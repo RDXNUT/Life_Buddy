@@ -5,13 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // **สำคัญมาก:** นำค่า firebaseConfig ที่ถูกต้องจาก Firebase Console มาใส่ตรงนี้
     const firebaseConfig = {
-  apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
-  authDomain: "life-buddy-xok07.firebaseapp.com",
-  projectId: "life-buddy-xok07",
-  storageBucket: "life-buddy-xok07.firebasestorage.app",
-  messagingSenderId: "243239137119",
-  appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
-};
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -45,15 +45,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 3. AUTHENTICATION & DATA ===================
     // ===================================================================
 
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
         if (user) {
             currentUser = user;
-            loadState(user.uid);
+            await loadState(user.uid);
         } else {
             currentUser = null;
             state = JSON.parse(JSON.stringify(initialState));
-            initApp();
         }
+        initializeApp(); 
     });
 
     async function loadState(userId) {
@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error loading state:", error);
             state = JSON.parse(JSON.stringify(initialState));
         }
-        initApp();
     }
 
     function saveState() {
@@ -91,13 +90,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 4. CORE APP LOGIC ==========================
     // ===================================================================
 
-    function initApp() {
-        dayjs.locale('th');
-        setupAllEventListeners();
+    function initializeApp() {
+        if (!areListenersSetup) {
+            setupAllEventListeners();
+        }
         updateUIForLoginStatus();
         applySettings();
         checkDailyReset();
         showPage('home');
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 500);
+        }
     }
     
     function updateUIForLoginStatus() {
@@ -208,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateRewardsUI() {
+        if (!currentUser) return;
         document.getElementById('total-exp-display').textContent = state.exp || 0;
         const container = document.getElementById('badges-container');
         const badgeData = [
@@ -220,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSettingsUI() {
+        if (!currentUser) return;
         if (typeof state.exp === 'undefined') state.exp = 0;
         let currentLevel = 1, expForNextLevel = levelCaps[0], expInCurrentLevel = state.exp, prevLevelsTotalExp = 0;
         for (let i = 0; i < levelCaps.length; i++) {
@@ -416,24 +426,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('close-modal-btn').addEventListener('click', closeAuthModal);
         document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
         document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-        
         document.getElementById('signup-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
             auth.createUserWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
-
         document.getElementById('login-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
-        
         document.getElementById('google-signin-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
         
+        // ACTIVITY MANAGER MODAL
         document.getElementById('manage-activities-btn').addEventListener('click', openActivityManager);
         document.getElementById('close-activity-modal-btn').addEventListener('click', closeActivityManager);
         document.getElementById('activity-manager-modal').addEventListener('click', e => { if (e.target.id === 'activity-manager-modal') closeActivityManager(); });
