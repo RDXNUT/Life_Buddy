@@ -3,15 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
-    // **สำคัญมาก:** นำค่า firebaseConfig ที่ถูกต้องจาก Firebase Console มาใส่ตรงนี้
     const firebaseConfig = {
-  apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
-  authDomain: "life-buddy-xok07.firebaseapp.com",
-  projectId: "life-buddy-xok07",
-  storageBucket: "life-buddy-xok07.firebasestorage.app",
-  messagingSenderId: "243239137119",
-  appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
-};
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -40,20 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentQuizTopic = null, shuffledFlashcards = [], currentCardIndex = 0;
     let toastTimeout;
     let areListenersSetup = false;
+    const allPages = document.querySelectorAll('.page');
+    const allNavLinks = document.querySelectorAll('.nav-link');
 
     // ===================================================================
-    // ====================== 3. AUTHENTICATION & DATA ===================
+    // ====================== 3. APP INITIALIZATION FLOW =================
     // ===================================================================
 
-    auth.onAuthStateChanged(async user => {
+    auth.onAuthStateChanged(async (user) => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.classList.remove('hidden');
+        loadingOverlay.style.opacity = '1';
+
         if (user) {
             currentUser = user;
-            await loadStateFromFirestore(user.uid);
+            state = await loadStateFromFirestore(user.uid);
         } else {
             currentUser = null;
             state = JSON.parse(JSON.stringify(initialState));
         }
-        initializeApp(); 
+        runApp();
     });
 
     async function loadStateFromFirestore(userId) {
@@ -62,20 +67,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const doc = await doc.get();
             if (doc.exists) {
                 const loadedData = doc.data();
-                if (!loadedData.userActivities || loadedData.userActivities.length === 0) {
-                    loadedData.userActivities = [...defaultActivities];
+                const mergedState = deepMerge(initialState, loadedData);
+                if (!mergedState.userActivities || mergedState.userActivities.length === 0) {
+                    mergedState.userActivities = [...defaultActivities];
                 }
-                state = { ...JSON.parse(JSON.stringify(initialState)), ...loadedData };
+                return mergedState;
             } else {
-                state = JSON.parse(JSON.stringify(initialState));
-                await saveState();
+                const freshState = JSON.parse(JSON.stringify(initialState));
+                await db.collection('users').doc(userId).set(freshState);
+                return freshState;
             }
         } catch (error) {
             console.error("Error loading state from Firestore:", error);
-            state = JSON.parse(JSON.stringify(initialState));
+            return JSON.parse(JSON.stringify(initialState));
         }
     }
 
+    function runApp() {
+        if (!areListenersSetup) {
+            setupAllEventListeners();
+            areListenersSetup = true;
+        }
+        updateUIForLoginStatus();
+        applySettings();
+        checkDailyReset();
+        renderAllUI();
+        
+        const activePageId = document.querySelector('.page.active')?.id.replace('-page', '') || 'home';
+        showPage(activePageId);
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => loadingOverlay.classList.add('hidden'), 500);
+    }
+
+    // ===================================================================
+    // ====================== 4. CORE FUNCTIONS ==========================
+    // ===================================================================
+    
     function saveState() {
         if (!currentUser) {
             showToast("เข้าสู่ระบบเพื่อบันทึกข้อมูลของคุณ");
@@ -86,78 +115,31 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error("Error saving state: ", error));
     }
     
-    // ===================================================================
-    // ====================== 4. CORE APP LOGIC ==========================
-    // ===================================================================
-
-    function initializeApp() {
-        if (!areListenersSetup) {
-            setupAllEventListeners();
-            areListenersSetup = true;
-        }
-        
-        updateUIForLoginStatus();
-        applySettings();
-        checkDailyReset();
-        renderAllPages();
-        
-        const activePage = document.querySelector('.page.active');
-        showPage(activePage ? activePage.id.replace('-page', '') : 'home');
-
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.opacity = '0';
-            setTimeout(() => {
-                loadingOverlay.classList.add('hidden');
-            }, 500);
-        }
-    }
-    
-    function updateUIForLoginStatus() {
-        if (currentUser) {
-            const userEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-            const displayName = currentUser.displayName || userEmailName;
-            const avatarUrl = currentUser.photoURL || `https://ui-avatars.com/api/?name=${displayName.charAt(0)}&background=random&color=fff`;
-            
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('user-profile').classList.remove('hidden');
-            document.getElementById('user-photo').src = avatarUrl;
-        } else {
-            document.getElementById('auth-container').classList.remove('hidden');
-            document.getElementById('user-profile').classList.add('hidden');
-        }
-        closeAuthModal();
-    }
-
-    const pages = document.querySelectorAll('.page');
-    const navLinks = document.querySelectorAll('.nav-link');
     window.showPage = (pageId) => {
+        if (!pageId) pageId = 'home';
         if ((pageId === 'profile' || pageId === 'rewards' || pageId === 'settings') && !currentUser) {
             openAuthModal();
             return;
         }
-        pages.forEach(p => p.classList.remove('active'));
-        navLinks.forEach(l => l.classList.remove('active'));
-        const targetPage = document.getElementById(`${pageId}-page`);
-        if (targetPage) targetPage.classList.add('active');
-        const targetLink = document.querySelector(`.nav-link[data-page="${pageId}"]`);
-        if(targetLink) targetLink.classList.add('active');
+        allPages.forEach(p => p.classList.toggle('active', p.id === `${pageId}-page`));
+        allNavLinks.forEach(l => l.classList.toggle('active', l.dataset.page === pageId));
         
+        if (history.pushState) {
+            history.pushState(null, null, `#${pageId}`);
+        } else {
+            location.hash = `#${pageId}`;
+        }
+
         const renderMap = {
-            home: updateHomePageUI,
             planner: () => renderPlannerCalendar(dayjs()),
             revisit: renderRevisitList,
-            focus: () => { if (document.getElementById('reset-timer-btn')) document.getElementById('reset-timer-btn').click(); },
             mood: () => renderMoodCalendar(dayjs()),
-            rewards: updateRewardsUI,
-            settings: updateSettingsUI,
             profile: renderProfilePage
         };
         renderMap[pageId]?.();
         
         feather.replace();
         closeSidebar();
-        window.scrollTo(0, 0);
     }
     
     function closeSidebar() {
@@ -184,13 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderAllPages() {
+    function renderAllUI() {
+        updateHeaderUI();
         updateHomePageUI();
         updateRewardsUI();
         updateSettingsUI();
-        if(currentUser) renderProfilePage();
     }
-    
+
     // ===================================================================
     // ====================== 5. UI UPDATE & HELPER FUNCTIONS ============
     // ===================================================================
@@ -202,6 +184,22 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.classList.remove('hidden');
         clearTimeout(toastTimeout);
         toastTimeout = setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+    
+    function updateUIForLoginStatus() {
+        if (currentUser) {
+            const userEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+            const displayName = currentUser.displayName || userEmailName;
+            const avatarUrl = currentUser.photoURL || `https://ui-avatars.com/api/?name=${displayName.charAt(0)}&background=random&color=fff`;
+            
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('user-profile').classList.remove('hidden');
+            document.getElementById('user-photo').src = avatarUrl;
+        } else {
+            document.getElementById('auth-container').classList.remove('hidden');
+            document.getElementById('user-profile').classList.add('hidden');
+        }
+        closeAuthModal();
     }
 
     function updateHeaderUI() {
@@ -294,6 +292,27 @@ document.addEventListener('DOMContentLoaded', () => {
         state.badges.mood7 = moodStreak >= 7;
         let totalReviews = (state.revisitTopics || []).reduce((sum, topic) => sum + (topic.reviewCount || 0), 0);
         state.badges.review20 = totalReviews >= 20;
+    }
+
+    function deepMerge(target, source) {
+        const output = { ...target };
+        if (isObject(target) && isObject(source)) {
+            Object.keys(source).forEach(key => {
+                if (isObject(source[key])) {
+                    if (!(key in target)) {
+                        Object.assign(output, { [key]: source[key] });
+                    } else {
+                        output[key] = deepMerge(target[key], source[key]);
+                    }
+                } else {
+                    Object.assign(output, { [key]: source[key] });
+                }
+            });
+        }
+        return output;
+    }
+    function isObject(item) {
+        return (item && typeof item === 'object' && !Array.isArray(item));
     }
     
     // ===================================================================
@@ -449,19 +468,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('close-modal-btn').addEventListener('click', closeAuthModal);
         document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
         document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-        
         document.getElementById('signup-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
             auth.createUserWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
-
         document.getElementById('login-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
-        
         document.getElementById('google-signin-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
@@ -563,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('open-menu').addEventListener('click', () => { document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); });
         document.getElementById('close-menu').addEventListener('click', closeSidebar);
         document.getElementById('overlay').addEventListener('click', closeSidebar);
-        navLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showPage(e.currentTarget.dataset.page); }));
+        allNavLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showPage(e.currentTarget.dataset.page); }));
 
         // HOME PAGE
         document.getElementById('check-in-btn').addEventListener('click', () => {
