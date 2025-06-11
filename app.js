@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(async user => {
         if (user) {
             currentUser = user;
-            await loadState(user.uid);
+            await loadStateFromFirestore(user.uid);
         } else {
             currentUser = null;
             state = JSON.parse(JSON.stringify(initialState));
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeApp(); 
     });
 
-    async function loadState(userId) {
+    async function loadStateFromFirestore(userId) {
         try {
             const docRef = db.collection('users').doc(userId);
             const doc = await doc.get();
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await saveState();
             }
         } catch (error) {
-            console.error("Error loading state:", error);
+            console.error("Error loading state from Firestore:", error);
             state = JSON.parse(JSON.stringify(initialState));
         }
     }
@@ -93,11 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeApp() {
         if (!areListenersSetup) {
             setupAllEventListeners();
+            areListenersSetup = true;
         }
+        
         updateUIForLoginStatus();
         applySettings();
         checkDailyReset();
-        showPage('home');
+        renderAllPages();
+        
+        const activePage = document.querySelector('.page.active');
+        showPage(activePage ? activePage.id.replace('-page', '') : 'home');
 
         const loadingOverlay = document.getElementById('loading-overlay');
         if (loadingOverlay) {
@@ -137,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetPage) targetPage.classList.add('active');
         const targetLink = document.querySelector(`.nav-link[data-page="${pageId}"]`);
         if(targetLink) targetLink.classList.add('active');
+        
         const renderMap = {
             home: updateHomePageUI,
             planner: () => renderPlannerCalendar(dayjs()),
@@ -148,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             profile: renderProfilePage
         };
         renderMap[pageId]?.();
+        
         feather.replace();
         closeSidebar();
         window.scrollTo(0, 0);
@@ -175,6 +182,13 @@ document.addEventListener('DOMContentLoaded', () => {
             state.focus.todaySessions = 0;
             state.focus.lastFocusDate = todayStr;
         }
+    }
+
+    function renderAllPages() {
+        updateHomePageUI();
+        updateRewardsUI();
+        updateSettingsUI();
+        if(currentUser) renderProfilePage();
     }
     
     // ===================================================================
@@ -216,7 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateRewardsUI() {
-        if (!currentUser) return;
+        if (!currentUser) {
+            document.getElementById('total-exp-display').textContent = 0;
+            document.getElementById('badges-container').innerHTML = '';
+            return;
+        }
         document.getElementById('total-exp-display').textContent = state.exp || 0;
         const container = document.getElementById('badges-container');
         const badgeData = [
@@ -229,7 +247,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSettingsUI() {
-        if (!currentUser) return;
+        if (!currentUser) {
+            document.getElementById('current-level').textContent = `Level 1`;
+            document.getElementById('exp-progress-text').textContent = `0 / ${levelCaps[0]}`;
+            document.getElementById('exp-progress-bar').style.width = `0%`;
+            return;
+        };
         if (typeof state.exp === 'undefined') state.exp = 0;
         let currentLevel = 1, expForNextLevel = levelCaps[0], expInCurrentLevel = state.exp, prevLevelsTotalExp = 0;
         for (let i = 0; i < levelCaps.length; i++) {
@@ -426,16 +449,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('close-modal-btn').addEventListener('click', closeAuthModal);
         document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
         document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+        
         document.getElementById('signup-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
             auth.createUserWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
+
         document.getElementById('login-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
             auth.signInWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
+        
         document.getElementById('google-signin-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
@@ -562,6 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         document.getElementById('todo-list').addEventListener('change', e => {
             if (e.target.type === 'checkbox') {
+                if (!state.todos) state.todos = [];
                 const todo = state.todos.find(t => t.id === parseInt(e.target.dataset.id));
                 if (todo) {
                     const wasCompleted = todo.completed; todo.completed = e.target.checked;
