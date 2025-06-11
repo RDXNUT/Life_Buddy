@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
+    // **สำคัญมาก:** นำค่า firebaseConfig ที่ถูกต้องจาก Firebase Console มาใส่ตรงนี้
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const storage = firebase.storage();
     
     // ===================================================================
     // ====================== 2. GLOBAL STATE & CONSTANTS ================
@@ -29,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
         focus: { totalSessions: 0, todaySessions: 0, lastFocusDate: null },
         badges: { focus10: false, plan5: false, mood7: false, review20: false },
         settings: { theme: 'light', focusDuration: 25, breakDuration: 5 },
-        userActivities: [...defaultActivities]
+        userActivities: [...defaultActivities],
+        profile: { gender: 'unspecified', age: '', bio: '' }
     };
     let timerInterval, timeLeft, isFocusing = true;
     let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
@@ -100,7 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUIForLoginStatus() {
         if (currentUser) {
             const userEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'user';
-            const avatarUrl = currentUser.photoURL || `https://ui-avatars.com/api/?name=${userEmailName}&background=random&color=fff`;
+            const displayName = currentUser.displayName || userEmailName;
+            const avatarUrl = currentUser.photoURL || `https://ui-avatars.com/api/?name=${displayName.charAt(0)}&background=random&color=fff`;
             
             document.getElementById('auth-container').classList.add('hidden');
             document.getElementById('user-profile').classList.remove('hidden');
@@ -115,15 +119,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const pages = document.querySelectorAll('.page');
     const navLinks = document.querySelectorAll('.nav-link');
     window.showPage = (pageId) => {
+        if ((pageId === 'profile' || pageId === 'rewards' || pageId === 'settings') && !currentUser) {
+            openAuthModal();
+            return;
+        }
         pages.forEach(p => p.classList.remove('active'));
         navLinks.forEach(l => l.classList.remove('active'));
-        
         const targetPage = document.getElementById(`${pageId}-page`);
         if (targetPage) targetPage.classList.add('active');
-        
         const targetLink = document.querySelector(`.nav-link[data-page="${pageId}"]`);
         if(targetLink) targetLink.classList.add('active');
-        
         const renderMap = {
             home: updateHomePageUI,
             planner: () => renderPlannerCalendar(dayjs()),
@@ -132,9 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
             mood: () => renderMoodCalendar(dayjs()),
             rewards: updateRewardsUI,
             settings: updateSettingsUI,
+            profile: renderProfilePage
         };
         renderMap[pageId]?.();
-        
         feather.replace();
         closeSidebar();
         window.scrollTo(0, 0);
@@ -174,9 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.textContent = message;
         toast.classList.remove('hidden');
         clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-            toast.classList.add('hidden');
-        }, 3000);
+        toastTimeout = setTimeout(() => { toast.classList.add('hidden'); }, 3000);
     }
 
     function updateHeaderUI() {
@@ -217,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSettingsUI() {
-        if (!state.exp) state.exp = 0;
+        if (typeof state.exp === 'undefined') state.exp = 0;
         let currentLevel = 1, expForNextLevel = levelCaps[0], expInCurrentLevel = state.exp, prevLevelsTotalExp = 0;
         for (let i = 0; i < levelCaps.length; i++) {
             if (state.exp >= prevLevelsTotalExp + levelCaps[i]) {
@@ -234,13 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addExp(amount) {
-        if(!state.exp) state.exp = 0;
+        if(typeof state.exp === 'undefined') state.exp = 0;
         state.exp += amount;
         updateHeaderUI();
         updateSettingsUI();
     }
 
     function checkBadges() {
+        if(!currentUser) return;
         if(!state.planner || !state.revisitTopics) return;
         let uniquePlannerDays = new Set(Object.keys(state.planner).filter(key => state.planner[key].length > 0));
         let moodStreak = 0;
@@ -251,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else { break; }
         }
         if(!state.badges) state.badges = {};
-        if(!state.focus) state.focus = {};
+        if(!state.focus) state.focus = { totalSessions: 0 };
         state.badges.focus10 = (state.focus.totalSessions || 0) >= 10;
         state.badges.plan5 = uniquePlannerDays.size >= 5;
         state.badges.mood7 = moodStreak >= 7;
@@ -384,6 +388,22 @@ document.addEventListener('DOMContentLoaded', () => {
         feather.replace();
     }
     
+    function renderProfilePage() {
+        if (!currentUser) return;
+        const userEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'user';
+        const displayName = currentUser.displayName || userEmailName;
+        const photoURL = currentUser.photoURL || `https://ui-avatars.com/api/?name=${displayName.charAt(0)}&background=random&color=fff`;
+
+        document.getElementById('profile-page-photo').src = photoURL;
+        document.getElementById('profile-page-name').textContent = displayName;
+        document.getElementById('profile-page-email').textContent = currentUser.email;
+
+        document.getElementById('display-name').value = currentUser.displayName || '';
+        document.getElementById('gender').value = state.profile?.gender || 'unspecified';
+        document.getElementById('age').value = state.profile?.age || '';
+        document.getElementById('bio').value = state.profile?.bio || '';
+    }
+
     // ===================================================================
     // ====================== 7. EVENT LISTENERS =========================
     // ===================================================================
@@ -396,20 +416,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('close-modal-btn').addEventListener('click', closeAuthModal);
         document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
         document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+        
         document.getElementById('signup-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
-            auth.createUserWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = error.message);
+            auth.createUserWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
+
         document.getElementById('login-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
-            auth.signInWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = error.message);
+            auth.signInWithEmailAndPassword(email, password).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
+        
         document.getElementById('google-signin-btn').addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(error => document.getElementById('auth-error').textContent = error.message);
+            auth.signInWithPopup(provider).catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error));
         });
+        
         document.getElementById('manage-activities-btn').addEventListener('click', openActivityManager);
         document.getElementById('close-activity-modal-btn').addEventListener('click', closeActivityManager);
         document.getElementById('activity-manager-modal').addEventListener('click', e => { if (e.target.id === 'activity-manager-modal') closeActivityManager(); });
@@ -430,6 +454,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.userActivities.splice(indexToDelete, 1);
                 renderActivityList(); saveState();
             }
+        });
+        
+        // PROFILE PAGE LISTENERS
+        document.getElementById('profile-link').addEventListener('click', (e) => { e.preventDefault(); showPage('profile'); });
+        document.getElementById('photo-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentUser) return;
+            const profilePhoto = document.getElementById('profile-page-photo');
+            const saveBtn = document.getElementById('save-profile-btn');
+            profilePhoto.style.opacity = '0.5';
+            saveBtn.disabled = true;
+
+            const filePath = `profile_pictures/${currentUser.uid}/${Date.now()}_${file.name}`;
+            const fileRef = storage.ref(filePath);
+            const uploadTask = fileRef.put(file);
+
+            uploadTask.then(snapshot => snapshot.ref.getDownloadURL())
+                .then(downloadURL => currentUser.updateProfile({ photoURL: downloadURL }))
+                .then(() => {
+                    alert('อัปเดตรูปโปรไฟล์สำเร็จ!');
+                    updateUIForLoginStatus();
+                    renderProfilePage();
+                })
+                .catch(error => {
+                    console.error('Upload failed', error);
+                    alert('อัปโหลดรูปภาพไม่สำเร็จ');
+                })
+                .finally(() => {
+                    profilePhoto.style.opacity = '1';
+                    saveBtn.disabled = false;
+                });
+        });
+        document.getElementById('profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const saveBtn = document.getElementById('save-profile-btn');
+            const btnText = saveBtn.querySelector('.btn-text');
+            const btnLoader = saveBtn.querySelector('.btn-loader');
+
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            saveBtn.disabled = true;
+
+            const newDisplayName = document.getElementById('display-name').value;
+            const newProfileData = {
+                gender: document.getElementById('gender').value,
+                age: document.getElementById('age').value || null,
+                bio: document.getElementById('bio').value,
+            };
+
+            const updateAuthPromise = currentUser.updateProfile({ displayName: newDisplayName });
+            const updateFirestorePromise = db.collection('users').doc(currentUser.uid).set({ profile: newProfileData }, { merge: true });
+
+            Promise.all([updateAuthPromise, updateFirestorePromise])
+                .then(() => {
+                    if (!state.profile) state.profile = {};
+                    Object.assign(state.profile, newProfileData);
+                    alert('บันทึกข้อมูลโปรไฟล์สำเร็จ!');
+                    updateUIForLoginStatus();
+                    renderProfilePage();
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                })
+                .finally(() => {
+                    btnText.classList.remove('hidden');
+                    btnLoader.classList.add('hidden');
+                    saveBtn.disabled = false;
+                });
         });
 
         // NAVIGATION & SIDEBAR
@@ -524,6 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startBtn.innerHTML = '<i data-feather="play"></i> เริ่มต่อ';
             } else {
                 startBtn.innerHTML = '<i data-feather="pause"></i> หยุด';
+                if(!state.settings) state.settings = initialState.settings;
                 timeLeft = timeLeft ?? state.settings.focusDuration * 60;
                 timerInterval = setInterval(() => {
                     timeLeft--; updateTimerDisplay(timeLeft);
@@ -533,7 +627,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (isFocusing) {
                             if(currentUser) alert('หมดเวลาโฟกัส! พักหน่อยนะ');
                             isFocusing = false;
-                            state.focus.totalSessions++; state.focus.todaySessions++; addExp(25);
+                            state.focus.totalSessions = (state.focus.totalSessions || 0) + 1;
+                            state.focus.todaySessions = (state.focus.todaySessions || 0) + 1;
+                            addExp(25);
                             timeLeft = state.settings.breakDuration * 60;
                             document.getElementById('timer-mode').textContent = 'Break';
                         } else {
@@ -595,6 +691,20 @@ document.addEventListener('DOMContentLoaded', () => {
         areListenersSetup = true;
     }
     
+    function getFriendlyAuthError(error) {
+        switch (error.code) {
+            case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
+            case 'auth/user-not-found': return 'ไม่พบบัญชีผู้ใช้นี้';
+            case 'auth/wrong-password': return 'รหัสผ่านไม่ถูกต้อง';
+            case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
+            case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+            case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
+            case 'auth/cancelled-popup-request': return '';
+            case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
+            default: console.error("Auth Error:", error); return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+        }
+    }
+
     function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
     function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); document.getElementById('auth-error').textContent = ''; }
 });

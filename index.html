@@ -5,15 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Buddy – คู่หูชีวิต</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    
-    <!-- ลิงก์ไปยังไฟล์ CSS ภายนอก -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,6 +27,7 @@
             <li><a href="#" class="nav-link" data-page="mood"><i data-feather="smile"></i>บันทึกอารมณ์</a></li>
             <li><a href="#" class="nav-link" data-page="rewards"><i data-feather="award"></i>รางวัลและความสำเร็จ</a></li>
             <li><a href="#" class="nav-link" data-page="settings"><i data-feather="settings"></i>การตั้งค่า</a></li>
+            <li><a href="#" class="nav-link" data-page="profile"><i data-feather="user"></i>โปรไฟล์ของฉัน</a></li>
         </ul>
     </nav>
     <div id="overlay"></div>
@@ -39,16 +35,14 @@
     <!-- ส่วนหัวของแอป (Header) -->
     <header>
         <button id="open-menu" class="icon-button"><i data-feather="menu"></i></button>
-        
-        <!-- ส่วนนี้จะแสดงเมื่อยังไม่ล็อกอิน -->
         <div id="auth-container" class="guest-container">
             <span id="guest-mode-indicator">โหมดทดลองเล่น</span>
             <button id="login-btn" class="small-btn">เข้าสู่ระบบ / สมัคร</button>
         </div>
-
-        <!-- ส่วนนี้จะแสดงเมื่อล็อกอินแล้ว -->
         <div id="user-profile" class="user-stats hidden">
-            <img id="user-photo" src="" alt="User Photo" class="profile-pic">
+            <a href="#" id="profile-link" title="แก้ไขโปรไฟล์">
+                <img id="user-photo" src="" alt="User Photo" class="profile-pic">
+            </a>
             <span id="streak-display" title="สตรีคการเช็คอิน">🔥 0</span>
             <span id="exp-display" title="ค่าประสบการณ์"><i data-feather="star"></i> 0 EXP</span>
             <button id="check-in-btn">เช็คอิน</button>
@@ -65,18 +59,14 @@
             <div class="home-grid">
                 <section class="card"><h2><i data-feather="target"></i> เป้าหมายรายวัน</h2><form id="todo-form"><input type="text" id="todo-input" placeholder="เพิ่มเป้าหมายใหม่..." required><button type="submit" aria-label="เพิ่มเป้าหมาย"><i data-feather="plus"></i></button></form><ul id="todo-list"></ul></section>
                 <section class="card">
-                    <div class="card-header-actions">
-                        <h2><i data-feather="zap"></i> กิจกรรมแก้เบื่อ</h2>
-                        <button id="manage-activities-btn" class="icon-button" title="จัดการรายการกิจกรรม"><i data-feather="settings"></i></button>
-                    </div>
-                    <button id="random-activity-btn">สุ่มกิจกรรมคลายเหงา 🎲</button>
-                    <p id="activity-suggestion" class="suggestion-text"></p>
+                    <div class="card-header-actions"><h2><i data-feather="zap"></i> กิจกรรมแก้เบื่อ</h2><button id="manage-activities-btn" class="icon-button" title="จัดการรายการกิจกรรม"><i data-feather="settings"></i></button></div>
+                    <button id="random-activity-btn">สุ่มกิจกรรมคลายเหงา 🎲</button><p id="activity-suggestion" class="suggestion-text"></p>
                 </section>
             </div>
             <section class="card"><h2><i data-feather="sunrise"></i> คำแนะนำประจำวัน</h2><p id="daily-advice" class="suggestion-text">กดปุ่มเพื่อรับคำแนะนำดีๆ สำหรับวันนี้</p><button id="random-advice-btn">สุ่มใหม่</button></section>
         </div>
         <!-- Planner Page -->
-        <div id="planner-page" class="page"><h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1><div class="planner-container"><div class="calendar-main card"><div class="calendar-controls"><button id="planner-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="planner-month-year"></h3><button id="planner-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div><div id="planner-calendar" class="calendar"></div></div><div class="planner-sidebar"><div class="card"><h2>เพิ่มกิจกรรม</h2><h4 id="selected-planner-date-display"></h4><form id="planner-form"><input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required><select id="event-category" required><option value="" disabled selected>เลือกหมวดหมู่</option><option value="การบ้าน">การบ้าน</option><option value="สอบ">สอบ</option><option value="งานกลุ่ม">งานกลุ่ม</option><option value="เวลาอ่านหนังสือ">เวลาอ่านหนังสือ</option><option value="เวลาเล่น">เวลาเล่น</option><option value="เวลาออกกำลังกาย">เวลาออกกำลังกาย</option></select><input type="time" id="event-time" required><button type="submit">+ เพิ่มกิจกรรม</button></form></div><div class="card"><h2>กิจกรรมในวันที่เลือก</h2><ul id="events-list"></ul></div></div></div></div>
+        <div id="planner-page" class="page"><h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1><div class="planner-container"><div class="calendar-main card"><div class="calendar-controls"><button id="planner-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="planner-month-year"></h3><button id="planner-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div><div id="planner-calendar" class="calendar"></div></div><div class="planner-sidebar"><div class="card"><h2>เพิ่มกิจกรรม</h2><h4 id="selected-planner-date-display"></h4><form id="planner-form"><input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required><select id="event-category" required><option value="" disabled selected>เลือกหมวดหมู่</option><option value="การบ้าน">การบ้าน</option><option value="รายงาน">รายงาน</option><option value="งานกลุ่ม">งานกลุ่ม</option><option value="เวลาอ่านหนังสือ">เวลาอ่านหนังสือ</option><option value="เวลาเล่น">เวลาเล่น</option><option value="เวลาออกกำลังกาย">เวลาออกกำลังกาย</option></select><input type="time" id="event-time" required><button type="submit">+ เพิ่มกิจกรรม</button></form></div><div class="card"><h2>กิจกรรมในวันที่เลือก</h2><ul id="events-list"></ul></div></div></div></div>
         <!-- Revisit Page -->
         <div id="revisit-page" class="page"><h1><i data-feather="book-open"></i> ทบทวนความรู้</h1><div id="revisit-main-view"><section class="card"><h2>เพิ่มหัวข้อใหม่สำหรับทบทวน</h2><form id="revisit-form"><input type="text" id="revisit-topic-name" placeholder="ชื่อหัวข้อ (เช่น ระบบหมุนเวียนเลือด)" required><textarea id="revisit-topic-notes" placeholder="ใส่โน้ตย่อ, คำสำคัญ, หรือ Mindmap สั้นๆ..."></textarea><button type="submit">+ เพิ่มหัวข้อ</button></form></section><section class="card"><h2>หัวข้อที่ต้องทบทวนวันนี้</h2><ul id="revisit-due-list"></ul></section></div><div id="flashcard-view" class="hidden"><h2 id="flashcard-topic-title"></h2><p id="flashcard-topic-notes"></p><div class="flashcard-container"><div id="flashcard-quiz"><div class="flashcard"><div class="flashcard-inner"><div class="flashcard-front"><p id="quiz-question"></p></div><div class="flashcard-back"><p id="quiz-answer"></p></div></div></div><div class="quiz-controls"><button id="reveal-answer-btn">แสดงคำตอบ</button><div id="quiz-feedback-btns" class="hidden"><button id="quiz-not-understood-btn" class="btn-danger">❌ ยังไม่เข้าใจ</button><button id="quiz-understood-btn" class="btn-success">✅ เข้าใจแล้ว</button></div></div></div></div><div id="flashcard-creator" class="card"><h3>สร้าง Flashcards เพิ่ม</h3><form id="flashcard-form"><input type="hidden" id="flashcard-topic-id"><input type="text" id="flashcard-question" placeholder="คำถาม" required><input type="text" id="flashcard-answer" placeholder="คำตอบ" required><button type="submit">+ เพิ่มการ์ด</button></form></div><button id="back-to-revisit-list"><i data-feather="arrow-left"></i> กลับไปหน้ารวม</button></div></div>
         <!-- Focus Page -->
@@ -87,50 +77,36 @@
         <div id="rewards-page" class="page"><h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1><section class="card exp-total-card"><p>EXP สะสมทั้งหมด</p><div id="total-exp-display">0</div></section><section class="card"><h2>เหรียญตราสะสม (Badges)</h2><div id="badges-container" class="badges-grid"></div></section></div>
         <!-- Settings Page -->
         <div id="settings-page" class="page"><h1><i data-feather="settings"></i> การตั้งค่า</h1><section class="card"><h2>การปรับแต่งธีม</h2><div class="theme-switcher"><button id="theme-light-btn" class="theme-btn"><i data-feather="sun"></i> โทนสว่าง</button><button id="theme-dark-btn" class="theme-btn"><i data-feather="moon"></i> โทนมืด</button></div></section><section class="card"><h2>ระดับและประสบการณ์</h2><div class="level-progress"><div class="level-info"><span id="current-level">Level 1</span><span id="exp-progress-text">0 / 100</span></div><div class="progress-bar-container"><div id="exp-progress-bar" class="progress-bar"></div></div></div></section></div>
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <h1><i data-feather="user"></i> โปรไฟล์ของฉัน</h1>
+            <div class="profile-container">
+                <div class="card profile-card">
+                    <div class="profile-picture-wrapper">
+                        <img id="profile-page-photo" src="" alt="Profile Photo">
+                        <label for="photo-upload" class="photo-upload-label" title="เปลี่ยนรูปโปรไฟล์"><i data-feather="camera"></i></label>
+                        <input type="file" id="photo-upload" accept="image/*" class="hidden">
+                    </div>
+                    <h2 id="profile-page-name"></h2>
+                    <p id="profile-page-email" class="subtle-text"></p>
+                </div>
+                <div class="card profile-details-card">
+                    <h2>แก้ไขข้อมูลส่วนตัว</h2>
+                    <form id="profile-form">
+                        <div class="form-group"><label for="display-name">ชื่อเล่น (Display Name)</label><input type="text" id="display-name" placeholder="ชื่อที่คุณต้องการให้แสดง"></div>
+                        <div class="form-group"><label for="gender">เพศ</label><select id="gender"><option value="unspecified">ไม่ระบุ</option><option value="male">ชาย</option><option value="female">หญิง</option></select></div>
+                        <div class="form-group"><label for="age">อายุ</label><input type="number" id="age" placeholder="กรอกอายุของคุณ" min="1"></div>
+                        <div class="form-group"><label for="bio">เกี่ยวกับฉัน (Bio)</label><textarea id="bio" placeholder="คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ..." maxlength="150"></textarea></div>
+                        <button type="submit" id="save-profile-btn"><span class="btn-text">บันทึกการเปลี่ยนแปลง</span><span class="btn-loader hidden"></span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </main>
     
-    <!-- Modal สำหรับ Login/Signup -->
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button id="close-modal-btn" class="close-btn">×</button>
-            <h2>ยินดีต้อนรับสู่ Life Buddy</h2>
-            <div id="auth-form-container">
-                <form id="signup-form">
-                    <h3>สมัครสมาชิกใหม่</h3>
-                    <input type="email" id="signup-email" placeholder="อีเมล" required>
-                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
-                    <button type="submit">สมัครสมาชิก</button>
-                </form>
-                <form id="login-form">
-                    <h3>เข้าสู่ระบบ</h3>
-                    <input type="email" id="login-email" placeholder="อีเมล" required>
-                    <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
-                    <button type="submit">เข้าสู่ระบบ</button>
-                </form>
-            </div>
-            <p class="separator"><span>หรือ</span></p>
-            <button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button>
-            <p id="auth-error" class="error-message"></p>
-        </div>
-    </div>
-    
-    <!-- Modal สำหรับจัดการกิจกรรม -->
-    <div id="activity-manager-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button id="close-activity-modal-btn" class="close-btn">×</button>
-            <h2>จัดการรายการกิจกรรม</h2>
-            <p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p>
-            <div id="activity-list-container">
-                <!-- รายการกิจกรรมจะถูกสร้างโดย JavaScript -->
-            </div>
-            <form id="add-activity-form">
-                <input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required>
-                <button type="submit">เพิ่มกิจกรรม</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Toast Notification สำหรับแจ้งเตือน -->
+    <!-- Modals -->
+    <div id="auth-modal" class="modal-overlay hidden"><div class="modal-content"><button id="close-modal-btn" class="close-btn">×</button><h2>ยินดีต้อนรับสู่ Life Buddy</h2><div id="auth-form-container"><form id="signup-form"><h3>สมัครสมาชิกใหม่</h3><input type="email" id="signup-email" placeholder="อีเมล" required><input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required><button type="submit">สมัครสมาชิก</button></form><form id="login-form"><h3>เข้าสู่ระบบ</h3><input type="email" id="login-email" placeholder="อีเมล" required><input type="password" id="login-password" placeholder="รหัสผ่าน" required><button type="submit">เข้าสู่ระบบ</button></form></div><p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div></div>
+    <div id="activity-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button id="close-activity-modal-btn" class="close-btn">×</button><h2>จัดการรายการกิจกรรม</h2><p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p><div id="activity-list-container"></div><form id="add-activity-form"><input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required><button type="submit">เพิ่มกิจกรรม</button></form></div></div>
     <div id="toast-notification" class="hidden"></div>
 
     <!-- Scripts -->
@@ -139,6 +115,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
