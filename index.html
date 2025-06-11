@@ -13,208 +13,8 @@
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     
-    <!-- Internal CSS (ฝัง CSS ไว้ที่นี่เลย) -->
-    <style>
-        :root {
-            --font-family: 'Kanit', sans-serif;
-            
-            /* Light Theme */
-            --bg-light: #f5f7fa;
-            --card-bg-light: #ffffff;
-            --text-light: #1c2a38;
-            --subtle-text-light: #5b6a78;
-            --border-light: #e8eef3;
-            --primary-light: #007aff;
-            --primary-hover-light: #0056b3;
-            --accent-light: #ff9500;
-            --accent-hover-light: #d97e00;
-            --success-light: #34c759;
-            --danger-light: #ff3b30;
-            --shadow-light: 0 5px 20px rgba(0, 0, 0, 0.08);
-            --glass-bg-light: rgba(255, 255, 255, 0.7);
-
-            /* Dark Theme */
-            --bg-dark: #121212;
-            --card-bg-dark: #1e1e1e;
-            --text-dark: #e5e5e5;
-            --subtle-text-dark: #a0a0a0;
-            --border-dark: #383838;
-            --primary-dark: #0a84ff;
-            --primary-hover-dark: #3b9dff;
-            --accent-dark: #ff9f0a;
-            --accent-hover-dark: #ffb43a;
-            --success-dark: #30d158;
-            --danger-dark: #ff453a;
-            --shadow-dark: 0 5px 25px rgba(0, 0, 0, 0.3);
-            --glass-bg-dark: rgba(30, 30, 30, 0.6);
-        }
-
-        body[data-theme="light"] {
-            --bg-color: var(--bg-light);
-            --card-bg-color: var(--card-bg-light);
-            --text-color: var(--text-light);
-            --subtle-text-color: var(--subtle-text-light);
-            --border-color: var(--border-light);
-            --primary-color: var(--primary-light);
-            --primary-hover: var(--primary-hover-light);
-            --accent-color: var(--accent-light);
-            --accent-hover: var(--accent-hover-light);
-            --success-color: var(--success-light);
-            --danger-color: var(--danger-light);
-            --shadow: var(--shadow-light);
-            --glass-bg: var(--glass-bg-light);
-        }
-
-        body[data-theme="dark"] {
-            --bg-color: var(--bg-dark);
-            --card-bg-color: var(--card-bg-dark);
-            --text-color: var(--text-dark);
-            --subtle-text-color: var(--subtle-text-dark);
-            --border-color: var(--border-dark);
-            --primary-color: var(--primary-dark);
-            --primary-hover: var(--primary-hover-dark);
-            --accent-color: var(--accent-dark);
-            --accent-hover: var(--accent-hover-dark);
-            --success-color: var(--success-dark);
-            --danger-color: var(--danger-dark);
-            --shadow: var(--shadow-dark);
-            --glass-bg: var(--glass-bg-dark);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-            line-height: 1.7;
-            font-weight: 300;
-        }
-
-        main { padding: 85px 20px 20px; max-width: 1200px; margin: 0 auto; }
-        h1, h2, h3, h4 { font-weight: 500; color: var(--text-color); }
-        h1 { font-size: 2.2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
-        h2 { font-size: 1.6rem; margin-bottom: 1rem; color: var(--text-color); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
-        h3 { font-size: 1.2rem; margin-bottom: 0.8rem; }
-        p { color: var(--subtle-text-color); }
-        .card { background-color: var(--card-bg-color); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: all 0.3s; }
-        .hidden { display: none !important; }
-        .feather { width: 1.1em; height: 1.1em; stroke-width: 2; vertical-align: -0.15em; }
-
-        header {
-            position: fixed; top: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; height: 65px; z-index: 1000;
-            background-color: var(--glass-bg);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
-        }
-        .user-stats { display: flex; align-items: center; gap: 20px; font-weight: 500; }
-        .user-stats span { display: flex; align-items: center; gap: 8px; padding: 5px 10px; background-color: var(--bg-color); border-radius: 20px; }
-        #check-in-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
-        #check-in-btn:hover { background-color: var(--accent-hover); transform: scale(1.05); }
-        #check-in-btn:disabled { background-color: #555; color: #999; cursor: not-allowed; transform: none; }
-
-        #sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background-color: var(--card-bg-color); box-shadow: 5px 0 25px rgba(0,0,0,0.2); z-index: 1002; transition: left 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); padding-top: 20px; border-right: 1px solid var(--border-color); }
-        #sidebar.show { left: 0; }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 20px; border-bottom: 1px solid var(--border-color); }
-        #sidebar ul { list-style: none; padding: 10px; }
-        #sidebar ul li a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; text-decoration: none; color: var(--text-color); font-size: 1rem; font-weight: 400; border-radius: 8px; transition: all 0.2s; margin-bottom: 5px; }
-        #sidebar ul li a:hover { background-color: var(--primary-hover); color: #fff; transform: translateX(5px); }
-        #sidebar ul li a.active { background-color: var(--primary-color); color: #fff; font-weight: 500; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; display: none; opacity: 0; transition: opacity 0.3s; }
-        #overlay.show { display: block; opacity: 1; }
-
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        button, input, select, textarea { font-family: var(--font-family); font-size: 1rem; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); width: 100%; margin-bottom: 10px; transition: all 0.2s; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-color-light); }
-        body[data-theme="dark"] input:focus, body[data-theme="dark"] select:focus, body[data-theme="dark"] textarea:focus { box-shadow: 0 0 0 3px var(--primary-color-dark); }
-        textarea { min-height: 80px; resize: vertical; }
-        button { background-color: var(--primary-color); color: white; cursor: pointer; border: none; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        button:hover { background-color: var(--primary-hover); }
-        button:active { transform: scale(0.98); }
-        .icon-button { background: none; border: none; color: var(--text-color); cursor: pointer; width: auto; padding: 5px; margin-bottom: 0; }
-        .icon-button:hover { color: var(--primary-color); }
-        .small-btn { padding: 5px 10px; font-size: 0.9em; width: auto; }
-
-        .welcome-card { background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; }
-        .welcome-card h1, .welcome-card p { color: white; }
-        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .overview-item ul { list-style: none; margin-top: 10px; }
-        .overview-item li { border-left: 3px solid var(--accent-color); padding-left: 10px; margin-bottom: 8px; color: var(--subtle-text-color); }
-        .home-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 900px) { .home-grid { grid-template-columns: 1fr; } }
-        #todo-form { display: flex; gap: 10px; }
-        #todo-form button { flex-shrink: 0; width: 50px; }
-        #todo-list { list-style: none; margin-top: 15px; }
-        #todo-list li { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
-        #todo-list li.completed span { text-decoration: line-through; color: var(--subtle-text-color); }
-        #todo-list input[type="checkbox"] { margin-right: 15px; width: 20px; height: 20px; flex-shrink: 0; }
-        .suggestion-text { margin-top: 15px; font-style: italic; text-align: center; font-size: 1.1rem; color: var(--accent-color); min-height: 40px; }
-
-        .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .calendar-day-name, .calendar-day { text-align: center; padding: 5px; border-radius: 8px; }
-        .calendar-day-name { font-weight: 500; color: var(--subtle-text-color); }
-        .calendar-day { min-height: 50px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; justify-content: center; align-items: center; border: 1px solid transparent; }
-        .calendar-day:hover { background-color: var(--bg-color); transform: scale(1.1); }
-        .calendar-day.today { border-color: var(--accent-color); font-weight: bold; }
-        .calendar-day.selected { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); transform: scale(1.1); }
-        .event-dot { position: absolute; bottom: 8px; width: 6px; height: 6px; background-color: var(--accent-color); border-radius: 50%; }
-
-        .planner-container, .mood-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 1024px) { .planner-container, .mood-container { grid-template-columns: 1fr; } }
-        #events-list { list-style: none; }
-        #events-list li { padding: 8px; border-bottom: 1px dashed var(--border-color); font-size: 0.9rem; }
-        
-        .flashcard-container { text-align: center; }
-        .flashcard { background-color: transparent; width: 100%; height: 200px; perspective: 1000px; margin-bottom: 20px; }
-        .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 20px; border: 2px solid var(--border-color); border-radius: 12px; background-color: var(--card-bg-color); font-size: 1.2rem; }
-        .flashcard-back { transform: rotateY(180deg); }
-        .quiz-controls { margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
-        .btn-success { background-color: var(--success-color); }
-        .btn-danger { background-color: var(--danger-color); }
-
-        .timer-card { text-align: center; padding: 40px 20px; }
-        #timer-display { font-size: 7rem; font-weight: 700; color: var(--primary-color); line-height: 1; }
-        #timer-mode { font-size: 1.5rem; color: var(--subtle-text-color); margin: 10px 0 20px; font-weight: 500; }
-        .timer-controls { display: flex; justify-content: center; gap: 15px; }
-        .timer-controls button { width: 130px; }
-        #timer-settings .form-group { display: flex; align-items: center; gap: 10px; }
-        #timer-settings .form-group label { margin-bottom: 0; width: auto; }
-
-        .emoji-selector { display: flex; justify-content: space-around; font-size: 2.5rem; margin: 20px 0; }
-        .emoji-option { cursor: pointer; transition: transform 0.2s, filter 0.2s; filter: grayscale(80%) opacity(0.6); }
-        .emoji-option:hover { filter: grayscale(50%) opacity(0.8); transform: scale(1.1); }
-        .emoji-option.selected { filter: grayscale(0%) opacity(1); transform: scale(1.2); }
-        .reason-title { font-size: 1rem; color: var(--subtle-text-color); margin-top: 15px; }
-        .reason-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .reason-selector label { display: flex; align-items: center; font-size: 0.9rem; }
-        .reason-selector input { width: auto; margin-right: 10px; }
-        
-        .exp-total-card { text-align: center; background: linear-gradient(135deg, var(--accent-color), #fca549); color: white; }
-        #total-exp-display { font-size: 3.5rem; font-weight: 700; color: white; }
-        .badges-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .badge-card { text-align: center; padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; }
-        .badge-card .badge-icon { font-size: 3.5rem; line-height: 1; }
-        .badge-card .badge-title { font-weight: 500; font-size: 1.1rem; margin-top: 10px; color: var(--text-color); }
-        .badge-card .badge-desc { font-size: 0.9rem; color: var(--subtle-text-color); }
-        .badge-card .badge-status { margin-top: 15px; font-weight: bold; padding: 5px 10px; border-radius: 15px; display: inline-block; }
-        .badge-card .badge-status.locked { color: var(--subtle-text-color); background-color: var(--bg-color); }
-        .badge-card .badge-status.unlocked { color: #fff; background-color: var(--success-color); }
-        
-        .theme-switcher { display: flex; gap: 10px; }
-        .theme-btn.active { border: 2px solid var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
-        .level-progress { margin-top: 20px; }
-        .level-info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 500; }
-        .progress-bar-container { width: 100%; height: 25px; background-color: var(--bg-color); border-radius: 20px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); border-radius: 20px; transition: width 0.5s ease-in-out; }
-    </style>
+    <!-- ลิงก์ไปยังไฟล์ CSS ภายนอก -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -239,769 +39,106 @@
     <!-- ส่วนหัวของแอป (Header) -->
     <header>
         <button id="open-menu" class="icon-button"><i data-feather="menu"></i></button>
-        <div class="user-stats">
-            <span id="streak-display" title="สตรีคการเช็คอิน"><i data-feather="zap"></i> 0</span>
+        
+        <!-- ส่วนนี้จะแสดงเมื่อยังไม่ล็อกอิน -->
+        <div id="auth-container" class="guest-container">
+            <span id="guest-mode-indicator">โหมดทดลองเล่น</span>
+            <button id="login-btn" class="small-btn">เข้าสู่ระบบ / สมัคร</button>
+        </div>
+
+        <!-- ส่วนนี้จะแสดงเมื่อล็อกอินแล้ว -->
+        <div id="user-profile" class="user-stats hidden">
+            <img id="user-photo" src="" alt="User Photo" class="profile-pic">
+            <span id="streak-display" title="สตรีคการเช็คอิน">🔥 0</span>
             <span id="exp-display" title="ค่าประสบการณ์"><i data-feather="star"></i> 0 EXP</span>
             <button id="check-in-btn">เช็คอิน</button>
+            <button id="logout-btn" class="icon-button" title="ออกจากระบบ"><i data-feather="log-out"></i></button>
         </div>
     </header>
 
     <!-- พื้นที่แสดงเนื้อหาหลัก -->
     <main>
-        <!-- ====================== หน้าหลัก (Home) ====================== -->
+        <!-- Home Page -->
         <div id="home-page" class="page">
-            <section class="card welcome-card">
-                <h1>ยินดีต้อนรับสู่ Life Buddy!</h1>
-                <p>เพื่อนคู่ชีวิตดิจิทัลของคุณ พร้อมช่วยให้ทุกวันของคุณดียิ่งขึ้น</p>
-            </section>
-
-            <section class="card">
-                <h2><i data-feather="clipboard"></i> ภาพรวมวันนี้</h2>
-                <div class="overview-grid">
-                    <div class="overview-item">
-                        <h3><i data-feather="list"></i> สรุปตารางงานวันนี้</h3>
-                        <ul id="today-tasks-summary"><li>ไม่มีงานสำหรับวันนี้</li></ul>
-                    </div>
-                    <div class="overview-item">
-                        <h3><i data-feather="book"></i> การทบทวนที่ต้องทำ</h3>
-                        <ul id="today-revisit-summary"><li>ไม่มีหัวข้อต้องทบทวน</li></ul>
-                    </div>
-                    <div class="overview-item">
-                        <h3><i data-feather="watch"></i> สถิติการโฟกัส</h3>
-                        <p>วันนี้โฟกัสสำเร็จ <strong id="today-focus-count">0</strong> รอบ</p>
-                        <button class="small-btn" onclick="showPage('focus')">ไปที่หน้าจับเวลา</button>
-                    </div>
-                </div>
-            </section>
-            
+            <section class="card welcome-card"><h1>ยินดีต้อนรับสู่ Life Buddy!</h1><p>เพื่อนคู่ชีวิตดิจิทัลของคุณ พร้อมช่วยให้ทุกวันของคุณดียิ่งขึ้น</p></section>
+            <section class="card"><h2><i data-feather="clipboard"></i> ภาพรวมวันนี้</h2><div class="overview-grid"><div class="overview-item"><h3><i data-feather="list"></i> สรุปตารางงานวันนี้</h3><ul id="today-tasks-summary"><li>ไม่มีงานสำหรับวันนี้</li></ul></div><div class="overview-item"><h3><i data-feather="book"></i> การทบทวนที่ต้องทำ</h3><ul id="today-revisit-summary"><li>ไม่มีหัวข้อต้องทบทวน</li></ul></div><div class="overview-item"><h3><i data-feather="watch"></i> สถิติการโฟกัส</h3><p>วันนี้โฟกัสสำเร็จ <strong id="today-focus-count">0</strong> รอบ</p><button class="small-btn" onclick="showPage('focus')">ไปที่หน้าจับเวลา</button></div></div></section>
             <div class="home-grid">
+                <section class="card"><h2><i data-feather="target"></i> เป้าหมายรายวัน</h2><form id="todo-form"><input type="text" id="todo-input" placeholder="เพิ่มเป้าหมายใหม่..." required><button type="submit" aria-label="เพิ่มเป้าหมาย"><i data-feather="plus"></i></button></form><ul id="todo-list"></ul></section>
                 <section class="card">
-                    <h2><i data-feather="target"></i> เป้าหมายรายวัน</h2>
-                    <form id="todo-form">
-                        <input type="text" id="todo-input" placeholder="เพิ่มเป้าหมายใหม่..." required>
-                        <button type="submit" aria-label="เพิ่มเป้าหมาย"><i data-feather="plus"></i></button>
-                    </form>
-                    <ul id="todo-list"></ul>
-                </section>
-
-                <section class="card">
-                    <h2><i data-feather="zap"></i> กิจกรรมแก้เบื่อ</h2>
+                    <div class="card-header-actions">
+                        <h2><i data-feather="zap"></i> กิจกรรมแก้เบื่อ</h2>
+                        <button id="manage-activities-btn" class="icon-button" title="จัดการรายการกิจกรรม"><i data-feather="settings"></i></button>
+                    </div>
                     <button id="random-activity-btn">สุ่มกิจกรรมคลายเหงา 🎲</button>
                     <p id="activity-suggestion" class="suggestion-text"></p>
                 </section>
             </div>
-
-            <section class="card">
-                <h2><i data-feather="sunrise"></i> คำแนะนำประจำวัน</h2>
-                <p id="daily-advice" class="suggestion-text">กดปุ่มเพื่อรับคำแนะนำดีๆ สำหรับวันนี้</p>
-                <button id="random-advice-btn">สุ่มใหม่</button>
-            </section>
+            <section class="card"><h2><i data-feather="sunrise"></i> คำแนะนำประจำวัน</h2><p id="daily-advice" class="suggestion-text">กดปุ่มเพื่อรับคำแนะนำดีๆ สำหรับวันนี้</p><button id="random-advice-btn">สุ่มใหม่</button></section>
         </div>
-
-        <!-- ====================== หน้าตารางชีวิต (Planner) ====================== -->
-        <div id="planner-page" class="page">
-            <h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1>
-            <div class="planner-container">
-                <div class="calendar-main card">
-                    <div class="calendar-controls"><button id="planner-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="planner-month-year"></h3><button id="planner-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div>
-                    <div id="planner-calendar" class="calendar"></div>
-                </div>
-                <div class="planner-sidebar">
-                    <div class="card">
-                        <h2>เพิ่มกิจกรรม</h2>
-                        <h4 id="selected-planner-date-display"></h4>
-                        <form id="planner-form">
-                            <input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required>
-                            <select id="event-category" required>
-                                <option value="" disabled selected>เลือกหมวดหมู่</option>
-                                <option value="การบ้าน">การบ้าน</option>
-                                <option value="รายงาน">รายงาน</option>
-                                <option value="งานกลุ่ม">งานกลุ่ม</option>
-                                <option value="เวลาอ่านหนังสือ">เวลาอ่านหนังสือ</option>
-                                <option value="เวลาเล่น">เวลาเล่น</option>
-                                <option value="เวลาออกกำลังกาย">เวลาออกกำลังกาย</option>
-                            </select>
-                            <input type="time" id="event-time" required>
-                            <button type="submit">+ เพิ่มกิจกรรม</button>
-                        </form>
-                    </div>
-                    <div class="card">
-                        <h2>กิจกรรมในวันที่เลือก</h2>
-                        <ul id="events-list"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- ====================== หน้าทบทวนความรู้ (Revisit) ====================== -->
-        <div id="revisit-page" class="page">
-            <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
-            <div id="revisit-main-view">
-                <section class="card">
-                    <h2>เพิ่มหัวข้อใหม่สำหรับทบทวน</h2>
-                    <form id="revisit-form">
-                        <input type="text" id="revisit-topic-name" placeholder="ชื่อหัวข้อ (เช่น ระบบหมุนเวียนเลือด)" required>
-                        <textarea id="revisit-topic-notes" placeholder="ใส่โน้ตย่อ, คำสำคัญ, หรือ Mindmap สั้นๆ..."></textarea>
-                        <button type="submit">+ เพิ่มหัวข้อ</button>
-                    </form>
-                </section>
-                <section class="card">
-                    <h2>หัวข้อที่ต้องทบทวนวันนี้</h2>
-                    <ul id="revisit-due-list"></ul>
-                </section>
-            </div>
-            <div id="flashcard-view" class="hidden">
-                 <h2 id="flashcard-topic-title"></h2>
-                 <p id="flashcard-topic-notes"></p>
-                 <div class="flashcard-container">
-                    <div id="flashcard-quiz">
-                        <div class="flashcard">
-                            <div class="flashcard-inner">
-                                <div class="flashcard-front"><p id="quiz-question"></p></div>
-                                <div class="flashcard-back"><p id="quiz-answer"></p></div>
-                            </div>
-                        </div>
-                        <div class="quiz-controls">
-                            <button id="reveal-answer-btn">แสดงคำตอบ</button>
-                            <div id="quiz-feedback-btns" class="hidden">
-                                <button id="quiz-not-understood-btn" class="btn-danger">❌ ยังไม่เข้าใจ</button>
-                                <button id="quiz-understood-btn" class="btn-success">✅ เข้าใจแล้ว</button>
-                            </div>
-                        </div>
-                    </div>
-                 </div>
-                 <div id="flashcard-creator" class="card">
-                    <h3>สร้าง Flashcards เพิ่ม</h3>
-                    <form id="flashcard-form">
-                        <input type="hidden" id="flashcard-topic-id">
-                        <input type="text" id="flashcard-question" placeholder="คำถาม" required>
-                        <input type="text" id="flashcard-answer" placeholder="คำตอบ" required>
-                        <button type="submit">+ เพิ่มการ์ด</button>
-                    </form>
-                </div>
-                 <button id="back-to-revisit-list"><i data-feather="arrow-left"></i> กลับไปหน้ารวม</button>
-            </div>
-        </div>
-
-        <!-- ====================== หน้าจับเวลา (Focus) ====================== -->
-        <div id="focus-page" class="page">
-            <h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1>
-            <div class="card timer-card">
-                <div id="timer-display">25:00</div>
-                <div id="timer-mode">Focus</div>
-                <div class="timer-controls">
-                    <button id="start-timer-btn"><i data-feather="play"></i> เริ่ม</button>
-                    <button id="reset-timer-btn"><i data-feather="rotate-cw"></i> รีเซ็ต</button>
-                    <button id="settings-timer-btn" class="icon-button"><i data-feather="settings"></i></button>
-                </div>
-            </div>
-            <div id="timer-settings" class="card hidden">
-                <h3>ตั้งค่าเวลา (นาที)</h3>
-                <div class="form-group">
-                    <label for="focus-duration">เวลาโฟกัส:</label>
-                    <input type="number" id="focus-duration" value="25" min="1">
-                </div>
-                <div class="form-group">
-                    <label for="break-duration">เวลาพัก:</label>
-                    <input type="number" id="break-duration" value="5" min="1">
-                </div>
-                <button id="save-timer-settings-btn">บันทึก</button>
-            </div>
-        </div>
-
-        <!-- ====================== หน้าบันทึกอารมณ์ (Mood) ====================== -->
-        <div id="mood-page" class="page">
-            <h1><i data-feather="smile"></i> บันทึกอารมณ์</h1>
-            <div class="mood-container">
-                <div class="mood-calendar-area card">
-                    <div class="calendar-controls"><button id="mood-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="mood-month-year"></h3><button id="mood-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div>
-                    <div id="mood-calendar" class="calendar"></div>
-                </div>
-                <div class="mood-entry-area">
-                    <div class="card">
-                        <h2>บันทึกสำหรับ <span id="selected-mood-date-display"></span></h2>
-                        <div id="mood-details">
-                            <p><i>เลือกวันในปฏิทินเพื่อดูหรือเพิ่มบันทึก</i></p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2>วันนี้รู้สึกอย่างไร?</h2>
-                        <form id="mood-form">
-                            <div class="emoji-selector">
-                                <span class="emoji-option" data-mood="happy">😊</span>
-                                <span class="emoji-option" data-mood="excited">🤩</span>
-                                <span class="emoji-option" data-mood="neutral">😐</span>
-                                <span class="emoji-option" data-mood="sad">😢</span>
-                                <span class="emoji-option" data-mood="angry">😡</span>
-                            </div>
-                            <input type="hidden" id="selected-mood" required>
-                            <textarea id="mood-notes" placeholder="วันนี้เกิดอะไรขึ้นบ้าง?"></textarea>
-                            <h3 class="reason-title">เหตุผลหลัก (เลือกได้หลายข้อ)</h3>
-                            <div class="reason-selector">
-                                <label><input type="checkbox" name="mood-reason" value="study"> 📚 การเรียน</label>
-                                <label><input type="checkbox" name="mood-reason" value="family"> 👨‍👩‍👧‍👦 ครอบครัว</label>
-                                <label><input type="checkbox" name="mood-reason" value="friends"> 💬 เพื่อน</label>
-                                <label><input type="checkbox" name="mood-reason" value="work"> 🧑‍💻 งาน/กิจกรรม</label>
-                                <label><input type="checkbox" name="mood-reason" value="love"> 💖 ความรัก</label>
-                                <label><input type="checkbox" name="mood-reason" value="health"> 😷 สุขภาพ</label>
-                                <label><input type="checkbox" name="mood-reason" value="other"> ❓ อื่นๆ</label>
-                            </div>
-                            <button type="submit">บันทึกอารมณ์</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ====================== หน้ารางวัล (Rewards) ====================== -->
-        <div id="rewards-page" class="page">
-            <h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1>
-            <section class="card exp-total-card">
-                <p>EXP สะสมทั้งหมด</p>
-                <div id="total-exp-display">0</div>
-            </section>
-            <section class="card">
-                <h2>เหรียญตราสะสม (Badges)</h2>
-                <div id="badges-container" class="badges-grid"></div>
-            </section>
-        </div>
-
-        <!-- ====================== หน้าตั้งค่า (Settings) ====================== -->
-        <div id="settings-page" class="page">
-            <h1><i data-feather="settings"></i> การตั้งค่า</h1>
-            <section class="card">
-                <h2>การปรับแต่งธีม</h2>
-                <div class="theme-switcher">
-                    <button id="theme-light-btn" class="theme-btn"><i data-feather="sun"></i> โทนสว่าง</button>
-                    <button id="theme-dark-btn" class="theme-btn"><i data-feather="moon"></i> โทนมืด</button>
-                </div>
-            </section>
-            <section class="card">
-                <h2>ระดับและประสบการณ์</h2>
-                <div class="level-progress">
-                    <div class="level-info">
-                        <span id="current-level">Level 1</span>
-                        <span id="exp-progress-text">0 / 100</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div id="exp-progress-bar" class="progress-bar"></div>
-                    </div>
-                </div>
-            </section>
-        </div>
+        <!-- Planner Page -->
+        <div id="planner-page" class="page"><h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1><div class="planner-container"><div class="calendar-main card"><div class="calendar-controls"><button id="planner-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="planner-month-year"></h3><button id="planner-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div><div id="planner-calendar" class="calendar"></div></div><div class="planner-sidebar"><div class="card"><h2>เพิ่มกิจกรรม</h2><h4 id="selected-planner-date-display"></h4><form id="planner-form"><input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required><select id="event-category" required><option value="" disabled selected>เลือกหมวดหมู่</option><option value="การบ้าน">การบ้าน</option><option value="สอบ">สอบ</option><option value="งานกลุ่ม">งานกลุ่ม</option><option value="เวลาอ่านหนังสือ">เวลาอ่านหนังสือ</option><option value="เวลาเล่น">เวลาเล่น</option><option value="เวลาออกกำลังกาย">เวลาออกกำลังกาย</option></select><input type="time" id="event-time" required><button type="submit">+ เพิ่มกิจกรรม</button></form></div><div class="card"><h2>กิจกรรมในวันที่เลือก</h2><ul id="events-list"></ul></div></div></div></div>
+        <!-- Revisit Page -->
+        <div id="revisit-page" class="page"><h1><i data-feather="book-open"></i> ทบทวนความรู้</h1><div id="revisit-main-view"><section class="card"><h2>เพิ่มหัวข้อใหม่สำหรับทบทวน</h2><form id="revisit-form"><input type="text" id="revisit-topic-name" placeholder="ชื่อหัวข้อ (เช่น ระบบหมุนเวียนเลือด)" required><textarea id="revisit-topic-notes" placeholder="ใส่โน้ตย่อ, คำสำคัญ, หรือ Mindmap สั้นๆ..."></textarea><button type="submit">+ เพิ่มหัวข้อ</button></form></section><section class="card"><h2>หัวข้อที่ต้องทบทวนวันนี้</h2><ul id="revisit-due-list"></ul></section></div><div id="flashcard-view" class="hidden"><h2 id="flashcard-topic-title"></h2><p id="flashcard-topic-notes"></p><div class="flashcard-container"><div id="flashcard-quiz"><div class="flashcard"><div class="flashcard-inner"><div class="flashcard-front"><p id="quiz-question"></p></div><div class="flashcard-back"><p id="quiz-answer"></p></div></div></div><div class="quiz-controls"><button id="reveal-answer-btn">แสดงคำตอบ</button><div id="quiz-feedback-btns" class="hidden"><button id="quiz-not-understood-btn" class="btn-danger">❌ ยังไม่เข้าใจ</button><button id="quiz-understood-btn" class="btn-success">✅ เข้าใจแล้ว</button></div></div></div></div><div id="flashcard-creator" class="card"><h3>สร้าง Flashcards เพิ่ม</h3><form id="flashcard-form"><input type="hidden" id="flashcard-topic-id"><input type="text" id="flashcard-question" placeholder="คำถาม" required><input type="text" id="flashcard-answer" placeholder="คำตอบ" required><button type="submit">+ เพิ่มการ์ด</button></form></div><button id="back-to-revisit-list"><i data-feather="arrow-left"></i> กลับไปหน้ารวม</button></div></div>
+        <!-- Focus Page -->
+        <div id="focus-page" class="page"><h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1><div class="card timer-card"><div id="timer-display">25:00</div><div id="timer-mode">Focus</div><div class="timer-controls"><button id="start-timer-btn"><i data-feather="play"></i> เริ่ม</button><button id="reset-timer-btn"><i data-feather="rotate-cw"></i> รีเซ็ต</button><button id="settings-timer-btn" class="icon-button"><i data-feather="settings"></i></button></div></div><div id="timer-settings" class="card hidden"><h3>ตั้งค่าเวลา (นาที)</h3><div class="form-group"><label for="focus-duration">เวลาโฟกัส:</label><input type="number" id="focus-duration" value="25" min="1"></div><div class="form-group"><label for="break-duration">เวลาพัก:</label><input type="number" id="break-duration" value="5" min="1"></div><button id="save-timer-settings-btn">บันทึก</button></div></div>
+        <!-- Mood Page -->
+        <div id="mood-page" class="page"><h1><i data-feather="smile"></i> บันทึกอารมณ์</h1><div class="mood-container"><div class="mood-calendar-area card"><div class="calendar-controls"><button id="mood-prev-month" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button><h3 id="mood-month-year"></h3><button id="mood-next-month" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button></div><div id="mood-calendar" class="calendar"></div></div><div class="mood-entry-area"><div class="card"><h2>บันทึกสำหรับ <span id="selected-mood-date-display"></span></h2><div id="mood-details"><p><i>เลือกวันในปฏิทินเพื่อดูหรือเพิ่มบันทึก</i></p></div></div><div class="card"><h2>วันนี้รู้สึกอย่างไร?</h2><form id="mood-form"><div class="emoji-selector"><span class="emoji-option" data-mood="happy">😊</span><span class="emoji-option" data-mood="excited">🤩</span><span class="emoji-option" data-mood="neutral">😐</span><span class="emoji-option" data-mood="sad">😢</span><span class="emoji-option" data-mood="angry">😡</span></div><input type="hidden" id="selected-mood" required><textarea id="mood-notes" placeholder="วันนี้เกิดอะไรขึ้นบ้าง?"></textarea><h3 class="reason-title">เหตุผลหลัก (เลือกได้หลายข้อ)</h3><div class="reason-selector"><label><input type="checkbox" name="mood-reason" value="study"> 📚 การเรียน</label><label><input type="checkbox" name="mood-reason" value="family"> 👨‍👩‍👧‍👦 ครอบครัว</label><label><input type="checkbox" name="mood-reason" value="friends"> 💬 เพื่อน</label><label><input type="checkbox" name="mood-reason" value="work"> 🧑‍💻 งาน/กิจกรรม</label><label><input type="checkbox" name="mood-reason" value="love"> 💖 ความรัก</label><label><input type="checkbox" name="mood-reason" value="health"> 😷 สุขภาพ</label><label><input type="checkbox" name="mood-reason" value="other"> ❓ อื่นๆ</label></div><button type="submit">บันทึกอารมณ์</button></form></div></div></div></div>
+        <!-- Rewards Page -->
+        <div id="rewards-page" class="page"><h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1><section class="card exp-total-card"><p>EXP สะสมทั้งหมด</p><div id="total-exp-display">0</div></section><section class="card"><h2>เหรียญตราสะสม (Badges)</h2><div id="badges-container" class="badges-grid"></div></section></div>
+        <!-- Settings Page -->
+        <div id="settings-page" class="page"><h1><i data-feather="settings"></i> การตั้งค่า</h1><section class="card"><h2>การปรับแต่งธีม</h2><div class="theme-switcher"><button id="theme-light-btn" class="theme-btn"><i data-feather="sun"></i> โทนสว่าง</button><button id="theme-dark-btn" class="theme-btn"><i data-feather="moon"></i> โทนมืด</button></div></section><section class="card"><h2>ระดับและประสบการณ์</h2><div class="level-progress"><div class="level-info"><span id="current-level">Level 1</span><span id="exp-progress-text">0 / 100</span></div><div class="progress-bar-container"><div id="exp-progress-bar" class="progress-bar"></div></div></div></section></div>
     </main>
+    
+    <!-- Modal สำหรับ Login/Signup -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-modal-btn" class="close-btn">×</button>
+            <h2>ยินดีต้อนรับสู่ Life Buddy</h2>
+            <div id="auth-form-container">
+                <form id="signup-form">
+                    <h3>สมัครสมาชิกใหม่</h3>
+                    <input type="email" id="signup-email" placeholder="อีเมล" required>
+                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+                    <button type="submit">สมัครสมาชิก</button>
+                </form>
+                <form id="login-form">
+                    <h3>เข้าสู่ระบบ</h3>
+                    <input type="email" id="login-email" placeholder="อีเมล" required>
+                    <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
+                    <button type="submit">เข้าสู่ระบบ</button>
+                </form>
+            </div>
+            <p class="separator"><span>หรือ</span></p>
+            <button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button>
+            <p id="auth-error" class="error-message"></p>
+        </div>
+    </div>
+    
+    <!-- Modal สำหรับจัดการกิจกรรม -->
+    <div id="activity-manager-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-activity-modal-btn" class="close-btn">×</button>
+            <h2>จัดการรายการกิจกรรม</h2>
+            <p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p>
+            <div id="activity-list-container">
+                <!-- รายการกิจกรรมจะถูกสร้างโดย JavaScript -->
+            </div>
+            <form id="add-activity-form">
+                <input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required>
+                <button type="submit">เพิ่มกิจกรรม</button>
+            </form>
+        </div>
+    </div>
 
-    <!-- Scripts (ต้องอยู่ท้าย body) -->
+    <!-- Toast Notification สำหรับแจ้งเตือน -->
+    <div id="toast-notification" class="hidden"></div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/th.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            feather.replace();
-            dayjs.locale('th');
-
-            let state = {};
-            const levelCaps = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-            const initialState = {
-                exp: 0, streak: 0, lastCheckIn: null, todos: [], planner: {}, revisitTopics: [], moods: {},
-                focus: { totalSessions: 0, todaySessions: 0, lastFocusDate: null },
-                badges: { focus10: false, plan5: false, mood7: false, review20: false },
-                settings: { theme: 'light', focusDuration: 25, breakDuration: 5 }
-            };
-            
-            function loadState() {
-                const savedState = localStorage.getItem('lifeBuddyState');
-                state = savedState ? JSON.parse(savedState) : JSON.parse(JSON.stringify(initialState));
-            }
-
-            function saveState() {
-                checkBadges();
-                localStorage.setItem('lifeBuddyState', JSON.stringify(state));
-            }
-
-            function initApp() {
-                loadState();
-                setupAllEventListeners();
-                applySettings();
-                checkDailyReset();
-                showPage('home');
-            }
-
-            const pages = document.querySelectorAll('.page');
-            const navLinks = document.querySelectorAll('.nav-link');
-            window.showPage = (pageId) => {
-                pages.forEach(p => p.classList.remove('active'));
-                navLinks.forEach(l => l.classList.remove('active'));
-                
-                const targetPage = document.getElementById(`${pageId}-page`);
-                if (targetPage) targetPage.classList.add('active');
-                
-                const targetLink = document.querySelector(`.nav-link[data-page="${pageId}"]`);
-                if(targetLink) targetLink.classList.add('active');
-                
-                const renderMap = {
-                    home: updateHomePageUI,
-                    planner: () => renderPlannerCalendar(dayjs()),
-                    revisit: renderRevisitList,
-                    mood: () => renderMoodCalendar(dayjs()),
-                    rewards: updateRewardsUI,
-                    settings: updateSettingsUI,
-                };
-                renderMap[pageId]?.();
-                
-                feather.replace();
-                closeSidebar();
-                window.scrollTo(0, 0);
-            }
-            
-            function closeSidebar() {
-                document.getElementById('sidebar').classList.remove('show');
-                document.getElementById('overlay').classList.remove('show');
-            }
-
-            function updateHeaderUI() {
-                document.getElementById('exp-display').innerHTML = `<i data-feather="star"></i> ${state.exp} EXP`;
-                document.getElementById('streak-display').innerHTML = `<i data-feather="zap"></i> ${state.streak}`;
-                const checkInBtn = document.getElementById('check-in-btn');
-                if (state.lastCheckIn === dayjs().format('YYYY-MM-DD')) {
-                    checkInBtn.textContent = 'เช็คอินแล้ว';
-                    checkInBtn.disabled = true;
-                } else {
-                    checkInBtn.textContent = 'เช็คอิน';
-                    checkInBtn.disabled = false;
-                }
-                feather.replace();
-            }
-            
-            function updateHomePageUI() {
-                updateHeaderUI();
-                const todayStr = dayjs().format('YYYY-MM-DD');
-                const tasksList = document.getElementById('today-tasks-summary');
-                tasksList.innerHTML = (state.planner[todayStr] || []).map(t => `<li>${t.time} - ${t.name}</li>`).join('') || '<li>ไม่มีงานสำหรับวันนี้</li>';
-                
-                const revisitList = document.getElementById('today-revisit-summary');
-                const dueTopics = state.revisitTopics.filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
-                revisitList.innerHTML = dueTopics.map(t => `<li>${t.name}</li>`).join('') || '<li>ไม่มีหัวข้อต้องทบทวน</li>';
-                
-                document.getElementById('today-focus-count').textContent = state.focus.todaySessions;
-
-                const todoList = document.getElementById('todo-list');
-                todoList.innerHTML = state.todos.map(todo => `
-                    <li class="${todo.completed ? 'completed' : ''}">
-                        <input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}>
-                        <span>${todo.text}</span>
-                    </li>`).join('');
-            }
-
-            function updateRewardsUI() {
-                document.getElementById('total-exp-display').textContent = state.exp;
-                const container = document.getElementById('badges-container');
-                const badgeData = [
-                    { id: 'focus10', title: 'นักโฟกัสหน้าใหม่', desc: 'โฟกัสครบ 10 รอบ', icon: '🎯' },
-                    { id: 'plan5', title: 'นักวางแผนตัวยง', desc: 'สร้างตารางงานครบ 5 วัน', icon: '🏆' },
-                    { id: 'mood7', title: 'จิตใจเบิกบาน', desc: 'อารมณ์ดีต่อเนื่อง 7 วัน', icon: '😊' },
-                    { id: 'review20', title: 'ยอดนักทบทวน', desc: 'ทบทวนบทเรียนครบ 20 ครั้ง', icon: '📚' }
-                ];
-                container.innerHTML = badgeData.map(badge => {
-                    const unlocked = state.badges[badge.id];
-                    return `
-                    <div class="badge-card">
-                        <div class="badge-icon">${badge.icon}</div>
-                        <div class="badge-title">${badge.title}</div>
-                        <div class="badge-desc">${badge.desc}</div>
-                        <div class="badge-status ${unlocked ? 'unlocked' : 'locked'}">${unlocked ? 'ปลดล็อกแล้ว' : 'ล็อกอยู่'}</div>
-                    </div>`;
-                }).join('');
-            }
-            
-            function updateSettingsUI() {
-                let currentLevel = 1, expForNextLevel = levelCaps[0], expInCurrentLevel = state.exp, prevLevelsTotalExp = 0;
-                for (let i = 0; i < levelCaps.length; i++) {
-                    if (state.exp >= prevLevelsTotalExp + levelCaps[i]) {
-                        prevLevelsTotalExp += levelCaps[i]; currentLevel++;
-                    } else {
-                        expForNextLevel = levelCaps[i]; expInCurrentLevel = state.exp - prevLevelsTotalExp; break;
-                    }
-                }
-                const progress = Math.min(100, (expInCurrentLevel / expForNextLevel) * 100);
-                document.getElementById('current-level').textContent = `Level ${currentLevel}`;
-                document.getElementById('exp-progress-text').textContent = `${expInCurrentLevel} / ${expForNextLevel}`;
-                document.getElementById('exp-progress-bar').style.width = `${progress}%`;
-            }
-            
-            function checkDailyReset() {
-                const todayStr = dayjs().format('YYYY-MM-DD');
-                if (state.focus.lastFocusDate !== todayStr) {
-                    state.focus.todaySessions = 0;
-                    state.focus.lastFocusDate = todayStr;
-                }
-            }
-            
-            function addExp(amount) {
-                state.exp += amount;
-                updateHeaderUI();
-                updateSettingsUI();
-            }
-
-            function checkBadges() {
-                let uniquePlannerDays = new Set(Object.keys(state.planner).filter(key => state.planner[key].length > 0));
-                let happyStreak = 0;
-                let sortedMoodDays = Object.keys(state.moods).sort();
-                for(let i = sortedMoodDays.length - 1; i >= 0; i--) {
-                    const currentDay = sortedMoodDays[i];
-                    const prevDay = dayjs(currentDay).subtract(1, 'day').format('YYYY-MM-DD');
-                    if(state.moods[currentDay].mood === 'happy' || state.moods[currentDay].mood === 'excited') {
-                        if(i === sortedMoodDays.length - 1 || sortedMoodDays[i-1] === prevDay) {
-                            happyStreak++;
-                        } else {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                
-                state.badges.focus10 = state.focus.totalSessions >= 10;
-                state.badges.plan5 = uniquePlannerDays.size >= 5;
-                state.badges.mood7 = happyStreak >= 7;
-                let totalReviews = state.revisitTopics.reduce((sum, topic) => sum + (topic.reviewCount || 0), 0);
-                state.badges.review20 = totalReviews >= 20;
-            }
-
-            function applySettings() {
-                document.body.dataset.theme = state.settings.theme;
-                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-                document.getElementById(`theme-${state.settings.theme}-btn`).classList.add('active');
-                document.getElementById('focus-duration').value = state.settings.focusDuration;
-                document.getElementById('break-duration').value = state.settings.breakDuration;
-            }
-
-            function setupAllEventListeners() {
-                document.getElementById('open-menu').addEventListener('click', () => {
-                    document.getElementById('sidebar').classList.add('show');
-                    document.getElementById('overlay').classList.add('show');
-                });
-                document.getElementById('close-menu').addEventListener('click', closeSidebar);
-                document.getElementById('overlay').addEventListener('click', closeSidebar);
-                navLinks.forEach(link => link.addEventListener('click', e => {
-                    e.preventDefault();
-                    showPage(e.currentTarget.dataset.page);
-                }));
-
-                document.getElementById('check-in-btn').addEventListener('click', () => {
-                    const todayStr = dayjs().format('YYYY-MM-DD');
-                    const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-                    if (state.lastCheckIn !== todayStr) {
-                        state.streak = state.lastCheckIn === yesterdayStr ? state.streak + 1 : 1;
-                        state.lastCheckIn = todayStr;
-                        addExp(40);
-                        saveState();
-                        alert(`เช็คอินสำเร็จ! สตรีคของคุณคือ ${state.streak} วัน! ได้รับ 40 EXP`);
-                        updateHeaderUI();
-                    }
-                });
-
-                document.getElementById('todo-form').addEventListener('submit', e => {
-                    e.preventDefault();
-                    const input = document.getElementById('todo-input');
-                    if (input.value.trim()) {
-                        state.todos.push({ id: Date.now(), text: input.value.trim(), completed: false });
-                        input.value = '';
-                        updateHomePageUI();
-                        saveState();
-                    }
-                });
-                document.getElementById('todo-list').addEventListener('change', e => {
-                    if (e.target.type === 'checkbox') {
-                        const todo = state.todos.find(t => t.id === parseInt(e.target.dataset.id));
-                        if (todo) {
-                            todo.completed = e.target.checked;
-                            if(todo.completed) {
-                                addExp(10);
-                                alert("ทำเป้าหมายสำเร็จ! +10 EXP");
-                            }
-                            updateHomePageUI();
-                            saveState();
-                        }
-                    }
-                });
-                const activities = ["เขียนสิ่งที่ขอบคุณวันนี้ 3 อย่าง", "ยืดเส้น 3 นาที", "โทรหาเพื่อนคนหนึ่ง", "จดไอเดียเรื่องที่สนใจ", "จัดโต๊ะทำงาน"];
-                document.getElementById('random-activity-btn').addEventListener('click', () => {
-                    document.getElementById('activity-suggestion').textContent = activities[Math.floor(Math.random() * activities.length)];
-                    addExp(5);
-                    saveState();
-                });
-                const advices = ["เหนื่อยได้ แต่อย่าลืมหายใจให้ลึก ๆ", "เก่งแล้วนะ ที่ยังอยู่ตรงนี้ได้", "ต้นไม้ไม่ได้โตในวันเดียว คนเราก็เช่นกัน", "ดื่มน้ำบ้างนะ วันนี้เธอทำดีแล้วล่ะ", "ใจล้า อย่าฝืน แต่ใจสู้ อย่าถอย"];
-                document.getElementById('random-advice-btn').addEventListener('click', () => {
-                    document.getElementById('daily-advice').textContent = advices[Math.floor(Math.random() * advices.length)];
-                });
-
-                let currentPlannerDate = dayjs();
-                let selectedPlannerDate = dayjs().format('YYYY-MM-DD');
-                window.renderPlannerCalendar = (date) => {
-                    currentPlannerDate = date;
-                    document.getElementById('planner-month-year').textContent = date.format('MMMM YYYY');
-                    const calendarEl = document.getElementById('planner-calendar');
-                    calendarEl.innerHTML = '';
-                    const monthStart = date.startOf('month'), startDay = monthStart.day(), daysInMonth = date.daysInMonth();
-                    ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].forEach(d => calendarEl.innerHTML += `<div class="calendar-day-name">${d}</div>`);
-                    for (let i = 0; i < startDay; i++) calendarEl.innerHTML += '<div></div>';
-                    for (let i = 1; i <= daysInMonth; i++) {
-                        const dayElem = document.createElement('div');
-                        dayElem.className = 'calendar-day';
-                        dayElem.textContent = i;
-                        const currentDate = date.date(i), dateStr = currentDate.format('YYYY-MM-DD');
-                        if (currentDate.isSame(dayjs(), 'day')) dayElem.classList.add('today');
-                        if (dateStr === selectedPlannerDate) dayElem.classList.add('selected');
-                        if (state.planner[dateStr]?.length > 0) dayElem.innerHTML += '<div class="event-dot"></div>';
-                        dayElem.addEventListener('click', () => {
-                            selectedPlannerDate = dateStr;
-                            renderPlannerCalendar(date);
-                        });
-                        calendarEl.appendChild(dayElem);
-                    }
-                    renderPlannerDetails(selectedPlannerDate);
-                    feather.replace();
-                };
-                function renderPlannerDetails(dateStr) {
-                    document.getElementById('selected-planner-date-display').textContent = `สำหรับวันที่ ${dayjs(dateStr).format('D MMMM')}`;
-                    const list = document.getElementById('events-list');
-                    list.innerHTML = (state.planner[dateStr] || []).sort((a,b) => a.time.localeCompare(b.time))
-                        .map(e => `<li><strong>${e.time}</strong> - ${e.name} (${e.category})</li>`).join('') || '<li>ไม่มีกิจกรรม</li>';
-                }
-                document.getElementById('planner-prev-month').addEventListener('click', () => renderPlannerCalendar(currentPlannerDate.subtract(1, 'month')));
-                document.getElementById('planner-next-month').addEventListener('click', () => renderPlannerCalendar(currentPlannerDate.add(1, 'month')));
-                document.getElementById('planner-form').addEventListener('submit', e => {
-                    e.preventDefault();
-                    if(!document.getElementById('event-category').value) { return alert("กรุณาเลือกหมวดหมู่"); }
-                    const newEvent = {
-                        name: document.getElementById('event-name').value,
-                        category: document.getElementById('event-category').value,
-                        time: document.getElementById('event-time').value,
-                    };
-                    if (!state.planner[selectedPlannerDate]) state.planner[selectedPlannerDate] = [];
-                    state.planner[selectedPlannerDate].push(newEvent);
-                    addExp(15);
-                    saveState();
-                    renderPlannerCalendar(currentPlannerDate);
-                    e.target.reset();
-                });
-
-                // Revisit Logic
-                let currentQuizTopic = null;
-                let shuffledFlashcards = [];
-                let currentCardIndex = 0;
-                window.renderRevisitList = () => {
-                    const listEl = document.getElementById('revisit-due-list');
-                    const dueTopics = state.revisitTopics.filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
-                    listEl.innerHTML = dueTopics.map(topic => `<li><span>${topic.name}</span><button class="small-btn" onclick="startReviewSession(${topic.id})">เริ่มทบทวน</button></li>`).join('') || '<li>ไม่มีหัวข้อต้องทบทวนวันนี้!</li>';
-                    feather.replace();
-                }
-                window.startReviewSession = (topicId) => {
-                    currentQuizTopic = state.revisitTopics.find(t => t.id === topicId);
-                    if (!currentQuizTopic) return;
-                    document.getElementById('revisit-main-view').classList.add('hidden');
-                    document.getElementById('flashcard-view').classList.remove('hidden');
-                    document.getElementById('flashcard-topic-title').textContent = currentQuizTopic.name;
-                    document.getElementById('flashcard-topic-notes').textContent = currentQuizTopic.notes || "ไม่มีโน้ตย่อ";
-                    document.getElementById('flashcard-topic-id').value = topicId;
-                    shuffledFlashcards = [...currentQuizTopic.flashcards].sort(() => 0.5 - Math.random());
-                    currentCardIndex = 0;
-                    if(shuffledFlashcards.length > 0) {
-                        displayNextFlashcard();
-                    } else {
-                        alert("ยังไม่มี Flashcard ในหัวข้อนี้ กรุณาเพิ่มก่อน");
-                        document.getElementById('flashcard-quiz').classList.add('hidden');
-                    }
-                }
-                function displayNextFlashcard() {
-                    document.getElementById('flashcard-quiz').classList.remove('hidden');
-                    if (currentCardIndex >= shuffledFlashcards.length) {
-                        finishQuiz();
-                        return;
-                    }
-                    const card = shuffledFlashcards[currentCardIndex];
-                    const flashcardEl = document.querySelector('.flashcard');
-                    flashcardEl.classList.remove('flipped');
-                    document.getElementById('quiz-question').textContent = card.q;
-                    document.getElementById('quiz-answer').textContent = card.a;
-                    document.getElementById('reveal-answer-btn').classList.remove('hidden');
-                    document.getElementById('quiz-feedback-btns').classList.add('hidden');
-                }
-                function finishQuiz() {
-                    alert('ทบทวนหัวข้อนี้เสร็จแล้ว! เก่งมาก!');
-                    const intervals = [1, 3, 7, 14, 30, 60];
-                    currentQuizTopic.level = Math.min(currentQuizTopic.level + 1, intervals.length - 1);
-                    currentQuizTopic.nextReviewDate = dayjs().add(intervals[currentQuizTopic.level], 'day').format('YYYY-MM-DD');
-                    currentQuizTopic.reviewCount = (currentQuizTopic.reviewCount || 0) + 1;
-                    addExp(20);
-                    saveState();
-                    document.getElementById('back-to-revisit-list').click();
-                }
-                document.getElementById('revisit-form').addEventListener('submit', e => {
-                    e.preventDefault();
-                    state.revisitTopics.push({ id: Date.now(), name: document.getElementById('revisit-topic-name').value, notes: document.getElementById('revisit-topic-notes').value, level: 0, nextReviewDate: dayjs().format('YYYY-MM-DD'), flashcards: [], reviewCount: 0 });
-                    renderRevisitList(); e.target.reset(); saveState();
-                });
-                document.getElementById('back-to-revisit-list').addEventListener('click', () => {
-                    document.getElementById('revisit-main-view').classList.remove('hidden');
-                    document.getElementById('flashcard-view').classList.add('hidden');
-                    renderRevisitList();
-                });
-                document.getElementById('reveal-answer-btn').addEventListener('click', () => {
-                    document.querySelector('.flashcard').classList.add('flipped');
-                    document.getElementById('reveal-answer-btn').classList.add('hidden');
-                    document.getElementById('quiz-feedback-btns').classList.remove('hidden');
-                });
-                document.getElementById('quiz-understood-btn').addEventListener('click', () => {
-                    addExp(5); currentCardIndex++; displayNextFlashcard(); saveState();
-                });
-                document.getElementById('quiz-not-understood-btn').addEventListener('click', () => {
-                    shuffledFlashcards.push(shuffledFlashcards[currentCardIndex]);
-                    currentCardIndex++;
-                    displayNextFlashcard();
-                });
-                document.getElementById('flashcard-form').addEventListener('submit', e => {
-                    e.preventDefault();
-                    const topic = state.revisitTopics.find(t => t.id === parseInt(document.getElementById('flashcard-topic-id').value));
-                    if(topic) {
-                        topic.flashcards.push({q: document.getElementById('flashcard-question').value, a: document.getElementById('flashcard-answer').value});
-                        alert('เพิ่ม Flashcard แล้ว!'); e.target.reset(); saveState();
-                    }
-                });
-
-                // Focus Logic
-                let timerInterval, timeLeft, isFocusing = true;
-                const startBtn = document.getElementById('start-timer-btn');
-                function updateTimerDisplay(time) {
-                    const minutes = Math.floor(time / 60);
-                    const seconds = time % 60;
-                    document.getElementById('timer-display').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                }
-                startBtn.addEventListener('click', () => {
-                    if (timerInterval) {
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        startBtn.innerHTML = '<i data-feather="play"></i> เริ่มต่อ';
-                    } else {
-                        startBtn.innerHTML = '<i data-feather="pause"></i> หยุด';
-                        timeLeft = timeLeft ?? state.settings.focusDuration * 60;
-                        timerInterval = setInterval(() => {
-                            timeLeft--;
-                            updateTimerDisplay(timeLeft);
-                            if (timeLeft < 0) {
-                                clearInterval(timerInterval);
-                                timerInterval = null;
-                                new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3').play();
-                                if (isFocusing) {
-                                    alert('หมดเวลาโฟกัส! พักหน่อยนะ');
-                                    isFocusing = false;
-                                    state.focus.totalSessions++;
-                                    state.focus.todaySessions++;
-                                    addExp(25);
-                                    timeLeft = state.settings.breakDuration * 60;
-                                    document.getElementById('timer-mode').textContent = 'Break';
-                                } else {
-                                    alert('หมดเวลาพัก! กลับมาโฟกัสกันต่อ');
-                                    isFocusing = true;
-                                    timeLeft = state.settings.focusDuration * 60;
-                                    document.getElementById('timer-mode').textContent = 'Focus';
-                                }
-                                updateTimerDisplay(timeLeft);
-                                startBtn.innerHTML = '<i data-feather="play"></i> เริ่ม';
-                                saveState();
-                                updateHomePageUI();
-                            }
-                        }, 1000);
-                    }
-                    feather.replace();
-                });
-                document.getElementById('reset-timer-btn').addEventListener('click', () => {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    isFocusing = true;
-                    timeLeft = state.settings.focusDuration * 60;
-                    updateTimerDisplay(timeLeft);
-                    document.getElementById('timer-mode').textContent = 'Focus';
-                    startBtn.innerHTML = '<i data-feather="play"></i> เริ่ม';
-                    feather.replace();
-                });
-                document.getElementById('settings-timer-btn').addEventListener('click', () => document.getElementById('timer-settings').classList.toggle('hidden'));
-                document.getElementById('save-timer-settings-btn').addEventListener('click', () => {
-                    state.settings.focusDuration = parseInt(document.getElementById('focus-duration').value);
-                    state.settings.breakDuration = parseInt(document.getElementById('break-duration').value);
-                    document.getElementById('timer-settings').classList.add('hidden');
-                    document.getElementById('reset-timer-btn').click();
-                    saveState();
-                });
-
-                // Mood Logic
-                let currentMoodDate = dayjs();
-                let selectedMoodDate = dayjs().format('YYYY-MM-DD');
-                window.renderMoodCalendar = (date) => {
-                    currentMoodDate = date;
-                    document.getElementById('mood-month-year').textContent = date.format('MMMM YYYY');
-                    const calendarEl = document.getElementById('mood-calendar');
-                    calendarEl.innerHTML = '';
-                    const monthStart = date.startOf('month'), startDay = monthStart.day(), daysInMonth = date.daysInMonth();
-                    ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'].forEach(d => calendarEl.innerHTML += `<div class="calendar-day-name">${d}</div>`);
-                    for (let i = 0; i < startDay; i++) calendarEl.innerHTML += '<div></div>';
-                    for (let i = 1; i <= daysInMonth; i++) {
-                        const dayElem = document.createElement('div');
-                        dayElem.className = 'calendar-day';
-                        dayElem.textContent = i;
-                        const currentDate = date.date(i), dateStr = currentDate.format('YYYY-MM-DD');
-                        if (currentDate.isSame(dayjs(), 'day')) dayElem.classList.add('today');
-                        if (dateStr === selectedMoodDate) dayElem.classList.add('selected');
-                        const moodEntry = state.moods[dateStr];
-                        if (moodEntry) {
-                            const moodColors = { happy: '#ffcc00', excited: '#ff9500', neutral: '#8e8e93', sad: '#007aff', angry: '#ff3b30' };
-                            dayElem.style.backgroundColor = moodColors[moodEntry.mood];
-                            dayElem.style.color = 'white';
-                        }
-                        dayElem.addEventListener('click', () => { selectedMoodDate = dateStr; renderMoodCalendar(date); });
-                        calendarEl.appendChild(dayElem);
-                    }
-                    renderMoodDetails(selectedMoodDate);
-                    feather.replace();
-                };
-                function renderMoodDetails(dateStr) {
-                    document.getElementById('selected-mood-date-display').textContent = dayjs(dateStr).format('D MMMM YYYY');
-                    const details = document.getElementById('mood-details');
-                    const entry = state.moods[dateStr];
-                    if (entry) {
-                        details.innerHTML = `<p><strong>อารมณ์:</strong> ${entry.mood}</p><p><strong>บันทึก:</strong> ${entry.notes || '<em>ไม่มี</em>'}</p><p><strong>เหตุผล:</strong> ${entry.reasons.join(', ') || '<em>ไม่ระบุ</em>'}</p>`;
-                    } else {
-                        details.innerHTML = '<p><i>ยังไม่มีการบันทึกสำหรับวันนี้</i></p>';
-                    }
-                }
-                document.getElementById('mood-prev-month').addEventListener('click', () => renderMoodCalendar(currentMoodDate.subtract(1, 'month')));
-                document.getElementById('mood-next-month').addEventListener('click', () => renderMoodCalendar(currentMoodDate.add(1, 'month')));
-                document.querySelectorAll('.emoji-option').forEach(el => el.addEventListener('click', e => {
-                    document.querySelectorAll('.emoji-option.selected').forEach(s => s.classList.remove('selected'));
-                    e.currentTarget.classList.add('selected');
-                    document.getElementById('selected-mood').value = e.currentTarget.dataset.mood;
-                }));
-                document.getElementById('mood-form').addEventListener('submit', e => {
-                    e.preventDefault();
-                    const mood = document.getElementById('selected-mood').value;
-                    if (!mood) return alert('กรุณาเลือกอารมณ์');
-                    const reasons = [...document.querySelectorAll('input[name="mood-reason"]:checked')].map(el => el.value);
-                    state.moods[selectedMoodDate] = { mood, notes: document.getElementById('mood-notes').value, reasons };
-                    addExp(15);
-                    saveState();
-                    renderMoodCalendar(currentMoodDate);
-                    e.target.reset();
-                    document.querySelectorAll('.emoji-option.selected').forEach(s => s.classList.remove('selected'));
-                });
-
-                // Settings
-                document.getElementById('theme-light-btn').addEventListener('click', () => { state.settings.theme = 'light'; applySettings(); saveState(); });
-                document.getElementById('theme-dark-btn').addEventListener('click', () => { state.settings.theme = 'dark'; applySettings(); saveState(); });
-            }
-
-            initApp();
-        });
-    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
