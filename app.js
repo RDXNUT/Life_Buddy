@@ -1,28 +1,26 @@
+// ===================================================================
+// ========================= START OF FILE ===========================
+// ===================================================================
+
 document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
-    authDomain: "life-buddy-xok07.firebaseapp.com",
-    projectId: "life-buddy-xok07",
-    storageBucket: "life-buddy-xok07.firebasestorage.app",
-    messagingSenderId: "243239137119",
-    appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
-
+    // !!!!!! นี่คือจุดเดียวที่คุณต้องแก้ไขด้วยตัวเอง !!!!!!
+    // !!!!!! ให้ไปคัดลอก Config ของจริงจาก Firebase Console มาวางทับตรงนี้ !!!!!!
+    // (ไปที่ Project Settings > General > Your Apps > เลือก "CDN" แล้วคัดลอก Object มา)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms", // <--- วางทับค่านี้
+      authDomain: "life-buddy-xok07.firebaseapp.com",    // <--- วางทับค่านี้
+      projectId: "life-buddy-xok07",                      // <--- วางทับค่านี้
+      storageBucket: "life-buddy-xok07.firebasestorage.app", // <--- วางทับค่านี้
+      messagingSenderId: "243239137119",                  // <--- วางทับค่านี้
+      appId: "1:243239137119:web:2baf84c64caddf211ad0ea"   // <--- วางทับค่านี้
+    };
+  
+    // เริ่มต้นการเชื่อมต่อ Firebase
+    // โค้ดส่วนนี้จะทำงานได้ก็ต่อเมื่อ firebaseConfig ถูกต้อง
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
