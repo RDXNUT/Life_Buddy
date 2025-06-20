@@ -3,15 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
-    // !!! สำคัญ: ใส่ Firebase Config ของคุณที่นี่ !!!
-    const firebaseConfig = {
-      apiKey: "AIzaSyB...", // ใส่ apiKey ของคุณ
-      authDomain: "life-buddy-xok07.firebaseapp.com",
-      projectId: "life-buddy-xok07",
-      storageBucket: "life-buddy-xok07.firebasestorage.app",
-      messagingSenderId: "243239137119",
-      appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
-    };
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
+    authDomain: "life-buddy-xok07.firebaseapp.com",
+    projectId: "life-buddy-xok07",
+    storageBucket: "life-buddy-xok07.firebasestorage.app",
+    messagingSenderId: "243239137119",
+    appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
