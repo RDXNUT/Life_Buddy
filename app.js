@@ -3,14 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
+    // !!! สำคัญ: ใส่ Firebase Config ของคุณที่นี่ !!!
     const firebaseConfig = {
-  apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
-  authDomain: "life-buddy-xok07.firebaseapp.com",
-  projectId: "life-buddy-xok07",
-  storageBucket: "life-buddy-xok07.firebasestorage.app",
-  messagingSenderId: "243239137119",
-  appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
-};
+      apiKey: "AIzaSyB...", // ใส่ apiKey ของคุณ
+      authDomain: "life-buddy-xok07.firebaseapp.com",
+      projectId: "life-buddy-xok07",
+      storageBucket: "life-buddy-xok07.firebasestorage.app",
+      messagingSenderId: "243239137119",
+      appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
+    };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -64,15 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadStateFromFirestore(userId) {
         try {
             const docRef = db.collection('users').doc(userId);
-            const doc = await doc.get();
+            const doc = await docRef.get();
             if (doc.exists) {
+                console.log("โหลดข้อมูลจาก Firestore สำเร็จ");
                 const loadedData = doc.data();
-                const mergedState = deepMerge(initialState, loadedData);
+                const mergedState = deepMerge(JSON.parse(JSON.stringify(initialState)), loadedData);
                 if (!mergedState.userActivities || mergedState.userActivities.length === 0) {
                     mergedState.userActivities = [...defaultActivities];
                 }
                 return mergedState;
             } else {
+                console.log("ไม่พบข้อมูลผู้ใช้เก่า, สร้างข้อมูลเริ่มต้นใหม่");
                 const freshState = JSON.parse(JSON.stringify(initialState));
                 await db.collection('users').doc(userId).set(freshState);
                 return freshState;
@@ -93,7 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checkDailyReset();
         renderAllUI();
         
-        const activePageId = document.querySelector('.page.active')?.id.replace('-page', '') || 'home';
+        const hash = window.location.hash.substring(1);
+        const activePageId = document.querySelector('.page.active')?.id.replace('-page', '') || hash || 'home';
         showPage(activePageId);
 
         const loadingOverlay = document.getElementById('loading-overlay');
@@ -112,7 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         checkBadges();
         db.collection('users').doc(currentUser.uid).set(state, { merge: true })
-            .catch(error => console.error("Error saving state: ", error));
+            .then(() => {
+                console.log("บันทึกข้อมูลลง Firestore สำเร็จ!");
+            })
+            .catch(error => console.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล: ", error));
     }
     
     window.showPage = (pageId) => {
@@ -270,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addExp(amount) {
         if(typeof state.exp === 'undefined') state.exp = 0;
         state.exp += amount;
+        showToast(`ได้รับ ${amount} EXP!`);
         updateHeaderUI();
         updateSettingsUI();
     }
@@ -463,11 +471,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAllEventListeners() {
         if (areListenersSetup) return;
 
-        // AUTH & MODALS
+        // --- AUTH & MODALS ---
         document.getElementById('login-btn').addEventListener('click', openAuthModal);
         document.getElementById('close-modal-btn').addEventListener('click', closeAuthModal);
         document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
         document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+        
+        // --- AUTH FORM SWITCHER ---
+        document.getElementById('show-signup-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('signup-view').classList.remove('hidden');
+            document.getElementById('auth-error').textContent = ''; // Clear old errors
+        });
+        document.getElementById('show-login-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('signup-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('auth-error').textContent = ''; // Clear old errors
+        });
+        
+        // --- AUTH ACTIONS ---
         document.getElementById('signup-form').addEventListener('submit', e => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value;
@@ -588,7 +612,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.streak = state.lastCheckIn === yesterdayStr ? (state.streak || 0) + 1 : 1;
                 state.lastCheckIn = todayStr;
                 addExp(40);
-                if (currentUser) { alert(`เช็คอินสำเร็จ! สตรีคของคุณคือ ${state.streak} วัน! ได้รับ 40 EXP`); }
                 updateHeaderUI();
                 saveState();
             }
@@ -608,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const todo = state.todos.find(t => t.id === parseInt(e.target.dataset.id));
                 if (todo) {
                     const wasCompleted = todo.completed; todo.completed = e.target.checked;
-                    if(todo.completed && !wasCompleted) { addExp(10); if(currentUser) {alert("ทำเป้าหมายสำเร็จ! +10 EXP");} }
+                    if(todo.completed && !wasCompleted) { addExp(10); }
                     updateHomePageUI(); saveState();
                 }
             }
@@ -743,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function getFriendlyAuthError(error) {
+        console.error("Auth Error:", error); // Log the full error for debugging
         switch (error.code) {
             case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
             case 'auth/user-not-found': return 'ไม่พบบัญชีผู้ใช้นี้';
@@ -752,10 +776,24 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
             case 'auth/cancelled-popup-request': return '';
             case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
-            default: console.error("Auth Error:", error); return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+            case 'auth/internal-error':
+                 if (error.message.includes("INVALID_LOGIN_CREDENTIALS")) {
+                    return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                 }
+                 return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
+            default: return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
         }
     }
 
-    function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-    function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); document.getElementById('auth-error').textContent = ''; }
+    function openAuthModal() { 
+        document.getElementById('auth-modal').classList.remove('hidden'); 
+        // Reset to show login view by default
+        document.getElementById('signup-view').classList.add('hidden');
+        document.getElementById('login-view').classList.remove('hidden');
+        document.getElementById('auth-error').textContent = '';
+    }
+    function closeAuthModal() { 
+        document.getElementById('auth-modal').classList.add('hidden'); 
+        document.getElementById('auth-error').textContent = ''; 
+    }
 });

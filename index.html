@@ -115,21 +115,30 @@
     <div id="auth-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <button id="close-modal-btn" class="close-btn">×</button>
-            <h2>ยินดีต้อนรับสู่ Life Buddy</h2>
-            <div id="auth-form-container">
-                <form id="signup-form">
-                    <h3>สมัครสมาชิกใหม่</h3>
-                    <input type="email" id="signup-email" placeholder="อีเมล" required>
-                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
-                    <button type="submit">สมัครสมาชิก</button>
-                </form>
+            
+            <!-- Login Form (แสดงเป็นค่าเริ่มต้น) -->
+            <div id="login-view">
+                <h2>เข้าสู่ระบบ</h2>
                 <form id="login-form">
-                    <h3>เข้าสู่ระบบ</h3>
                     <input type="email" id="login-email" placeholder="อีเมล" required>
                     <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
                     <button type="submit">เข้าสู่ระบบ</button>
                 </form>
+                <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a></p>
             </div>
+
+            <!-- Signup Form (ซ่อนไว้) -->
+            <div id="signup-view" class="hidden">
+                <h2>สมัครสมาชิกใหม่</h2>
+                <form id="signup-form">
+                    <input type="email" id="signup-email" placeholder="อีเมล" required>
+                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+                    <button type="submit">สมัครสมาชิก</button>
+                </form>
+                <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a></p>
+            </div>
+
+            <!-- Common Area -->
             <p class="separator"><span>หรือ</span></p>
             <button id="google-signin-btn" class="google-btn">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google
@@ -157,7 +166,7 @@
     <!-- Scripts (ลำดับการเรียกสำคัญมาก) -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/th.js"></script>
-    <script>dayjs.locale('th')</script> <!-- เรียกใช้ locale ภาษาไทย -->
+    <script>dayjs.locale('th')</script>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
