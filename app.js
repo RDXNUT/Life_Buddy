@@ -3,16 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====================== 1. FIREBASE SETUP ==========================
     // ===================================================================
     
-    // !!!!!! นี่คือจุดเดียวที่คุณต้องแก้ไขด้วยตัวเอง !!!!!!
-    // !!!!!! ให้ไปคัดลอก Config ของจริงจาก Firebase Console มาวางทับตรงนี้ !!!!!!
-    // (ไปที่ Project Settings > General > Your Apps > เลือก "CDN" แล้วคัดลอก Object มา)
+    // Firebase Config ที่ถูกต้องของคุณ
     const firebaseConfig = {
-      apiKey: "ใส่-API-KEY-ของจริง-ที่คัดลอกมาที่นี่",
-      authDomain: "ใส่-AUTHDOMAIN-ของจริง-ที่คัดลอกมาที่นี่",
-      projectId: "ใส่-PROJECTID-ของจริง-ที่คัดลอกมาที่นี่",
-      storageBucket: "ใส่-STORAGEBUCKET-ของจริง-ที่คัดลอกมาที่นี่",
-      messagingSenderId: "ใส่-MESSAGINGSENDERID-ของจริง-ที่คัดลอกมาที่นี่",
-      appId: "ใส่-APPID-ของจริง-ที่คัดลอกมาที่นี่"
+      apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
+      authDomain: "life-buddy-xok07.firebaseapp.com",
+      projectId: "life-buddy-xok07",
+      storageBucket: "life-buddy-xok07.firebasestorage.app",
+      messagingSenderId: "243239137119",
+      appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
     };
   
     // เริ่มต้นการเชื่อมต่อ Firebase
@@ -187,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function checkDailyReset() {
-        if (!state.focus) state.focus = initialState.focus;
+        if (!state.focus) state.focus = { totalSessions: 0, todaySessions: 0, lastFocusDate: null };
         const todayStr = dayjs().format('YYYY-MM-DD');
         if (state.focus.lastFocusDate !== todayStr) {
             state.focus.todaySessions = 0;
@@ -237,6 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHeaderUI() {
+        if(!currentUser) return;
         document.getElementById('exp-display').innerHTML = `<i data-feather="star"></i> ${state.exp || 0} EXP`;
         document.getElementById('streak-display').innerHTML = `🔥 ${state.streak || 0}`;
         const checkInBtn = document.getElementById('check-in-btn');
@@ -263,7 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateRewardsUI() {
-        if (!document.getElementById('rewards-page').classList.contains('active')) return;
+        const page = document.getElementById('rewards-page');
+        if (!page || !page.classList.contains('active')) return;
         if (!currentUser) {
             document.getElementById('total-exp-display').textContent = 0;
             document.getElementById('badges-container').innerHTML = '';
@@ -281,7 +281,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSettingsUI() {
-        if (!document.getElementById('settings-page').classList.contains('active')) return;
+        const page = document.getElementById('settings-page');
+        if (!page || !page.classList.contains('active')) return;
         if (!currentUser) return;
         const { level, expInCurrentLevel, expForNextLevel } = calculateLevel(state.exp);
         const progress = Math.min(100, (expInCurrentLevel / expForNextLevel) * 100);
@@ -291,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addExp(amount) {
+        if(!currentUser) return;
         if(typeof state.exp === 'undefined') state.exp = 0;
         state.exp += amount;
         showToast(`ได้รับ ${amount} EXP!`);
@@ -351,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentDate = date.date(i), dateStr = currentDate.format('YYYY-MM-DD');
             if (currentDate.isSame(dayjs(), 'day')) dayElem.classList.add('today');
             if (dateStr === selectedPlannerDate) dayElem.classList.add('selected');
-            if (state.planner[dateStr]?.length > 0) dayElem.innerHTML += '<div class="event-dot"></div>';
+            if (state.planner && state.planner[dateStr]?.length > 0) dayElem.innerHTML += '<div class="event-dot"></div>';
             dayElem.addEventListener('click', () => { selectedPlannerDate = dateStr; renderPlannerCalendar(date); });
             calendarEl.appendChild(dayElem);
         }
@@ -365,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.renderRevisitList = () => {
         const listEl = document.getElementById('revisit-due-list');
+        if (!listEl) return;
         const dueTopics = (state.revisitTopics || []).filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
         listEl.innerHTML = dueTopics.map(topic => `<li><span>${topic.name}</span><button class="small-btn" onclick="startReviewSession(${topic.id})">เริ่มทบทวน</button></li>`).join('') || '<li class="empty-state">ไม่มีหัวข้อต้องทบทวนวันนี้!</li>';
     }
@@ -454,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function renderActivityList() {
         const container = document.getElementById('activity-list-container');
-        container.innerHTML = state.userActivities.map((activity, index) => `
+        container.innerHTML = (state.userActivities || defaultActivities).map((activity, index) => `
             <div class="activity-item">
                 <span>${activity}</span>
                 <button class="delete-activity-btn" data-index="${index}" title="ลบกิจกรรม"><i data-feather="trash-2"></i></button>
@@ -476,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('age').value = state.profile?.age || '';
         document.getElementById('bio').value = state.profile?.bio || '';
     }
-
+    
     // ===================================================================
     // ====================== NEW: FRIEND & CHAT FUNCTIONS ===============
     // ===================================================================
@@ -636,9 +639,13 @@ document.addEventListener('DOMContentLoaded', () => {
             snapshot.docChanges().forEach(change => {
                 if (change.type === 'added') {
                     const messageData = change.doc.data();
+                    if (!messageData.text) return; // Ignore empty messages
                     const messageEl = document.createElement('div');
                     messageEl.classList.add('chat-message', messageData.senderId === currentUser.uid ? 'sent' : 'received');
-                    messageEl.innerHTML = `<div class="message-bubble">${messageData.text}</div>`;
+                    const bubble = document.createElement('div');
+                    bubble.classList.add('message-bubble');
+                    bubble.textContent = messageData.text; // Use textContent for security
+                    messageEl.appendChild(bubble);
                     messagesContainer.appendChild(messageEl);
                 }
             });
@@ -698,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- COMMUNITY & SEARCH LISTENERS ---
         document.getElementById('community-btn').addEventListener('click', () => showPage('community'));
-        document.getElementById('search-friends-btn').addEventListener('click', () => { document.getElementById('search-friends-modal').classList.remove('hidden'); document.getElementById('search-results-container').innerHTML = ''; });
+        document.getElementById('search-friends-btn').addEventListener('click', () => { document.getElementById('search-friends-modal').classList.remove('hidden'); document.getElementById('search-results-container').innerHTML = ''; document.getElementById('search-friends-input').value = ''; });
         document.getElementById('close-search-modal-btn').addEventListener('click', () => document.getElementById('search-friends-modal').classList.add('hidden'));
         
         document.getElementById('search-friends-form').addEventListener('submit', async (e) => {
@@ -766,12 +773,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // --- ALL OTHER LISTENERS ---
-        document.getElementById('profile-link').addEventListener('click', (e) => { e.preventDefault(); showPage('profile'); });
+        // --- NAVIGATION & SIDEBAR ---
         document.getElementById('open-menu').addEventListener('click', () => { document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); });
         document.getElementById('close-menu').addEventListener('click', closeSidebar);
         document.getElementById('overlay').addEventListener('click', closeSidebar);
         allNavLinks.forEach(link => link.addEventListener('click', e => { e.preventDefault(); showPage(e.currentTarget.dataset.page); }));
+
+        // --- PROFILE LISTENERS ---
+        document.getElementById('profile-link').addEventListener('click', (e) => { e.preventDefault(); showPage('profile'); });
+        // ... (profile form listeners)
+
+        // --- OTHER FEATURE LISTENERS ---
         document.getElementById('check-in-btn').addEventListener('click', () => {
             const todayStr = dayjs().format('YYYY-MM-DD');
             const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
@@ -783,28 +795,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateHeaderUI();
             }
         });
-        document.getElementById('todo-form').addEventListener('submit', e => {
-            e.preventDefault();
-            const input = document.getElementById('todo-input');
-            if (input.value.trim()) {
-                state.todos.push({ id: Date.now(), text: input.value.trim(), completed: false });
-                input.value = ''; updateHomePageUI(); saveState();
-            }
-        });
-        document.getElementById('todo-list').addEventListener('change', e => {
-            if (e.target.type === 'checkbox') {
-                const todo = state.todos.find(t => t.id === parseInt(e.target.dataset.id));
-                if (todo) {
-                    const wasCompleted = todo.completed; todo.completed = e.target.checked;
-                    if(todo.completed && !wasCompleted) { addExp(10); }
-                    updateHomePageUI(); saveState();
-                }
-            }
-        });
-        document.getElementById('random-activity-btn').addEventListener('click', () => { document.getElementById('activity-suggestion').textContent = state.userActivities[Math.floor(Math.random() * state.userActivities.length)]; });
+        document.getElementById('todo-form').addEventListener('submit', e => { e.preventDefault(); const input = document.getElementById('todo-input'); if (input.value.trim()) { state.todos.push({ id: Date.now(), text: input.value.trim(), completed: false }); input.value = ''; updateHomePageUI(); saveState(); } });
+        document.getElementById('todo-list').addEventListener('change', e => { if (e.target.type === 'checkbox') { const todo = state.todos.find(t => t.id === parseInt(e.target.dataset.id)); if (todo) { const wasCompleted = todo.completed; todo.completed = e.target.checked; if(todo.completed && !wasCompleted) { addExp(10); } updateHomePageUI(); saveState(); } } });
+        document.getElementById('random-activity-btn').addEventListener('click', () => { document.getElementById('activity-suggestion').textContent = (state.userActivities || defaultActivities)[Math.floor(Math.random() * (state.userActivities || defaultActivities).length)]; });
         document.getElementById('random-advice-btn').addEventListener('click', () => { const advices = ["เหนื่อยได้ แต่อย่าลืมหายใจให้ลึก ๆ", "เก่งแล้วนะ ที่ยังอยู่ตรงนี้ได้", "ต้นไม้ไม่ได้โตในวันเดียว คนเราก็เช่นกัน", "ดื่มน้ำบ้างนะ วันนี้เธอทำดีแล้วล่ะ", "ใจล้า อย่าฝืน แต่ใจสู้ อย่าถอย"]; document.getElementById('daily-advice').textContent = advices[Math.floor(Math.random() * advices.length)]; });
         
-        // ... (all other listeners from the original file should be here)
         areListenersSetup = true;
     }
     
@@ -816,6 +811,14 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'auth/wrong-password': return 'รหัสผ่านไม่ถูกต้อง';
             case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
             case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+            case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
+            case 'auth/cancelled-popup-request': return '';
+            case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
+            case 'auth/internal-error':
+                if (error.message && error.message.includes("INVALID_LOGIN_CREDENTIALS")) {
+                   return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                }
+                return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
             default: return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
         }
     }
