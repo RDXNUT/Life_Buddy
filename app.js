@@ -216,21 +216,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateHomePageUI() {
-        
         const page = document.getElementById('home-page');
+        // หยุดทำงานถ้าไม่ใช่หน้า Home
         if (!page || !page.classList.contains('active')) return;
+
+        // --- สรุปตารางงานวันนี้ ---
         const todayStr = dayjs().format('YYYY-MM-DD');
         const tasksList = document.getElementById('today-tasks-summary');
-        tasksList.innerHTML = (state.planner[todayStr] || []).map(t => `<li>${t.time} - ${t.name}</li>`).join('') || '<li>ไม่มีงานสำหรับวันนี้</li>';
-        const revisitList = document.getElementById('today-revisit-summary');
-        const dueTopics = (state.revisitTopics || []).filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
-        revisitList.innerHTML = dueTopics.map(t => `<li>${t.name}</li>`).join('') || '<li>ไม่มีหัวข้อต้องทบทวน</li>';
-        document.getElementById('today-focus-count').textContent = state.focus?.todaySessions || 0;
-        
-        const todoList = document.getElementById('todo-list');
-        todoList.innerHTML = (state.todos || []).map(todo => `<li class="${todo.completed ? 'completed' : ''}"><input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}><span>${todo.text}</span></li>`).join('');
+        if (tasksList) {
+            let tasksForToday = [];
+            if (state.planner && state.planner[todayStr] && Array.isArray(state.planner[todayStr])) {
+                tasksForToday = state.planner[todayStr];
+            }
+            tasksList.innerHTML = tasksForToday.map(t => `<li>${t.time} - ${t.name}</li>`).join('') || '<li>ไม่มีงานสำหรับวันนี้</li>';
+        }
 
-         renderWishList();
+        // --- การทบทวนที่ต้องทำ (ส่วนที่แก้ไข) ---
+        const revisitList = document.getElementById('today-revisit-summary');
+        if (revisitList) {
+            let dueTopics = [];
+            // ตรวจสอบว่า state.revisitTopics เป็น Object ที่มีข้อมูล
+            if (typeof state.revisitTopics === 'object' && state.revisitTopics !== null) {
+                // Object.values จะดึง Array ของหัวข้อในแต่ละวิชาออกมา
+                Object.values(state.revisitTopics).forEach(subjectArray => {
+                    // ตรวจสอบอีกครั้งว่าข้อมูลในแต่ละวิชาเป็น Array จริงๆ
+                    if (Array.isArray(subjectArray)) {
+                        // กรองหาหัวข้อที่ถึงกำหนดในวันนี้
+                        const dueInSubject = subjectArray.filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
+                        // นำผลลัพธ์มารวมกัน
+                        dueTopics = dueTopics.concat(dueInSubject);
+                    }
+                });
+            }
+            revisitList.innerHTML = dueTopics.map(t => `<li>${t.name}</li>`).join('') || '<li>ไม่มีหัวข้อต้องทบทวน</li>';
+        }
+
+        // --- สถิติการโฟกัส ---
+        const todayFocusCountEl = document.getElementById('today-focus-count');
+        if (todayFocusCountEl) {
+        todayFocusCountEl.textContent = state.focus?.todaySessions || 0;
+        }
+    
+        // --- เป้าหมายรายวัน (Todo List) ---
+        const todoList = document.getElementById('todo-list');
+        if (todoList) {
+            let todos = state.todos || [];
+            todoList.innerHTML = todos.map(todo => 
+                `<li class="${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}>
+                    <span>${todo.text}</span>
+                </li>`
+            ).join('');
+        }
+
+        // --- Wish List ---
+        renderWishList();
     }
 
     function updateRewardsUI() {
