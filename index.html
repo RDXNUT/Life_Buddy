@@ -396,10 +396,14 @@
         <h1><i data-feather="users"></i> เพื่อนและแชท</h1>
         <div class="community-container">
             <div id="friend-list-panel" class="card">
-                <div class="tab-buttons"><button class="tab-btn active" data-tab="friends">เพื่อน</button><button class="tab-btn" data-tab="requests">คำขอ<span id="request-count-badge" class="badge hidden">0</span></button></div>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="friends">กำลังติดตาม</button> <!-- เปลี่ยนชื่อจาก เพื่อน -->
+                    <button class="tab-btn" data-tab="requests">คำขอ<span id="request-count-badge" class="badge hidden">0</span></button>
+                </div>
                 <div id="friends-tab-content" class="tab-content active"><ul id="friends-list" class="user-list"></ul></div>
                 <div id="requests-tab-content" class="tab-content"><ul id="friend-requests-list" class="user-list"></ul></div>
             </div>
+            
             <div id="chat-panel" class="card">
                 <div id="chat-welcome-view"><i data-feather="message-circle"></i><p>เลือกเพื่อนเพื่อเริ่มการสนทนา</p></div>
                 <div id="chat-conversation-view" class="hidden">

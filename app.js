@@ -42,6 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         following: [],
         followers: [],
+        followRequests: [],
+        sentFollowRequests: [],
         chatStreaks: {}
     };
 
@@ -1181,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ฟังก์ชันสำหรับแสดงผลการค้นหา
     function renderSearchResults(users) {
-        lastSearchResults = users; // เก็บผลลัพธ์ล่าสุด
+        lastSearchResults = users;
         const resultsContainer = document.getElementById('search-results-container');
         if (users.length === 0) {
             resultsContainer.innerHTML = '<p>ไม่พบผู้ใช้</p>';
@@ -1191,14 +1193,15 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = users.map(user => {
             const profile = user.profile;
             const amIFollowing = (state.following || []).includes(user.id);
-    
+            const requestSent = (state.sentFollowRequests || []).includes(user.id);
+
             let actionButton = '';
             if (amIFollowing) {
-                // ถ้าติดตามอยู่แล้ว ให้แสดงปุ่ม "เลิกติดตาม"
-                actionButton = `<button class="small-btn btn-secondary" onclick="handleUnfollowUser('${user.id}')">กำลังติดตาม</button>`;
+                actionButton = `<button class="small-btn btn-secondary" disabled>กำลังติดตาม</button>`;
+            } else if (requestSent) {
+                actionButton = `<button class="small-btn" disabled>ส่งคำขอแล้ว</button>`;
             } else {
-                // ถ้ายังไม่ติดตาม ให้แสดงปุ่ม "ติดตาม"
-                actionButton = `<button class="small-btn" onclick="handleFollowUser('${user.id}')">ติดตาม</button>`;
+                actionButton = `<button class="small-btn" onclick="handleSendFollowRequest('${user.id}')">ติดตาม</button>`;
             }
 
             return `
@@ -1216,83 +1219,115 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // ฟังก์ชันสำหรับ "ติดตาม"
-    window.handleFollowUser = async (targetUserId) => {
-        if (!currentUser || currentUser.uid === targetUserId) return;
+    // ฟังก์ชันใหม่: สำหรับส่งคำขอติดตาม
+    window.handleSendFollowRequest = async (recipientId) => {
+        if (!currentUser) return;
 
-        const currentUserId = currentUser.uid;
-        const userRef = db.collection('users').doc(currentUserId);
-        const targetUserRef = db.collection('users').doc(targetUserId);
-
-        // ใช้ Batch Write เพื่อให้การทำงานเสร็จสมบูรณ์พร้อมกัน
-        const batch = db.batch();
-
-        // 1. เพิ่ม targetUserId เข้าไปใน array 'following' ของเรา
-        batch.update(userRef, {
-            following: firebase.firestore.FieldValue.arrayUnion(targetUserId)
-        });
-
-        // 2. เพิ่ม currentUserId เข้าไปใน array 'followers' ของเขา
-        batch.update(targetUserRef, {
-            followers: firebase.firestore.FieldValue.arrayUnion(currentUserId)
-        });
-
-        try {
-            await batch.commit();
-            showToast("ติดตามสำเร็จ!");
-
-            // อัปเดต state ในเครื่องทันทีเพื่อ UI ที่รวดเร็ว
-            if (!state.following) state.following = [];
-            state.following.push(targetUserId);
-        
-            // อัปเดตปุ่มในหน้า UI ทันที
-            renderSearchResults(lastSearchResults); // lastSearchResults คือตัวแปรที่เราจะสร้างในขั้นตอนถัดไป
-            renderProfilePage(); // อัปเดตจำนวน Following
-
-        } catch (error) {
-            console.error("Error following user: ", error);
-            showToast("เกิดข้อผิดพลาดในการติดตาม");
-        }
-    };
-
-    // ฟังก์ชันสำหรับ "เลิกติดตาม"
-    window.handleUnfollowUser = async (targetUserId) => {
-        if (!currentUser || currentUser.uid === targetUserId) return;
-
-        const currentUserId = currentUser.uid;
-        const userRef = db.collection('users').doc(currentUserId);
-        const targetUserRef = db.collection('users').doc(targetUserId);
+        const senderId = currentUser.uid;
+        const senderRef = db.collection('users').doc(senderId);
+        const recipientRef = db.collection('users').doc(recipientId);
 
         const batch = db.batch();
 
-        // 1. ลบ targetUserId ออกจาก array 'following' ของเรา
-        batch.update(userRef, {
-            following: firebase.firestore.FieldValue.arrayRemove(targetUserId)
+        // 1. เพิ่ม recipientId ใน "sentFollowRequests" ของผู้ส่ง
+        batch.update(senderRef, {
+            sentFollowRequests: firebase.firestore.FieldValue.arrayUnion(recipientId)
+        });
+        // 2. เพิ่ม senderId ใน "followRequests" ของผู้รับ
+        batch.update(recipientRef, {
+            followRequests: firebase.firestore.FieldValue.arrayUnion(senderId)
         });
 
-        // 2. ลบ currentUserId ออกจาก array 'followers' ของเขา
-        batch.update(targetUserRef, {
-            followers: firebase.firestore.FieldValue.arrayRemove(currentUserId)
-        });
+        await batch.commit();
+        showToast("ส่งคำขอติดตามแล้ว!");
 
-        try {
-            await batch.commit();
-            showToast("เลิกติดตามแล้ว");
-
-            // อัปเดต state ในเครื่องทันที
-            if (state.following) {
-            state.following = state.following.filter(id => id !== targetUserId);
-            }
-
-            // อัปเดตปุ่มในหน้า UI ทันที
-            renderSearchResults(lastSearchResults);
-            renderProfilePage(); // อัปเดตจำนวน Following
-
-        } catch (error) {
-            console.error("Error unfollowing user: ", error);
-            showToast("เกิดข้อผิดพลาดในการเลิกติดตาม");
-        }
+        // อัปเดต state ในเครื่องและ UI ทันที
+        if (!state.sentFollowRequests) state.sentFollowRequests = [];
+        state.sentFollowRequests.push(recipientId);
+        renderSearchResults(lastSearchResults); // อัปเดตปุ่มในหน้าค้นหา
     };
+
+    // ฟังก์ชันใหม่: สำหรับตอบรับคำขอ
+    window.handleAcceptFollowRequest = async (senderId) => {
+        if (!currentUser) return;
+        const recipientId = currentUser.uid; // ตัวเราคือผู้รับ
+
+        const senderRef = db.collection('users').doc(senderId);
+        const recipientRef = db.collection('users').doc(recipientId);
+
+        const batch = db.batch();
+
+        // 1. ทำให้ผู้ส่ง "กำลังติดตาม" เรา
+        batch.update(senderRef, {
+            following: firebase.firestore.FieldValue.arrayUnion(recipientId),
+            sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) // ลบคำขอที่ส่งออก
+        });
+        // 2. ทำให้เรามีผู้ส่งเป็น "ผู้ติดตาม"
+        batch.update(recipientRef, {
+            followers: firebase.firestore.FieldValue.arrayUnion(senderId),
+            followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) // ลบคำขอที่ได้รับออก
+        });
+
+        await batch.commit();
+        showToast("ตอบรับคำขอแล้ว");
+        // ไม่ต้องอัปเดต state ในเครื่อง เพราะ listener จะทำงานและ re-render เอง
+    };
+
+    // ฟังก์ชันใหม่: สำหรับปฏิเสธคำขอ
+    window.handleDeclineFollowRequest = async (senderId) => {
+        if (!currentUser) return;
+        const recipientId = currentUser.uid;
+
+        const senderRef = db.collection('users').doc(senderId);
+        const recipientRef = db.collection('users').doc(recipientId);
+
+        const batch = db.batch();
+        // ลบคำขอออกจากทั้งสองฝั่ง
+        batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
+        batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
+
+        await batch.commit();
+        showToast("ปฏิเสธคำขอแล้ว");
+    };
+
+    // ฟังก์ชันใหม่: สำหรับแสดงผลคำขอที่ได้รับ
+    async function renderFollowRequests() {
+        const listEl = document.getElementById('friend-requests-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<li>กำลังโหลด...</li>';
+
+        const requestIds = state.followRequests || [];
+        if (requestIds.length === 0) {
+            listEl.innerHTML = '<li>ไม่มีคำขอติดตาม</li>';
+            return;
+        }
+
+        // ดึงข้อมูลโปรไฟล์ของคนที่ส่งคำขอมา
+        const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
+        const requestDocs = await Promise.all(requestPromises);
+
+        listEl.innerHTML = requestDocs.map(doc => {
+            if (!doc.exists) return '';
+            const senderData = doc.data();
+            const displayName = senderData.profile.displayName || 'User';
+            const img = document.createElement('img');
+            renderProfilePicture(senderData.profile.photoURL, img);
+            return `
+                <li class="user-list-item">
+                    <div class="user-list-avatar">${img.outerHTML}</div>
+                    <div class="user-info">
+                        <h4>${displayName}</h4>
+                        <p>${senderData.profile.lifebuddyId || ''}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')"><i data-feather="check"></i> ยอมรับ</button>
+                        <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')"><i data-feather="x"></i> ปฏิเสธ</button>
+                    </div>
+                </li>
+            `;
+        }).join('');
+        feather.replace();
+    }
 
     function calculateLevel(exp) {
         if (typeof exp === 'undefined' || exp === null) exp = 0;
