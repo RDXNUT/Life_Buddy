@@ -1834,7 +1834,19 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'edit-wishlist-btn':
                 handleEditWishList();
                 break;
-             case 'google-signin-btn':
+            case 'copy-id-btn':
+                if (state.profile && state.profile.lifebuddyId) {
+                    navigator.clipboard.writeText(state.profile.lifebuddyId)
+                        .then(() => {
+                            showToast('คัดลอก ID สำเร็จ!');
+                        })
+                        .catch(err => {
+                            console.error('ไม่สามารถคัดลอก ID ได้: ', err);
+                            showToast('เกิดข้อผิดพลาดในการคัดลอก');
+                        });
+                }
+                break;
+            case 'google-signin-btn':
                 const provider = new firebase.auth.GoogleAuthProvider();
                 auth.signInWithPopup(provider)
                     .catch(error => {

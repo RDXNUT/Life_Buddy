@@ -1328,3 +1328,26 @@ label.reason-option:has(input:checked) .reason-icon-group {
     transform: translateY(-50%);
     color: var(--success-color);
 }
+
+/* ===== Profile ID Copy Button ===== */
+.id-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* ระยะห่างระหว่าง ID กับปุ่ม */
+    margin-bottom: 15px;
+}
+
+#profile-view-lifebuddy-id {
+    margin-bottom: 0; /* เอา margin-bottom เดิมออก */
+}
+
+#copy-id-btn {
+    /* ปรับให้ปุ่มดูดีขึ้นเล็กน้อย */
+    padding: 4px;
+    border-radius: 8px;
+    line-height: 1;
+}
+#copy-id-btn:hover {
+    background-color: var(--bg-color);
+}
