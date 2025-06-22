@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
     
     const initialState = {
-        coins: 1000, coinHistory: [], 
+        coins: 50, coinHistory: [], 
         wishList: { name: 'ของชิ้นต่อไป!', target: 1000 }, 
         lastBonusDate: null, 
         lastCoinUsage: null, 
