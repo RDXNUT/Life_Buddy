@@ -5,12 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Buddy – คู่หูชีวิต</title>
     
+    <!-- Fonts and Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body data-theme="light">
     <!-- Loading Screen -->
@@ -49,8 +55,8 @@
                 <button id="community-btn" class="icon-button" title="เพื่อนและแชท"><i data-feather="message-square"></i><span id="unread-notification-dot" class="notification-dot hidden"></span></button>
                 <a href="#" id="profile-link" title="แก้ไขโปรไฟล์"><img id="user-photo" src="" alt="User Photo" class="profile-pic"></a>
                 <span id="coin-display" title="เหรียญของคุณ"><i data-feather="dollar-sign"></i> 0</span>
-                <span id="streak-display" title="สตรีคการเช็คอิน">🔥 0</span>
-                <span id="exp-display" title="ค่าประสบการณ์"><i data-feather="star"></i> 0 EXP</span>
+                <span id="streak-display" title="สตรีคการเช็คอิน">🔥 <span id="streak-count">0</span></span>
+                <span id="level-header-display" title="ระดับของคุณ" class="level-badge-header"><i data-feather="star"></i> Level 1</span>
                 <button id="check-in-btn"><span class="check-in-text">เช็คอิน</span><i data-feather="check" class="check-in-icon hidden"></i></button>
                 <button id="logout-btn" class="icon-button" title="ออกจากระบบ"><i data-feather="log-out"></i></button>
             </div>
@@ -70,6 +76,25 @@
                     <button id="random-activity-btn">สุ่มกิจกรรมคลายเหงา 🎲</button><p id="activity-suggestion" class="suggestion-text"></p>
                 </section>
             </div>
+
+             <section class="card wishlist-card"> 
+            <h2><i data-feather="gift"></i> Wish List / กระปุกออมสิน</h2>
+            <div id="wishlist-container">
+                <div class="wishlist-header">
+                    <span id="wishlist-name">ของชิ้นต่อไป!</span>
+                    <button id="edit-wishlist-btn" class="icon-button" title="แก้ไขเป้าหมาย"><i data-feather="edit-3"></i></button>
+                </div>
+                <!-- เราจะใช้โครงสร้างเดียวกับหลอด EXP เพื่อความสวยงาม -->
+                <div class="progress-bar-wrapper">
+                    <div id="wishlist-progress-bar" class="progress-bar"></div>
+                </div>
+                <div class="wishlist-info">
+                    <span id="wishlist-progress-text">0 / 1000</span>
+                    <span id="wishlist-percentage">0%</span>
+                </div>
+            </div>
+        </section>
+
             <section class="card">
                 <div class="card-header-actions">
                     <h2><i data-feather="sunrise"></i> คำแนะนำประจำวัน</h2>
@@ -117,30 +142,313 @@
                 </div>
             </div>
         </div>
+
         <!-- Revisit Page -->
-        <div id="revisit-page" class="page">
-            <!-- ...เนื้อหาหน้า Revisit... -->
+    <div id="revisit-page" class="page">
+    <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
+
+    <!-- View สำหรับแสดงรายการหัวข้อตามหมวดหมู่ -->
+    <div id="revisit-list-view">
+        <section class="card">
+            <h2><i data-feather="plus-circle"></i> เพิ่มหัวข้อใหม่สำหรับทบทวน</h2>
+            <form id="revisit-form">
+                <!-- เลือกหมวดหมู่วิชา -->
+                <div class="form-group">
+                    <label for="revisit-subject">เลือกวิชา</label>
+                    <select id="revisit-subject" required>
+                        <option value="" disabled selected>-- เลือกวิชา --</option>
+                        <option value="math">คณิตศาสตร์</option>
+                        <option value="physics">ฟิสิกส์</option>
+                        <option value="chemistry">เคมี</option>
+                        <option value="biology">ชีววิทยา</option>
+                        <option value="english">ภาษาอังกฤษ</option>
+                        <option value="thai">ภาษาไทย</option>
+                        <option value="social">สังคมศึกษา</option>
+                        <option value="history">ประวัติศาสตร์</option>
+                        <option value="tech">เทคโนโลยี</option>
+                        <option value="health">สุขศึกษา</option>
+                        <option value="art">ศิลปะ</option>
+                    </select>
+                </div>
+                <!-- ชื่อหัวข้อ -->
+                <div class="form-group">
+                    <label for="revisit-topic-name">ชื่อหัวข้อ</label>
+                    <input type="text" id="revisit-topic-name" placeholder="เช่น ระบบหมุนเวียนเลือด, พันธุกรรม..." required>
+                </div>
+                <!-- โน้ตย่อ -->
+                <div class="form-group">
+                    <label for="revisit-topic-notes">ใส่โน้ตย่อ / Bullet / คำสำคัญ</label>
+                    <textarea id="revisit-topic-notes" placeholder="ใส่เนื้อหาสรุปสั้นๆ ที่นี่..."></textarea>
+                </div>
+                <!-- การแจ้งเตือนทบทวน -->
+                <div class="form-group">
+                    <label>เลือกรอบการทบทวน (Spaced Repetition)</label>
+                    <div class="review-interval-selector">
+                        <label><input type="checkbox" name="review-interval" value="1" checked> 1 วัน</label>
+                        <label><input type="checkbox" name="review-interval" value="3" checked> 3 วัน</label>
+                        <label><input type="checkbox" name="review-interval" value="7" checked> 7 วัน</label>
+                        <label><input type="checkbox" name="review-interval" value="14"> 14 วัน</label>
+                        <label><input type="checkbox" name="review-interval" value="30" checked> 30 วัน</label>
+                        <label><input type="checkbox" name="review-interval" value="60"> 60 วัน</label>
+                    </div>
+                </div>
+                
+                <button type="submit">+ เพิ่มหัวข้อ</button>
+            </form>
+        </section>
+
+        <!-- ส่วนแสดงรายการหัวข้อทั้งหมด -->
+        <section class="card">
+            <h2><i data-feather="archive"></i> คลังความรู้ของฉัน</h2>
+            <div id="revisit-topics-by-subject">
+                <!-- เนื้อหาจะถูกสร้างโดย JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- View สำหรับทำ Flashcard (เหมือนเดิม) -->
+    <div id="flashcard-view" class="hidden">
+        <button id="back-to-revisit-list" class="small-btn" style="margin-bottom: 20px;"><i data-feather="arrow-left"></i> กลับไปที่รายการ</button>
+        
+        <section class="card">
+            <h2>ทบทวน: <span id="flashcard-topic-title">หัวข้อ</span></h2>
+            <p><strong>โน้ตย่อ:</strong> <span id="flashcard-topic-notes">รายละเอียดโน้ตย่อ...</span></p>
+        </section>
+
+        <!-- ส่วนแสดง Flashcard สำหรับทบทวน -->
+        <div id="flashcard-quiz" class="hidden">
+            <div class="flashcard-container">
+                <div class="flashcard">
+                    <div class="flashcard-front">
+                        <p id="quiz-question">คำถาม?</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p id="quiz-answer">คำตอบ!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flashcard-controls">
+                <button id="reveal-answer-btn" class="small-btn">เฉลย</button>
+                <div id="quiz-feedback-btns" class="hidden">
+                    <button id="quiz-not-understood-btn" class="btn-secondary">ทบทวนอีกครั้ง</button>
+                    <button id="quiz-understood-btn" class="small-btn">เข้าใจแล้ว</button>
+                </div>
+            </div>
         </div>
+
+        <!-- ส่วนสำหรับเพิ่ม Flashcard ใหม่ -->
+        <section class="card">
+            <h3><i data-feather="plus-circle"></i> เพิ่ม Flashcard ใหม่ในหัวข้อนี้</h3>
+            <form id="flashcard-form">
+                <div class="form-group">
+                    <label for="flashcard-question">คำถาม (หน้าการ์ด)</label>
+                    <textarea id="flashcard-question" placeholder="ใส่คำถามที่นี่..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="flashcard-answer">คำตอบ (หลังการ์ด)</label>
+                    <textarea id="flashcard-answer" placeholder="ใส่คำตอบที่นี่..." required></textarea>
+                </div>
+                <button type="submit">+ เพิ่มการ์ดใบนี้</button>
+            </form>
+        </section>
+    </div>
+    </div>
+
         <!-- Focus Page -->
-        <div id="focus-page" class="page">
-            <!-- ...เนื้อหาหน้า Focus... -->
+    <div id="focus-page" class="page">
+        <h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1>
+    
+        <!-- === [ส่วนที่เพิ่มเข้ามาใหม่] === -->
+        <div class="focus-topic-selector card">
+            <label for="focus-topic">คุณกำลังจะโฟกัสเรื่องอะไร?</label>
+            <select id="focus-topic">
+                <option value="general">เรื่องทั่วไป</option>
+                <option value="math">คณิตศาสตร์</option>
+                <option value="physics">ฟิสิกส์</option>
+                <option value="chemistry">เคมี</option>
+                <option value="biology">ชีววิทยา</option>
+                <option value="english">ภาษาอังกฤษ</option>
+                <option value="reading">การอ่าน</option>
+                <option value="writing">การเขียน</option>
+                <option value="work">การทำงาน</option>
+            </select>
         </div>
+    
+        <div class="card timer-card">
+            <div id="timer-display">25:00</div>
+            <div id="timer-mode">Focus</div>
+            <div class="timer-controls">
+                <button id="start-timer-btn"><i data-feather="play"></i> เริ่ม</button>
+                <button id="reset-timer-btn" class="btn-secondary"><i data-feather="rotate-cw"></i> รีเซ็ต</button>
+                <button id="settings-timer-btn" class="icon-button"><i data-feather="settings"></i></button>
+            </div>
+        </div>
+
+        <section id="focus-stats-section" class="card">
+            <h2><i data-feather="bar-chart"></i> สถิติการโฟกัส</h2>
+            <div class="stats-controls">
+                <button class="stats-tab-btn active" data-period="day">วันนี้</button>
+                <button class="stats-tab-btn" data-period="week">สัปดาห์นี้</button>
+                <button class="stats-tab-btn" data-period="all">ทั้งหมด</button>
+            </div>
+            <div id="focus-stats-display">
+                <!-- เนื้อหาสถิติจะถูกสร้างโดย JavaScript -->
+            </div>
+        </section>
+    
+        <div id="timer-settings" class="card hidden">
+            <h3>ตั้งค่าเวลา (นาที)</h3>
+            <div class="form-group">
+                <label for="focus-duration">เวลาโฟกัส:</label>
+                <input type="number" id="focus-duration" value="25" min="1">
+            </div>
+            <div class="form-group">
+                <label for="break-duration">เวลาพัก:</label>
+                <input type="number" id="break-duration" value="5" min="1">
+            </div>
+            <button id="save-timer-settings-btn">บันทึก</button>
+        </div>
+    </div>
+
         <!-- Mood Page -->
-        <div id="mood-page" class="page">
-             <!-- ...เนื้อหาหน้า Mood... -->
+    <div id="mood-page" class="page">
+            <h1><i data-feather="smile"></i> บันทึกอารมณ์</h1>
+            <div class="mood-container">
+            <div class="mood-calendar-area card">
+            <div class="calendar-controls">
+                <button id="mood-prev-month" class="calendar-nav-btn" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button>
+                <h3 id="mood-month-year"></h3>
+                <button id="mood-next-month" class="calendar-nav-btn" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button>
+            </div>
+            <div id="mood-calendar" class="calendar"></div>
         </div>
+        <div class="mood-entry-area">
+            <div class="card">
+                <h2>บันทึกสำหรับ <span id="selected-mood-date-display"></span></h2>
+                <div id="mood-details">
+                    <p><i>เลือกวันในปฏิทินเพื่อดูหรือเพิ่มบันทึก</i></p>
+                </div>
+            </div>
+            <div class="card">
+                <h2>วันนี้รู้สึกอย่างไร?</h2>
+                <form id="mood-form">
+                    <div class="emoji-selector">
+                        <span class="emoji-option" data-mood="happy">😊</span>
+                        <span class="emoji-option" data-mood="excited">🤩</span>
+                        <span class="emoji-option" data-mood="neutral">😐</span>
+                        <span class="emoji-option" data-mood="sad">😢</span>
+                        <span class="emoji-option" data-mood="angry">😡</span>
+                    </div>
+                    <input type="hidden" id="selected-mood" required>
+                    <textarea id="mood-notes" placeholder="วันนี้เกิดอะไรขึ้นบ้าง?"></textarea>
+                    
+                    <h3 class="reason-title">เหตุผลหลัก (เลือกได้หลายข้อ)</h3>
+                    
+                    <!-- === [ส่วนที่แก้ไขแล้ว - เพิ่มอิโมจิกลับเข้ามา] === -->
+                    <div class="reason-selector">
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="study">
+                            <div class="reason-icon-group">📚<i data-feather="book-open"></i></div>
+                            <span>การเรียน</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="family">
+                            <div class="reason-icon-group">👨‍👩‍👧‍👦<i data-feather="home"></i></div>
+                            <span>ครอบครัว</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="friends">
+                            <div class="reason-icon-group">💬<i data-feather="message-circle"></i></div>
+                            <span>เพื่อน</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="work">
+                            <div class="reason-icon-group">🧑‍💻<i data-feather="briefcase"></i></div>
+                            <span>งาน/กิจกรรม</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="love">
+                            <div class="reason-icon-group">💖<i data-feather="heart"></i></div>
+                            <span>ความรัก</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="health">
+                            <div class="reason-icon-group">😷<i data-feather="activity"></i></div>
+                            <span>สุขภาพ</span>
+                        </label>
+                        <label class="reason-option">
+                            <input type="checkbox" name="mood-reason" value="other">
+                            <div class="reason-icon-group">❓<i data-feather="help-circle"></i></div>
+                            <span>อื่นๆ</span>
+                        </label>
+                    </div>
+                    <!-- === [สิ้นสุดส่วนที่แก้ไข] === -->
+                    
+                    <button type="submit">บันทึกอารมณ์</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
         <!-- Community Page -->
-        <div id="community-page" class="page">
-             <!-- ...เนื้อหาหน้า Community... -->
+    <div id="community-page" class="page">
+        <h1><i data-feather="users"></i> เพื่อนและแชท</h1>
+        <div class="community-container">
+            <div id="friend-list-panel" class="card">
+                <div class="tab-buttons"><button class="tab-btn active" data-tab="friends">เพื่อน</button><button class="tab-btn" data-tab="requests">คำขอ<span id="request-count-badge" class="badge hidden">0</span></button></div>
+                <div id="friends-tab-content" class="tab-content active"><ul id="friends-list" class="user-list"></ul></div>
+                <div id="requests-tab-content" class="tab-content"><ul id="friend-requests-list" class="user-list"></ul></div>
+            </div>
+            <div id="chat-panel" class="card">
+                <div id="chat-welcome-view"><i data-feather="message-circle"></i><p>เลือกเพื่อนเพื่อเริ่มการสนทนา</p></div>
+                <div id="chat-conversation-view" class="hidden">
+                    <div class="chat-header"><img id="chat-partner-photo" src="" alt="Friend's Photo" class="profile-pic"><h3 id="chat-partner-name"></h3></div>
+                    <div id="chat-messages" class="chat-messages-container"></div>
+                    <form id="chat-form" class="chat-input-area"><input type="text" id="chat-input" placeholder="พิมพ์ข้อความ..." autocomplete="off" required><button type="submit" aria-label="ส่งข้อความ"><i data-feather="send"></i></button></form>
+                </div>
+            </div>
         </div>
+    </div>
+
         <!-- Rewards Page -->
         <div id="rewards-page" class="page">
-             <!-- ...เนื้อหาหน้า Rewards... -->
+            <h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1>
+            <section class="card exp-total-card"><p>EXP สะสมทั้งหมด</p><div id="total-exp-display">0</div></section><section class="card"><h2>เหรียญตราสะสม (Badges)</h2><div id="badges-container" class="badges-grid"></div></section>
         </div>
+
         <!-- Settings Page -->
-        <div id="settings-page" class="page">
-             <!-- ...เนื้อหาหน้า Settings... -->
+<div id="settings-page" class="page">
+    <h1><i data-feather="settings"></i> การตั้งค่า</h1>
+
+    <!-- Card สำหรับปรับแต่งธีม -->
+    <section class="card">
+        <h2><i data-feather="sun"></i> การปรับแต่งธีม</h2>
+        <div class="theme-switcher">
+            <button id="theme-light-btn" class="theme-btn">
+                <i data-feather="sun"></i> โทนสว่าง
+            </button>
+            <button id="theme-dark-btn" class="theme-btn">
+                <i data-feather="moon"></i> โทนมืด
+            </button>
         </div>
+    </section>
+
+    <!-- Card สำหรับระดับและประสบการณ์ (แก้ไขแล้ว) -->
+    <section class="card">
+        <h2><i data-feather="bar-chart-2"></i> ระดับและประสบการณ์</h2>
+        <div class="level-progress-container">
+            <div class="level-info">
+                <span class="level-badge" id="current-level">Level 1</span>
+                <span class="exp-text" id="exp-progress-text">0 / 100 EXP</span>
+            </div>
+            <div class="progress-bar-wrapper">
+                <div id="exp-progress-bar" class="progress-bar"></div>
+            </div>
+        </div>
+    </section>
+    
+</div>
         
         <!-- Profile Page -->
         <div id="profile-page" class="page">
@@ -155,6 +463,7 @@
                     </div>
                     <div class="profile-info">
                         <h2 id="profile-view-name">ชื่อผู้ใช้</h2>
+                        <span class="level-badge" id="profile-view-level">Level 1</span>
                         <p id="profile-view-lifebuddy-id" class="subtle-text"><em>lifebuddy_id#0000</em></p>
                         <p id="profile-view-bio" class="bio-text">คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ...</p>
                         <p id="profile-view-joindate" class="subtle-text join-date"><i data-feather="calendar"></i> เข้าร่วมเมื่อ...</p>
@@ -206,15 +515,6 @@
                         </form>
                     </div>
                 </div>
-                <div class="card wishlist-card">
-                    <h2><i data-feather="gift"></i> Wish List / กระปุกออมสิน</h2>
-                    <div id="wishlist-container">
-                        <div class="wishlist-header"><span id="wishlist-name">ของชิ้นต่อไป!</span><button id="edit-wishlist-btn" class="icon-button" title="แก้ไขเป้าหมาย"><i data-feather="edit-3"></i></button></div>
-                        <div class="progress-bar-container"><div id="wishlist-progress-bar" class="progress-bar"></div></div>
-                        <div class="wishlist-info"><span id="wishlist-progress-text">0 / 1000</span><span id="wishlist-percentage">0%</span></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
     
@@ -223,7 +523,20 @@
         <div class="modal-content"><button class="close-btn">×</button><div id="login-view"><h2>เข้าสู่ระบบ</h2><form id="login-form"><input type="email" id="login-email" placeholder="อีเมล" required><input type="password" id="login-password" placeholder="รหัสผ่าน" required><button type="submit">เข้าสู่ระบบ</button></form><p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a></p></div><div id="signup-view" class="hidden"><h2>สมัครสมาชิกใหม่</h2><form id="signup-form"><input type="email" id="signup-email" placeholder="อีเมล" required><input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required><button type="submit">สมัครสมาชิก</button></form><p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a></p></div><p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div>
     </div>
     <div id="activity-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการกิจกรรม</h2><p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p><div id="activity-list-container"></div><form id="add-activity-form"><input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required><button type="submit">เพิ่มกิจกรรม</button></form></div></div>
-    <div id="search-friends-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>ค้นหาเพื่อน</h2><form id="search-friends-form"><input type="text" id="search-friends-input" placeholder="ค้นหาด้วยชื่อเล่น หรือ LifeBuddy ID" required><button type="submit">ค้นหา</button></form><div id="search-results-container"></div></div></div>
+    <div id="search-friends-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <button class="close-btn">×</button>
+        <h2>ค้นหาเพื่อน</h2>
+        <form id="search-friends-form">
+            <input type="text" id="search-friends-input" placeholder="ค้นหาด้วยชื่อเล่น หรือ LifeBuddy ID" required>
+            <button type="submit">ค้นหา</button>
+        </form>
+        <div id="search-results-container">
+            <!-- ผลการค้นหาจะแสดงที่นี่ -->
+        </div>
+    </div>
+</div>
+
     <div id="advice-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการคำแนะนำ</h2><p>เพิ่มคำคมหรือกำลังใจส่วนตัวของคุณที่นี่</p><div id="advice-list-container"></div><form id="add-advice-form"><input type="text" id="new-advice-input" placeholder="เพิ่มคำแนะนำใหม่ที่นี่..." required><button type="submit">เพิ่มคำแนะนำ</button></form></div></div>
     
     <!-- Profile Selector Modal -->
@@ -242,7 +555,7 @@
     <!-- Toast Notification -->
     <div id="toast-notification" class="hidden"></div>
 
-    <!-- Scripts -->
+     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/th.js"></script>
     <script>dayjs.locale('th')</script>
