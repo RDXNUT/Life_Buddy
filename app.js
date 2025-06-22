@@ -1468,6 +1468,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupAllEventListeners() {
     if (areListenersSetup) return;
+
+    const googleBtn = document.getElementById('google-signin-btn');
+    if (googleBtn) {
+        console.log("ปุ่ม Google ถูกพบใน DOM, กำลังเพิ่ม Event Listener...");
+        googleBtn.addEventListener('click', () => {
+            console.log("ปุ่ม Google ถูกคลิก!"); // <--- จุด Debugging
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    console.log("Google Sign-In สำเร็จ:", result.user.email);
+                    // ไม่ต้องทำอะไรต่อ เพราะ onAuthStateChanged จะจัดการเอง
+                })
+                .catch(error => {
+                    console.error("Google Sign-in Error:", error);
+                    const errorMessage = getFriendlyAuthError(error);
+                    const authErrorEl = document.getElementById('auth-error');
+                    if (authErrorEl) authErrorEl.textContent = errorMessage;
+                });
+        });
+    } else {
+        console.error("ไม่พบปุ่ม #google-signin-btn ใน DOM!");
+    }
     
     // --- Listener สำหรับการคลิก ---
     document.body.addEventListener('click', (e) => {
