@@ -40,7 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: '', gender: 'unspecified', age: '', bio: '', lifebuddyId: '', 
             photoURL: 'assets/profiles/startprofile.png',
         },
-        friends: [], friendRequestsSent: [], friendRequestsReceived: [], chatStreaks: {}
+        following: [],
+        followers: [],
+        chatStreaks: {}
     };
 
     let timerInterval, timeLeft, isFocusing = true;
@@ -402,6 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profile-stat-focus').textContent = state.focus?.totalSessions || 0;
         document.getElementById('profile-stat-moods').textContent = Object.keys(state.moods || {}).length;
     
+        const followersCount = (state.followers || []).length;
+        const followingCount = (state.following || []).length;
+        document.getElementById('profile-stat-followers').textContent = followersCount;
+        document.getElementById('profile-stat-following').textContent = followingCount;
+
         // แสดงความสำเร็จ (Achievements)
         const achievementsContainer = document.getElementById('profile-achievements-container');
         if (achievementsContainer) {
@@ -1124,6 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ฟังก์ชันสำหรับจัดการการค้นหาเพื่อน
+    let lastSearchResults = [];
     async function handleFriendSearch(e) {
         e.preventDefault();
         const searchInput = document.getElementById('search-friends-input');
@@ -1173,6 +1181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ฟังก์ชันสำหรับแสดงผลการค้นหา
     function renderSearchResults(users) {
+        lastSearchResults = users; // เก็บผลลัพธ์ล่าสุด
         const resultsContainer = document.getElementById('search-results-container');
         if (users.length === 0) {
             resultsContainer.innerHTML = '<p>ไม่พบผู้ใช้</p>';
@@ -1181,16 +1190,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultsContainer.innerHTML = users.map(user => {
             const profile = user.profile;
-            const isFriend = state.friends.includes(user.id);
-            const requestSent = state.friendRequestsSent.includes(user.id);
-        
+            const amIFollowing = (state.following || []).includes(user.id);
+    
             let actionButton = '';
-            if (isFriend) {
-                actionButton = '<button class="small-btn" disabled>เป็นเพื่อนกันแล้ว</button>';
-            } else if (requestSent) {
-             actionButton = '<button class="small-btn" disabled>ส่งคำขอแล้ว</button>';
+            if (amIFollowing) {
+                // ถ้าติดตามอยู่แล้ว ให้แสดงปุ่ม "เลิกติดตาม"
+                actionButton = `<button class="small-btn btn-secondary" onclick="handleUnfollowUser('${user.id}')">กำลังติดตาม</button>`;
             } else {
-             actionButton = `<button class="small-btn" onclick="sendFriendRequest('${user.id}')">เพิ่มเพื่อน</button>`;
+                // ถ้ายังไม่ติดตาม ให้แสดงปุ่ม "ติดตาม"
+                actionButton = `<button class="small-btn" onclick="handleFollowUser('${user.id}')">ติดตาม</button>`;
             }
 
             return `
@@ -1208,77 +1216,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // ฟังก์ชันสำหรับส่งคำขอเป็นเพื่อน
-    window.sendFriendRequest = async (recipientId) => {
-        if (!currentUser) return;
-    
-        // อัปเดตฝั่งผู้ส่ง: เพิ่มใน friendRequestsSent
-        const senderRef = db.collection('users').doc(currentUser.uid);
-        await senderRef.update({
-            friendRequestsSent: firebase.firestore.FieldValue.arrayUnion(recipientId)
-        });
+    // ฟังก์ชันสำหรับ "ติดตาม"
+    window.handleFollowUser = async (targetUserId) => {
+        if (!currentUser || currentUser.uid === targetUserId) return;
 
-        // อัปเดตฝั่งผู้รับ: เพิ่มใน friendRequestsReceived
-        const recipientRef = db.collection('users').doc(recipientId);
-        await recipientRef.update({
-         friendRequestsReceived: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-        });
+        const currentUserId = currentUser.uid;
+        const userRef = db.collection('users').doc(currentUserId);
+        const targetUserRef = db.collection('users').doc(targetUserId);
 
-        showToast("ส่งคำขอเป็นเพื่อนแล้ว!");
-        // อัปเดต UI ใน Modal ทันที
-        document.querySelector(`button[onclick="sendFriendRequest('${recipientId}')"]`)
-            .outerHTML = '<button class="small-btn" disabled>ส่งคำขอแล้ว</button>';
-    
-        // อัปเดต state ของผู้ใช้ปัจจุบัน
-        if (!state.friendRequestsSent) state.friendRequestsSent = [];
-        state.friendRequestsSent.push(recipientId);
-    }
-
-    async function renderFriendRequests() {
-        const listEl = document.getElementById('friend-requests-list');
-        listEl.innerHTML = '<li class="user-list-item empty-state">Loading...</li>';
-        if (!state.friendRequestsReceived || state.friendRequestsReceived.length === 0) {
-            listEl.innerHTML = '<li class="user-list-item empty-state">ไม่มีคำขอเป็นเพื่อน</li>';
-            return;
-        }
-        const requestPromises = state.friendRequestsReceived.map(uid => db.collection('users').doc(uid).get());
-        const requestDocs = await Promise.all(requestPromises);
-        listEl.innerHTML = requestDocs.map(doc => {
-            if (!doc.exists) return '';
-            const senderData = doc.data();
-            const displayName = senderData.profile.displayName || 'User';
-            const img = document.createElement('img');
-            renderProfilePicture(senderData.profile.photoURL, img);
-            return `
-                <li class="user-list-item">
-                    <div class="user-list-avatar">${img.outerHTML}</div>
-                    <div class="user-info">
-                        <h4>${displayName}</h4>
-                        <p>${senderData.profile.lifebuddyId || ''}</p>
-                    </div>
-                    <div class="user-actions">
-                        <button class="small-btn btn-success" onclick="acceptFriendRequest('${doc.id}')"><i data-feather="check"></i></button>
-                        <button class="small-btn btn-danger" onclick="declineFriendRequest('${doc.id}')"><i data-feather="x"></i></button>
-                    </div>
-                </li>
-            `;
-        }).join('');
-        feather.replace();
-    }
-    
-    window.acceptFriendRequest = async (senderId) => {
+        // ใช้ Batch Write เพื่อให้การทำงานเสร็จสมบูรณ์พร้อมกัน
         const batch = db.batch();
-        batch.update(db.collection('users').doc(currentUser.uid), { friends: firebase.firestore.FieldValue.arrayUnion(senderId), friendRequestsReceived: firebase.firestore.FieldValue.arrayRemove(senderId) });
-        batch.update(db.collection('users').doc(senderId), { friends: firebase.firestore.FieldValue.arrayUnion(currentUser.uid), friendRequestsSent: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
-        await batch.commit();
-        showToast("เพิ่มเพื่อนสำเร็จ!");
+
+        // 1. เพิ่ม targetUserId เข้าไปใน array 'following' ของเรา
+        batch.update(userRef, {
+            following: firebase.firestore.FieldValue.arrayUnion(targetUserId)
+        });
+
+        // 2. เพิ่ม currentUserId เข้าไปใน array 'followers' ของเขา
+        batch.update(targetUserRef, {
+            followers: firebase.firestore.FieldValue.arrayUnion(currentUserId)
+        });
+
+        try {
+            await batch.commit();
+            showToast("ติดตามสำเร็จ!");
+
+            // อัปเดต state ในเครื่องทันทีเพื่อ UI ที่รวดเร็ว
+            if (!state.following) state.following = [];
+            state.following.push(targetUserId);
+        
+            // อัปเดตปุ่มในหน้า UI ทันที
+            renderSearchResults(lastSearchResults); // lastSearchResults คือตัวแปรที่เราจะสร้างในขั้นตอนถัดไป
+            renderProfilePage(); // อัปเดตจำนวน Following
+
+        } catch (error) {
+            console.error("Error following user: ", error);
+            showToast("เกิดข้อผิดพลาดในการติดตาม");
+        }
     };
 
-    window.declineFriendRequest = async (senderId) => {
-        await db.collection('users').doc(currentUser.uid).update({
-            friendRequestsReceived: firebase.firestore.FieldValue.arrayRemove(senderId)
+    // ฟังก์ชันสำหรับ "เลิกติดตาม"
+    window.handleUnfollowUser = async (targetUserId) => {
+        if (!currentUser || currentUser.uid === targetUserId) return;
+
+        const currentUserId = currentUser.uid;
+        const userRef = db.collection('users').doc(currentUserId);
+        const targetUserRef = db.collection('users').doc(targetUserId);
+
+        const batch = db.batch();
+
+        // 1. ลบ targetUserId ออกจาก array 'following' ของเรา
+        batch.update(userRef, {
+            following: firebase.firestore.FieldValue.arrayRemove(targetUserId)
         });
-        showToast("ปฏิเสธคำขอแล้ว");
+
+        // 2. ลบ currentUserId ออกจาก array 'followers' ของเขา
+        batch.update(targetUserRef, {
+            followers: firebase.firestore.FieldValue.arrayRemove(currentUserId)
+        });
+
+        try {
+            await batch.commit();
+            showToast("เลิกติดตามแล้ว");
+
+            // อัปเดต state ในเครื่องทันที
+            if (state.following) {
+            state.following = state.following.filter(id => id !== targetUserId);
+            }
+
+            // อัปเดตปุ่มในหน้า UI ทันที
+            renderSearchResults(lastSearchResults);
+            renderProfilePage(); // อัปเดตจำนวน Following
+
+        } catch (error) {
+            console.error("Error unfollowing user: ", error);
+            showToast("เกิดข้อผิดพลาดในการเลิกติดตาม");
+        }
     };
 
     function calculateLevel(exp) {

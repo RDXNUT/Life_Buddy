@@ -1278,3 +1278,34 @@ label.reason-option:has(input:checked) .reason-icon-group {
     font-size: 0.9em;
     color: var(--subtle-text-color);
 }
+
+/* ===== Profile Follow Stats ===== */
+.profile-follow-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px; /* ระยะห่างระหว่าง "ผู้ติดตาม" กับ "กำลังติดตาม" */
+    margin: 20px 0; /* ระยะห่างบนล่าง */
+}
+
+.follow-stat-item {
+    text-align: center;
+}
+
+.follow-stat-value {
+    font-size: 1.5rem; /* ขนาดตัวเลข */
+    font-weight: 700;
+    display: block;
+    color: var(--text-color);
+}
+
+.follow-stat-label {
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+}
+
+/* ทำให้ Icon ในสถิติเดิมดูดีขึ้นนิดหน่อย */
+.stat-item .stat-icon .feather {
+    width: 28px;
+    height: 28px;
+    stroke-width: 2;
+}
