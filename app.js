@@ -217,50 +217,45 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateHomePageUI() {
         const page = document.getElementById('home-page');
-        // หยุดทำงานถ้าไม่ใช่หน้า Home
         if (!page || !page.classList.contains('active')) return;
 
         // --- สรุปตารางงานวันนี้ ---
         const todayStr = dayjs().format('YYYY-MM-DD');
         const tasksList = document.getElementById('today-tasks-summary');
         if (tasksList) {
-            let tasksForToday = [];
-            if (state.planner && state.planner[todayStr] && Array.isArray(state.planner[todayStr])) {
-                tasksForToday = state.planner[todayStr];
-            }
+         const tasksForToday = (state.planner && state.planner[todayStr]) || [];
             tasksList.innerHTML = tasksForToday.map(t => `<li>${t.time} - ${t.name}</li>`).join('') || '<li>ไม่มีงานสำหรับวันนี้</li>';
         }
 
-        // --- การทบทวนที่ต้องทำ (ส่วนที่แก้ไข) ---
+        // --- การทบทวนที่ต้องทำ (Defensive Version) ---
         const revisitList = document.getElementById('today-revisit-summary');
         if (revisitList) {
             let dueTopics = [];
-            // ตรวจสอบว่า state.revisitTopics เป็น Object ที่มีข้อมูล
-            if (typeof state.revisitTopics === 'object' && state.revisitTopics !== null) {
-                // Object.values จะดึง Array ของหัวข้อในแต่ละวิชาออกมา
+            // 1. ตรวจสอบว่า state.revisitTopics เป็น Object จริงๆ
+            if (state.revisitTopics && typeof state.revisitTopics === 'object' && !Array.isArray(state.revisitTopics)) {
+                // 2. ถ้าเป็น Object ให้วนลูปด้วย Object.values
                 Object.values(state.revisitTopics).forEach(subjectArray => {
-                    // ตรวจสอบอีกครั้งว่าข้อมูลในแต่ละวิชาเป็น Array จริงๆ
+                    // 3. ตรวจสอบว่า subjectArray เป็น Array จริงๆ ก่อนใช้ .filter
                     if (Array.isArray(subjectArray)) {
-                        // กรองหาหัวข้อที่ถึงกำหนดในวันนี้
-                        const dueInSubject = subjectArray.filter(t => dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
-                        // นำผลลัพธ์มารวมกัน
+                        const dueInSubject = subjectArray.filter(t => t && t.nextReviewDate && dayjs(t.nextReviewDate).isSame(dayjs(), 'day'));
                         dueTopics = dueTopics.concat(dueInSubject);
                     }
                 });
             }
+            // ถ้าไม่ใช่ Object หรือไม่มีข้อมูลเลย dueTopics จะยังเป็น Array ว่างๆ
             revisitList.innerHTML = dueTopics.map(t => `<li>${t.name}</li>`).join('') || '<li>ไม่มีหัวข้อต้องทบทวน</li>';
         }
 
         // --- สถิติการโฟกัส ---
         const todayFocusCountEl = document.getElementById('today-focus-count');
         if (todayFocusCountEl) {
-        todayFocusCountEl.textContent = state.focus?.todaySessions || 0;
+            todayFocusCountEl.textContent = state.focus?.todaySessions || 0;
         }
     
         // --- เป้าหมายรายวัน (Todo List) ---
         const todoList = document.getElementById('todo-list');
         if (todoList) {
-            let todos = state.todos || [];
+            const todos = state.todos || [];
             todoList.innerHTML = todos.map(todo => 
                 `<li class="${todo.completed ? 'completed' : ''}">
                     <input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}>
@@ -1462,6 +1457,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.revisitTopics[subject].push(newTopic);
 
         saveState();
+        renderRevisitList(); 
         renderRevisitList(); // อัปเดตรายการใหม่
         document.getElementById('revisit-form').reset();
         showToast(`เพิ่มหัวข้อ "${topicName}" ในวิชา${subject}แล้ว!`);
