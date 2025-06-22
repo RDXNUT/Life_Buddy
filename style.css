@@ -1309,3 +1309,22 @@ label.reason-option:has(input:checked) .reason-icon-group {
     height: 28px;
     stroke-width: 2;
 }
+
+/* Style for Mutual Following in Community List */
+.user-list-item {
+    position: relative;
+    cursor: pointer;
+}
+
+.user-list-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mutual-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: var(--success-color);
+}

@@ -1100,36 +1100,120 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     function setupFriendListeners(userId) {
-        const friendsListener = db.collection('users').doc(userId).onSnapshot(doc => { if (doc.exists) { state.friends = doc.data().friends || []; if (document.getElementById('community-page').classList.contains('active')) { renderFriendsList(); } } });
-        const requestsListener = db.collection('users').doc(userId).onSnapshot(doc => { if (doc.exists) { state.friendRequestsReceived = doc.data().friendRequestsReceived || []; if (document.getElementById('community-page').classList.contains('active')) { renderFriendRequests(); } const requestCount = state.friendRequestsReceived.length; const badge = document.getElementById('request-count-badge'); const dot = document.getElementById('unread-notification-dot'); badge.textContent = requestCount; badge.classList.toggle('hidden', requestCount === 0); dot.classList.toggle('hidden', requestCount === 0); } });
-        friendListeners.push(friendsListener, requestsListener);
+        // 1. ป้องกันการทำงานซ้ำซ้อน ถ้าไม่มี userId ให้หยุดทำงาน
+        if (!userId) return;
+
+        // 2. เคลียร์ Listener เก่าที่อาจจะยังทำงานค้างอยู่ทุกครั้งที่เรียกใช้ฟังก์ชันนี้
+        // เพื่อป้องกันการรั่วไหลของหน่วยความจำ (Memory Leak)
+        if (friendListeners.length > 0) {
+            friendListeners.forEach(unsubscribe => unsubscribe());
+            friendListeners = []; // รีเซ็ต array ของ listeners
+        }
+
+        // 3. สร้าง Listener ตัวใหม่เพียงตัวเดียวเพื่อ "ฟัง" การเปลี่ยนแปลงข้อมูลทั้งหมดของ user ที่ล็อกอินอยู่
+        // การใช้ Listener ตัวเดียวมีประสิทธิภาพมากกว่าการสร้างหลายๆ ตัวสำหรับแต่ละ field
+        const userListener = db.collection('users').doc(userId).onSnapshot(doc => {
+            if (doc.exists) {
+                const data = doc.data();
+
+                // 4. อัปเดต state ในเครื่อง (client-side) ด้วยข้อมูลล่าสุดจาก Firestore
+                state.following = data.following || []; // คนที่เรากำลังติดตาม
+                state.followers = data.followers || []; // คนที่ติดตามเรา
+                state.followRequests = data.followRequests || []; // คำขอติดตามที่ได้รับ
+                state.sentFollowRequests = data.sentFollowRequests || []; // คำขอติดตามที่เราส่งไป
+
+                // 5. จัดการการแสดงผลการแจ้งเตือน (จุดสีแดงและตัวเลข)
+                const requestCount = state.followRequests.length;
+                const badge = document.getElementById('request-count-badge'); // ตัวเลขในแท็บ "คำขอ"
+                const dot = document.getElementById('unread-notification-dot');   // จุดแดงที่ไอคอนแชทบน Header
+
+                // อัปเดตตัวเลขในแท็บ "คำขอ" ในหน้า Community
+                if (badge) {
+                    badge.textContent = requestCount;
+                    badge.classList.toggle('hidden', requestCount === 0);
+                }
+                // อัปเดตจุดแจ้งเตือนสีแดงที่ Header
+                if (dot) {
+                    dot.classList.toggle('hidden', requestCount === 0);
+                }
+
+                // 6. อัปเดต UI ของหน้าที่กำลังเปิดอยู่แบบ Real-time
+                const communityPage = document.getElementById('community-page');
+                const profilePage = document.getElementById('profile-page');
+            
+                // ถ้ากำลังเปิดหน้า Community อยู่ ให้ re-render รายการให้ถูกต้องตามแท็บที่เปิด
+                if (communityPage && communityPage.classList.contains('active')) {
+                    const activeTab = communityPage.querySelector('.tab-btn.active');
+                    if (activeTab && activeTab.dataset.tab === 'requests') {
+                        renderFollowRequests(); // ถ้าอยู่แท็บ "คำขอ" ก็ re-render หน้าคำขอ
+                    } else {
+                        renderFollowingList(); // ถ้าอยู่แท็บ "กำลังติดตาม" ก็ re-render หน้านั้น
+                    }
+                }
+            
+                // ถ้ากำลังเปิดหน้า Profile อยู่ ให้ re-render เพื่ออัปเดตจำนวนผู้ติดตาม/กำลังติดตาม
+                if (profilePage && profilePage.classList.contains('active')) {
+                    renderProfilePage();
+                }
+            }
+        }, error => {
+            // จัดการกรณีเกิด Error ขณะฟังข้อมูล
+            console.error("Error listening to user document:", error);
+        });
+
+        // 7. เก็บฟังก์ชัน unsubscribe ของ Listener ใหม่ไว้ใน array เพื่อให้เราสามารถหยุดการทำงานของมันได้ในอนาคต
+        friendListeners.push(userListener);
     }
 
-    async function renderFriendsList() {
-        const listEl = document.getElementById('friends-list');
-        listEl.innerHTML = '<li class="user-list-item empty-state">Loading...</li>';
-        if (!state.friends || state.friends.length === 0) {
-            listEl.innerHTML = '<li class="user-list-item empty-state">ยังไม่มีเพื่อน... ลองค้นหาดูสิ!</li>';
+    async function renderFollowingList() {
+        const listEl = document.getElementById('friends-list'); // ยังใช้ id เดิมของ list
+        if (!listEl) return;
+        listEl.innerHTML = '<li>กำลังโหลด...</li>';
+
+        const followingIds = state.following || [];
+        if (followingIds.length === 0) {
+            listEl.innerHTML = '<li>ยังไม่ได้ติดตามใครเลย...</li>';
             return;
         }
-        const friendPromises = state.friends.map(uid => db.collection('users').doc(uid).get());
-        const friendDocs = await Promise.all(friendPromises);
-        listEl.innerHTML = friendDocs.map(doc => {
-            if (!doc.exists) return '';
-            const friendData = doc.data();
-            const displayName = friendData.profile.displayName || 'User';
-            const img = document.createElement('img');
-            renderProfilePicture(friendData.profile.photoURL, img);
-            return `
-                <li class="user-list-item" onclick="startChat('${doc.id}')">
-                    <div class="user-list-avatar">${img.outerHTML}</div>
-                    <div class="user-info">
-                        <h4>${displayName}</h4>
-                        <p>Level ${calculateLevel(friendData.exp || 0).level}</p>
-                    </div>
-                </li>
-            `;
-        }).join('');
+
+        try {
+            const followingPromises = followingIds.map(uid => db.collection('users').doc(uid).get());
+            const followingDocs = await Promise.all(followingPromises);
+
+            listEl.innerHTML = followingDocs.map(doc => {
+                if (!doc.exists) return '';
+                const friendData = doc.data();
+
+                const isMutual = (friendData.following || []).includes(currentUser.uid);
+
+                const displayName = friendData.profile.displayName || 'User';
+                const img = document.createElement('img');
+                renderProfilePicture(friendData.profile.photoURL, img);
+
+                const listItemClass = isMutual ? 'user-list-item' : 'user-list-item disabled';
+                const onClickAction = isMutual ? 
+                    `onclick="startChat('${doc.id}')"` : 
+                    `onclick="showToast('ต้องติดตามซึ่งกันและกันถึงจะแชทได้')"`;
+                const mutualIcon = isMutual ? '<i data-feather="repeat" class="mutual-icon" title="ติดตามซึ่งกันและกัน"></i>' : '';
+
+                return `
+                    <li class="${listItemClass}" ${onClickAction}>
+                        <div class="user-list-avatar">${img.outerHTML}</div>
+                        <div class="user-info">
+                            <h4>${displayName}</h4>
+                            <p>Level ${calculateLevel(friendData.exp || 0).level}</p>
+                        </div>
+                        ${mutualIcon}
+                    </li>
+                `;
+            }).join('');
+
+            feather.replace();
+
+        } catch (error) {
+            console.error("Error rendering following list:", error);
+            listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
+        }
     }
 
     // ฟังก์ชันสำหรับจัดการการค้นหาเพื่อน
@@ -1542,6 +1626,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Listener สำหรับการคลิก ---
     document.body.addEventListener('click', (e) => {
         const closest = (selector) => e.target.closest(selector);
+
+        const communityTabBtn = closest('.tab-btn');
+        if (communityTabBtn && closest('#friend-list-panel')) {
+            const tab = communityTabBtn.dataset.tab;
+        
+            // ซ่อน content ทั้งหมดและเอา active ออกจากปุ่มทั้งหมด
+            document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => content.classList.remove('active'));
+
+            // แสดงอันที่เลือก
+            communityTabBtn.classList.add('active');
+            document.getElementById(`${tab}s-tab-content`).classList.add('active'); // เช่น friends-tab-content
+
+            // เรียก render ตามแท็บที่กด
+            if (tab === 'friends') {
+                renderFollowingList();
+            } else if (tab === 'requests') {
+                renderFollowRequests();
+            }
+            return; // จบการทำงานใน event listener
+        }
 
         // จัดการการคลิกที่ Navigation Links ใน Sidebar
         const navLink = closest('.nav-link'); 
