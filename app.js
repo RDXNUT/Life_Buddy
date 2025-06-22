@@ -1659,6 +1659,16 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'edit-wishlist-btn':
                 handleEditWishList();
                 break;
+             case 'google-signin-btn':
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider)
+                    .catch(error => {
+                        const errorMessage = getFriendlyAuthError(error);
+                        const authErrorEl = document.getElementById('auth-error');
+                        if(authErrorEl) authErrorEl.textContent = errorMessage;
+                        console.error("Google Sign-in Error:", error);
+                    });
+                break;
 
         }
     });
