@@ -1920,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'login-form': 
                 const emailL = document.getElementById('login-email').value; 
                 const passwordL = document.getElementById('login-password').value; 
+                console.log("Attempting to log in with:", emailL);
                 auth.signInWithEmailAndPassword(emailL, passwordL)
                     .catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error)); 
                 break;
