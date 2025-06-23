@@ -1629,23 +1629,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const communityTabBtn = closest('.tab-btn');
         if (communityTabBtn && closest('#friend-list-panel')) {
-            const tab = communityTabBtn.dataset.tab;
+            const tab = communityTabBtn.dataset.tab; // จะได้ค่า 'friends' หรือ 'requests'
         
-            // ซ่อน content ทั้งหมดและเอา active ออกจากปุ่มทั้งหมด
-            document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => content.classList.remove('active'));
+            // 1. ล้างสถานะ active ของปุ่มและเนื้อหาทั้งหมดก่อน
+            document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => 
+                btn.classList.remove('active'));
+            document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => 
+                content.classList.remove('active'));
 
-            // แสดงอันที่เลือก
+            //2. ทำให้ปุ่มที่ถูกคลิก active
             communityTabBtn.classList.add('active');
-            document.getElementById(`${tab}s-tab-content`).classList.add('active'); // เช่น friends-tab-content
 
-            // เรียก render ตามแท็บที่กด
+            // 3. หาและแสดงเนื้อหาที่คู่กัน
+            const contentToShow = document.getElementById(`${tab}s-tab-content`); // เช่น 'friends-tab-content'
+            if (contentToShow) {
+                contentToShow.classList.add('active');
+            }
+
+            // 4. โหลดข้อมูลสำหรับแท็บนั้นๆ
             if (tab === 'friends') {
                 renderFollowingList();
             } else if (tab === 'requests') {
-                renderFollowRequests();
+             renderFollowRequests();
             }
-            return; // จบการทำงานใน event listener
+
+            // 5. หยุดการทำงานของ listener ที่นี่
+            return; 
         }
 
         // จัดการการคลิกที่ Navigation Links ใน Sidebar
