@@ -1214,9 +1214,65 @@ label.reason-option:has(input:checked) .reason-icon-group {
 .search-result-item {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 10px 15px;
     border-bottom: 1px solid var(--border-color);
+    gap: 15px;
 }
+
+.user-list-item:last-child, .search-result-item:last-child {
+    border-bottom: none;
+}
+
+.user-list-avatar, .search-result-item .profile-pic {
+    width: 50px; /* <<<< ขนาดใหม่ */
+    height: 50px; /* <<<< ขนาดใหม่ */
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0; /* ป้องกันไม่ให้รูปถูกบีบ */
+    background-color: var(--border-color); /* สีพื้นหลังเผื่อรูปไม่โหลด */
+}
+
+/* เราไม่ต้องการ .profile-pic ซ้อนใน .user-list-avatar อีกต่อไป */
+.user-list-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* --- จัดการข้อมูลและปุ่ม --- */
+.user-info {
+    flex-grow: 1; /* ทำให้ข้อมูลดันไปทางซ้าย */
+    text-align: left;
+    margin-left: 0; /* ไม่ต้องใช้ margin แล้วเพราะใช้ gap */
+}
+
+.user-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.2;
+}
+.user-info p {
+    margin: 0;
+    font-size: 0.85em;
+    line-height: 1.2;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px; /* ระยะห่างระหว่างปุ่ม */
+    flex-shrink: 0; /* ป้องกันไม่ให้ปุ่มโดนบีบ */
+}
+
+/* ปรับปุ่มในรายการให้ดูดีขึ้น */
+.user-actions .small-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .search-result-item:last-child {
     border-bottom: none;
 }

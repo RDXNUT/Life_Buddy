@@ -1166,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function renderFollowingList() {
-        const listEl = document.getElementById('friends-list'); // ยังใช้ id เดิมของ list
+        const listEl = document.getElementById('friends-list');
         if (!listEl) return;
         listEl.innerHTML = '<li>กำลังโหลด...</li>';
 
@@ -1183,13 +1183,8 @@ document.addEventListener('DOMContentLoaded', () => {
             listEl.innerHTML = followingDocs.map(doc => {
                 if (!doc.exists) return '';
                 const friendData = doc.data();
-
                 const isMutual = (friendData.following || []).includes(currentUser.uid);
-
                 const displayName = friendData.profile.displayName || 'User';
-                const img = document.createElement('img');
-                renderProfilePicture(friendData.profile.photoURL, img);
-
                 const listItemClass = isMutual ? 'user-list-item' : 'user-list-item disabled';
                 const onClickAction = isMutual ? 
                     `onclick="startChat('${doc.id}')"` : 
@@ -1198,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 return `
                     <li class="${listItemClass}" ${onClickAction}>
-                        <div class="user-list-avatar">${img.outerHTML}</div>
+                        <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
                         <div class="user-info">
                             <h4>${displayName}</h4>
                             <p>Level ${calculateLevel(friendData.exp || 0).level}</p>
@@ -1206,10 +1201,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${mutualIcon}
                     </li>
                 `;
+                // -----------------------------------------------------------------
+
             }).join('');
-
             feather.replace();
-
         } catch (error) {
             console.error("Error rendering following list:", error);
             listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
@@ -1376,16 +1371,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ฟังก์ชันใหม่: สำหรับแสดงผลคำขอที่ได้รับ
     async function renderFollowRequests() {
-        const listEl = document.getElementById('friend-requests-list');
-        if (!listEl) return;
-        listEl.innerHTML = '<li>กำลังโหลด...</li>';
+    const listEl = document.getElementById('friend-requests-list');
+    if (!listEl) return;
+    listEl.innerHTML = '<li>กำลังโหลด...</li>';
 
-        const requestIds = state.followRequests || [];
-        if (requestIds.length === 0) {
-            listEl.innerHTML = '<li>ไม่มีคำขอติดตาม</li>';
-            return;
-        }
+    const requestIds = state.followRequests || [];
+    if (requestIds.length === 0) {
+        listEl.innerHTML = '<li>ไม่มีคำขอติดตาม</li>';
+        return;
+    }
 
+    try {
         // ดึงข้อมูลโปรไฟล์ของคนที่ส่งคำขอมา
         const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
         const requestDocs = await Promise.all(requestPromises);
@@ -1394,11 +1390,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!doc.exists) return '';
             const senderData = doc.data();
             const displayName = senderData.profile.displayName || 'User';
-            const img = document.createElement('img');
-            renderProfilePicture(senderData.profile.photoURL, img);
+            
             return `
                 <li class="user-list-item">
-                    <div class="user-list-avatar">${img.outerHTML}</div>
+                    <img src="${senderData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
                     <div class="user-info">
                         <h4>${displayName}</h4>
                         <p>${senderData.profile.lifebuddyId || ''}</p>
@@ -1409,9 +1404,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </li>
             `;
+            // -----------------------------------------------------------------
+
         }).join('');
         feather.replace();
+    } catch (error) {
+        console.error("Error rendering follow requests:", error);
+        listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
     }
+}
 
     function calculateLevel(exp) {
         if (typeof exp === 'undefined' || exp === null) exp = 0;
