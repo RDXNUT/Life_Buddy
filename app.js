@@ -4,7 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== 1. FIREBASE SETUP =====
     // =============================
 
-     const firebaseConfig = { apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms", authDomain: "life-buddy-xok07.firebaseapp.com", projectId: "life-buddy-xok07", storageBucket: "life-buddy-xok07.firebasestorage.app", messagingSenderId: "243239137119", appId: "1:243239137119:web:2baf84c64caddf211ad0ea" };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBUs0Gqhv0P1Up-vDz1HE9iFfaZr0bAEms",
+        authDomain: "life-buddy-xok07.firebaseapp.com",
+        projectId: "life-buddy-xok07",
+        storageBucket: "life-buddy-xok07.firebasestorage.app",
+        messagingSenderId: "243239137119",
+        appId: "1:243239137119:web:2baf84c64caddf211ad0ea"
+    };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
