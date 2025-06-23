@@ -1767,18 +1767,19 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'login-btn': 
                 openAuthModal(); 
                 break;
-             case 'show-signup-link': // เมื่อคลิก "สมัครสมาชิกที่นี่"
-                e.preventDefault(); // ป้องกันไม่ให้หน้าเว็บรีโหลด
+             case 'show-signup-link':
+                 e.preventDefault();
                 document.getElementById('login-view').classList.add('hidden');
                 document.getElementById('signup-view').classList.remove('hidden');
-                document.getElementById('auth-error').textContent = ''; // ล้างข้อความ Error เก่า
+                document.getElementById('auth-error').textContent = '';
                 break;
-            case 'show-login-link': // เมื่อคลิก "เข้าสู่ระบบที่นี่"
-                e.preventDefault(); // ป้องกันไม่ให้หน้าเว็บรีโหลด
+
+            case 'show-login-link':
+                e.preventDefault();
                 document.getElementById('signup-view').classList.add('hidden');
                 document.getElementById('login-view').classList.remove('hidden');
-                document.getElementById('auth-error').textContent = ''; // ล้างข้อความ Error เก่า
-                break;                       
+                document.getElementById('auth-error').textContent = '';
+                break;
             case 'logout-btn': 
                 auth.signOut(); 
                 break;
