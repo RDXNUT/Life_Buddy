@@ -542,7 +542,32 @@
     
     <!-- Modals -->
     <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content"><button class="close-btn">×</button><div id="login-view"><h2>เข้าสู่ระบบ</h2><form id="login-form"><input type="email" id="login-email" placeholder="อีเมล" required><input type="password" id="login-password" placeholder="รหัสผ่าน" required><button type="submit">เข้าสู่ระบบ</button></form><p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a></p></div><div id="signup-view" class="hidden"><h2>สมัครสมาชิกใหม่</h2><form id="signup-form"><input type="email" id="signup-email" placeholder="อีเมล" required><input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required><button type="submit">สมัครสมาชิก</button></form><p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a></p></div><p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div>
+        <div class="modal-content"><button class="close-btn">×</button>
+            <div id="login-view">
+                <h2>เข้าสู่ระบบ</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="อีเมล" required>
+                    <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
+                    <!-- ตรวจสอบปุ่มนี้ด้วย -->
+                    <button type="submit">เข้าสู่ระบบ</button>
+                </form>
+                <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a>
+                </p>
+            </div>
+        
+            <div id="signup-view" class="hidden">
+            <h2>สมัครสมาชิกใหม่</h2>
+            <form id="signup-form">
+                <input type="email" id="signup-email" placeholder="อีเมล" required>
+                <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+                
+                <button type="submit">สมัครสมาชิก</button>
+            </form>
+            <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a>
+            </p>
+        </div>
+        
+        <p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div>
     </div>
     <div id="activity-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการกิจกรรม</h2><p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p><div id="activity-list-container"></div><form id="add-activity-form"><input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required><button type="submit">เพิ่มกิจกรรม</button></form></div></div>
     <div id="search-friends-modal" class="modal-overlay hidden">
