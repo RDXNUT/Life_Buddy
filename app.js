@@ -1917,13 +1917,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     inputAdv.value = ''; 
                     showToast('เพิ่มคำแนะนำใหม่แล้ว!'); 
                 } 
+
                 break;
             case 'signup-form': 
-                const emailS = document.getElementById('signup-email').value; 
-                const passwordS = document.getElementById('signup-password').value; 
+
+                console.log("Signup form submitted!");
+
+                const signupEmailInput = document.getElementById('signup-email');
+                const signupPasswordInput = document.getElementById('signup-password');
+                const authErrorEl = document.getElementById('auth-error');
+
+                // 2. ตรวจสอบว่าหา element ต่างๆ เจอหรือไม่
+                if (!signupEmailInput || !signupPasswordInput || !authErrorEl) {
+                    console.error("Signup form elements not found!");
+                    return; // หยุดการทำงานถ้าหาไม่เจอ
+                }
+    
+                const emailS = signupEmailInput.value;
+                const passwordS = signupPasswordInput.value;
+
+                // 3. Log อีเมลและรหัสผ่าน (เพื่อดีบักเท่านั้น, **อย่าลืมลบออกตอนใช้งานจริง**)
+                console.log(`Attempting to create user with email: ${emailS}`);
+
+                // 4. แสดงข้อความกำลังโหลด
+                authErrorEl.textContent = 'กำลังสมัครสมาชิก...';
+                authErrorEl.style.color = 'var(--subtle-text-color)'; // เปลี่ยนเป็นสีเทา
+
                 auth.createUserWithEmailAndPassword(emailS, passwordS)
-                    .catch(error => document.getElementById('auth-error').textContent = getFriendlyAuthError(error)); 
+                    .then((userCredential) => {
+                        // ทำงานเมื่อสมัครสมาชิกสำเร็จ
+                        console.log("User created successfully:", userCredential.user);
+                        // ไม่ต้องทำอะไรต่อ เพราะ onAuthStateChanged จะจัดการการ redirect และอัปเดต UI เอง
+                        // closeAuthModal(); // ปิด Modal ทันที
+                    })
+                    .catch(error => {
+                        // 5. แสดง Error ที่ละเอียดขึ้นใน Console และบนหน้าจอ
+                        console.error("Signup Error:", error);
+                        console.error("Error Code:", error.code);
+                        console.error("Error Message:", error.message);
+            
+                        authErrorEl.textContent = getFriendlyAuthError(error);
+                        authErrorEl.style.color = 'var(--danger-color)'; // เปลี่ยนกลับเป็นสีแดง
+                    });
                 break;
+
             case 'login-form': 
                 const emailL = document.getElementById('login-email').value; 
                 const passwordL = document.getElementById('login-password').value; 
