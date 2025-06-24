@@ -656,11 +656,50 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateStr = currentDate.format('YYYY-MM-DD');
             if (currentDate.isSame(dayjs(), 'day')) dayElem.classList.add('today');
             if (dateStr === selectedMoodDate) dayElem.classList.add('selected');
+            
             const moodEntry = state.moods && state.moods[dateStr];
             if (moodEntry) {
-                const moodColors = { happy: '#ffcc00', excited: '#ff9500', neutral: '#8e8e93', sad: '#007aff', angry: '#ff3b30' };
-                dayElem.style.backgroundColor = moodColors[moodEntry.mood];
-                dayElem.style.color = 'white';
+                
+                // กำหนดสีและสไตล์ใหม่สำหรับแต่ละอารมณ์
+                const moodStyles = {
+                    happy: { // 😊
+                    background: '#FADADD', 
+                    color: '#A0526B',      
+                    border: '1px solid #F8C8D2'
+                    },
+                    excited: { // 🤩 
+                        background: '#FF9F43', 
+                        color: 'white',
+                        fontWeight: 'bold',
+                    },
+                    neutral: { // 😐 
+                        background: '#EAEAEA',
+                        color: '#8A8A8A',
+                        border: '1px solid #D1D1D1'
+                    },
+                    sad: { // 😢 
+                        background: '#B0C4DE',
+                        color: '#465362',
+                        border: '1px solid #8494A8'
+                    },
+                    angry: { // 😡 
+                        background: 'linear-gradient(135deg, #FF6B6B 0%, #D32F2F 100%)',
+                        color: 'white',
+                        border: '1px solid #C62828'
+                    }
+                };
+    
+                // นำสไตล์มาใช้กับ element ของวัน
+                const styles = moodStyles[moodEntry.mood];
+                if (styles) {
+                    dayElem.style.background = styles.background;
+                    dayElem.style.color = styles.color || 'var(--text-color)';
+                    dayElem.style.fontWeight = styles.fontWeight || 'normal';
+                    dayElem.style.border = styles.border || '1px solid transparent';
+                    if (styles.animation) {
+                        dayElem.style.animation = styles.animation;
+                    }
+                }
             }
             dayElem.addEventListener('click', () => { selectedMoodDate = dateStr; renderMoodCalendar(date); });
             calendarEl.appendChild(dayElem);
@@ -1150,13 +1189,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
                 // ถ้ากำลังเปิดหน้า Community อยู่ ให้ re-render รายการให้ถูกต้องตามแท็บที่เปิด
                 if (communityPage && communityPage.classList.contains('active')) {
-                    const activeTab = communityPage.querySelector('.tab-btn.active');
-                    if (activeTab && activeTab.dataset.tab === 'requests') {
-                        renderFollowRequests(); // ถ้าอยู่แท็บ "คำขอ" ก็ re-render หน้าคำขอ
-                    } else {
-                        renderFollowingList(); // ถ้าอยู่แท็บ "กำลังติดตาม" ก็ re-render หน้านั้น
-                    }
+                const activeTab = communityPage.querySelector('.tab-btn.active');
+                if (activeTab) {
+                    const tab = activeTab.dataset.tab;
+                    if (tab === 'requests') renderFollowRequests();
+                    else if (tab === 'followers') renderFollowersList();
+                    else renderFollowingList();
                 }
+            }
             
                 // ถ้ากำลังเปิดหน้า Profile อยู่ ให้ re-render เพื่ออัปเดตจำนวนผู้ติดตาม/กำลังติดตาม
                 if (profilePage && profilePage.classList.contains('active')) {
@@ -1170,6 +1210,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 7. เก็บฟังก์ชัน unsubscribe ของ Listener ใหม่ไว้ใน array เพื่อให้เราสามารถหยุดการทำงานของมันได้ในอนาคต
         friendListeners.push(userListener);
+    }
+
+    // ฟังก์ชันใหม่: สำหรับแสดงรายชื่อคนที่ติดตามเรา
+    async function renderFollowersList() {
+        const listEl = document.getElementById('following-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<li>กำลังโหลด...</li>';
+
+        const followerIds = state.followers || [];
+        if (followerIds.length === 0) {
+            listEl.innerHTML = '<li>ยังไม่มีผู้ติดตาม</li>';
+            return;
+        }
+
+        const followerPromises = followerIds.map(uid => db.collection('users').doc(uid).get());
+        const followerDocs = await Promise.all(followerPromises);
+
+        listEl.innerHTML = followerDocs.map(doc => {
+            if (!doc.exists) return '';
+            const followerData = doc.data();
+            const displayName = followerData.profile.displayName || 'User';
+
+            const amIFollowing = (state.following || []).includes(doc.id);
+
+            let actionButton = '';
+            if (amIFollowing) {
+                actionButton = `<button class="small-btn btn-secondary" disabled>กำลังติดตาม</button>`;
+            } else {
+                actionButton = `<button class="small-btn" onclick="handleFollowBack('${doc.id}')">ติดตามกลับ</button>`;
+            }
+
+            return `
+                <li class="user-list-item">
+                    <img src="${followerData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
+                    <div class="user-info">
+                        <h4>${displayName}</h4>
+                        <p>${followerData.profile.lifebuddyId || ''}</p>
+                    </div>
+                    <div class="user-actions">
+                        ${actionButton}
+                    </div>
+                </li>
+            `;
+        }).join('');
+        feather.replace();
     }
 
     async function renderFollowingList() {
@@ -1343,21 +1428,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const batch = db.batch();
 
-        // 1. ทำให้ผู้ส่ง "กำลังติดตาม" เรา
+        // 1. [แก้ไข] ลบคำขอที่ส่งออกไปจากฝั่งผู้ส่ง
         batch.update(senderRef, {
-            following: firebase.firestore.FieldValue.arrayUnion(recipientId),
-            sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) // ลบคำขอที่ส่งออก
+            sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId)
         });
-        // 2. ทำให้เรามีผู้ส่งเป็น "ผู้ติดตาม"
+
+        // 2. [เหมือนเดิม] ทำให้เรามีผู้ส่งเป็น "ผู้ติดตาม" และลบคำขอที่ได้รับออก
         batch.update(recipientRef, {
             followers: firebase.firestore.FieldValue.arrayUnion(senderId),
-            followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) // ลบคำขอที่ได้รับออก
+            followRequests: firebase.firestore.FieldValue.arrayRemove(senderId)
         });
 
         await batch.commit();
         showToast("ตอบรับคำขอแล้ว");
-        // ไม่ต้องอัปเดต state ในเครื่อง เพราะ listener จะทำงานและ re-render เอง
-    };
+            // Listener จะทำงานและ re-render UI เอง
+        };
 
     // ฟังก์ชันใหม่: สำหรับปฏิเสธคำขอ
     window.handleDeclineFollowRequest = async (senderId) => {
@@ -1374,6 +1459,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await batch.commit();
         showToast("ปฏิเสธคำขอแล้ว");
+    };
+
+    // ฟังก์ชันใหม่: สำหรับกดติดตามกลับ หรือติดตามคนอื่น
+    window.handleFollowBack = async (targetUserId) => {
+        if (!currentUser) return;
+        const currentUserId = currentUser.uid;
+
+        const userRef = db.collection('users').doc(currentUserId);
+        const targetUserRef = db.collection('users').doc(targetUserId);
+
+        const batch = db.batch();
+
+        // 1. เพิ่ม targetUserId เข้าไปใน array 'following' ของเรา
+        batch.update(userRef, {
+            following: firebase.firestore.FieldValue.arrayUnion(targetUserId)
+        });
+
+        // 2. เพิ่ม currentUserId เข้าไปใน array 'followers' ของเขา
+        batch.update(targetUserRef, {
+            followers: firebase.firestore.FieldValue.arrayUnion(currentUserId)
+        });
+
+        await batch.commit();
+        showToast("ติดตามกลับแล้ว!");
     };
 
     // ฟังก์ชันใหม่: สำหรับแสดงผลคำขอที่ได้รับ
@@ -1406,14 +1515,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p>${senderData.profile.lifebuddyId || ''}</p>
                     </div>
                     <div class="user-actions">
-                        <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')"><i data-feather="check"></i> ยอมรับ</button>
-                        <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')"><i data-feather="x"></i> ปฏิเสธ</button>
+                        <!-- แก้ไขปุ่มที่นี่ -->
+                        <button class="small-btn btn-accept-request" data-sender-id="${doc.id}">
+                            <i data-feather="check"></i> ยอมรับ
+                        </button>
+                        <button class="small-btn btn-secondary btn-decline-request" data-sender-id="${doc.id}">
+                            <i data-feather="x"></i> ปฏิเสธ
+                        </button>
                     </div>
                 </li>
             `;
-            // -----------------------------------------------------------------
-
         }).join('');
+
         feather.replace();
     } catch (error) {
         console.error("Error rendering follow requests:", error);
@@ -1535,17 +1648,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.profile.bio = document.getElementById('bio').value; 
                 state.settings.showEmail = document.getElementById('show-email-toggle').checked; await saveState(); updateHeaderUI(); Swal.fire('บันทึกสำเร็จ!', 'ข้อมูลโปรไฟล์ของคุณถูกอัปเดตแล้ว', 'success').then(() => { document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); }); } }); }
     
-    function handleMoodFormSubmit(e) { e.preventDefault(); 
+    function handleMoodFormSubmit(e) { 
+        e.preventDefault(); 
+    
         const selectedMood = document.getElementById('selected-mood').value; 
-        if (!selectedMood) { showToast("กรุณาเลือกอารมณ์ของคุณก่อน"); return; } 
+        if (!selectedMood) { 
+            showToast("กรุณาเลือกอารมณ์ของคุณก่อน"); 
+            return; 
+        } 
+    
         const notes = document.getElementById('mood-notes').value; 
         const reasons = Array.from(document.querySelectorAll('input[name="mood-reason"]:checked')).map(el => el.value); 
-        const todayStr = dayjs().format('YYYY-MM-DD'); if (!state.moods) state.moods = {}; 
-        const hadPreviousEntry = !!state.moods[todayStr]; state.moods[todayStr] = { mood: selectedMood, notes: notes, reasons: reasons }; 
-        if (!hadPreviousEntry) { updateCoins(5, "บันทึกอารมณ์"); } document.getElementById('mood-form').reset(); document.querySelectorAll('.emoji-option.selected').forEach(el => el.classList.remove('selected')); 
-        saveState(); renderMoodCalendar(currentMoodDate); 
-        showToast("บันทึกอารมณ์เรียบร้อยแล้ว!"); c
-        heckForDailyBonus(); }
+    
+        // [แก้ไข] ใช้ 'selectedMoodDate' แทน 'dayjs().format('YYYY-MM-DD')'
+        // ทำให้สามารถบันทึกย้อนหลังตามวันที่เลือกในปฏิทินได้
+        const dateToSave = selectedMoodDate; 
+    
+        if (!state.moods) {
+            state.moods = {}; 
+        }
+    
+        const hadPreviousEntry = !!state.moods[dateToSave]; 
+        state.moods[dateToSave] = { mood: selectedMood, notes: notes, reasons: reasons }; 
+    
+        if (!hadPreviousEntry) { 
+            updateCoins(5, "บันทึกอารมณ์"); 
+        } 
+    
+        document.getElementById('mood-form').reset(); 
+        document.querySelectorAll('.emoji-option.selected').forEach(el => el.classList.remove('selected')); 
+    
+        saveState(); 
+        renderMoodCalendar(currentMoodDate); // Re-render ปฏิทินเพื่อแสดงผลที่อัปเดต
+        showToast("บันทึกอารมณ์เรียบร้อยแล้ว!"); 
+    
+        // ตรวจสอบโบนัสรายวันเฉพาะเมื่อบันทึกของ "วันนี้" เท่านั้น
+        if (dateToSave === dayjs().format('YYYY-MM-DD')) {
+            checkForDailyBonus();
+        }
+    }
     
     function handlePlannerFormSubmit(e) { e.preventDefault(); 
         const eventNameInput = document.getElementById('event-name'); 
@@ -1635,34 +1776,47 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', (e) => {
         const closest = (selector) => e.target.closest(selector);
 
+        // --- จัดการปุ่มในรายการคำขอ ---
+        const acceptButton = closest('.btn-accept-request');
+        if (acceptButton) {
+            const senderId = acceptButton.dataset.senderId;
+            if (senderId) {
+                handleAcceptFollowRequest(senderId);
+            }
+            return; // หยุดการทำงาน
+        }
+
+        const declineButton = closest('.btn-decline-request');
+        if (declineButton) {
+            const senderId = declineButton.dataset.senderId;
+            if (senderId) {
+                handleDeclineFollowRequest(senderId);
+            }
+            return; // หยุดการทำงาน
+        }
+
         const communityTabBtn = closest('.tab-btn');
         if (communityTabBtn && closest('#friend-list-panel')) {
-            const tab = communityTabBtn.dataset.tab; // จะได้ค่า 'friends' หรือ 'requests'
+            
+            const tab = communityTabBtn.dataset.tab;
         
-            // 1. ล้างสถานะ active ของปุ่มและเนื้อหาทั้งหมดก่อน
-            document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => 
-                btn.classList.remove('active'));
-            document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => 
-                content.classList.remove('active'));
+        document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => content.classList.remove('active'));
 
-            //2. ทำให้ปุ่มที่ถูกคลิก active
-            communityTabBtn.classList.add('active');
+        communityTabBtn.classList.add('active');
+        const contentToShow = document.getElementById(`${tab}-tab-content`); // ไม่ต้องมี 's' แล้ว
+        if (contentToShow) {
+            contentToShow.classList.add('active');
+        }
 
-            // 3. หาและแสดงเนื้อหาที่คู่กัน
-            const contentToShow = document.getElementById(`${tab}s-tab-content`); // เช่น 'friends-tab-content'
-            if (contentToShow) {
-                contentToShow.classList.add('active');
-            }
-
-            // 4. โหลดข้อมูลสำหรับแท็บนั้นๆ
-            if (tab === 'friends') {
-                renderFollowingList();
-            } else if (tab === 'requests') {
-             renderFollowRequests();
-            }
-
-            // 5. หยุดการทำงานของ listener ที่นี่
-            return; 
+        if (tab === 'following') {
+            renderFollowingList();
+        } else if (tab === 'followers') {
+            renderFollowersList(); // เรียกฟังก์ชันใหม่
+        } else if (tab === 'requests') {
+            renderFollowRequests();
+        }
+        return;
         }
 
         // จัดการการคลิกที่ Navigation Links ใน Sidebar
@@ -1898,7 +2052,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        switch (e.target.id) {
+        switch (e.target.id) { //===== Submit =====//
             case 'todo-form': 
                 const input = document.getElementById('todo-input'); 
                 if (input.value.trim()) { 

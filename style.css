@@ -1407,3 +1407,19 @@ label.reason-option:has(input:checked) .reason-icon-group {
 #copy-id-btn:hover {
     background-color: var(--bg-color);
 }
+
+/* ======================================= */
+/* ===== Mood Calendar Animations ===== */
+/* ======================================= */
+
+@keyframes rainbow-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ทำให้ animation ทำงานได้ เราต้องเพิ่ม background-size */
+.calendar-day {
+    /* ... โค้ดเดิม ... */
+    background-size: 400% 400%; /* << เพิ่มบรรทัดนี้ */
+}
