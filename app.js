@@ -1669,6 +1669,30 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
+
+            const calendarNavBtn = closest('.calendar-nav-btn');
+            if (calendarNavBtn) {
+                const btnId = calendarNavBtn.id;
+                switch(btnId) {
+                    case 'planner-prev-month':
+                        currentPlannerDate = currentPlannerDate.subtract(1, 'month');
+                        renderPlannerCalendar(currentPlannerDate);
+                        break;
+                    case 'planner-next-month':
+                        currentPlannerDate = currentPlannerDate.add(1, 'month');
+                        renderPlannerCalendar(currentPlannerDate);
+                        break;
+                    case 'mood-prev-month':
+                        currentMoodDate = currentMoodDate.subtract(1, 'month');
+                        renderMoodCalendar(currentMoodDate);
+                        break;
+                    case 'mood-next-month':
+                        currentMoodDate = currentMoodDate.add(1, 'month');
+                        renderMoodCalendar(currentMoodDate);
+                        break;
+                }
+                return; 
+            }
             
             const acceptButton = closest('.btn-accept-request');
             if (acceptButton) {
@@ -1789,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const targetId = e.target.id || closest('[id]')?.id;    
-            switch(targetId) {
+            switch(targetId) {  //=====click=====//
                 case 'login-btn': 
                     openAuthModal(); 
                     break;
@@ -1836,7 +1860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     });
-                    break;
+                    break;              
                 case 'logout-btn': 
                     auth.signOut(); 
                     break;
