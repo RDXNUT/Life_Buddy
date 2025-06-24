@@ -1423,3 +1423,144 @@ label.reason-option:has(input:checked) .reason-icon-group {
     /* ... โค้ดเดิม ... */
     background-size: 400% 400%; /* << เพิ่มบรรทัดนี้ */
 }
+
+/* ===== Level Up Swal ===== */
+.swal-title-levelup {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* ======================================= */
+/* =========== Shop Page Styles ========== */
+/* ======================================= */
+
+/* ---- ส่วนหัวของหน้าร้านค้า ---- */
+#shop-page h1 {
+    justify-content: center; /* จัดไอคอนกับข้อความให้อยู่กลาง */
+}
+
+#shop-page .subtle-text {
+    text-align: center; 
+    margin-top: -1.5rem; 
+    margin-bottom: 2.5rem; /* เพิ่มระยะห่างให้มากขึ้น */
+}
+
+/* ---- โครงสร้างตารางสินค้า ---- */
+.shop-grid {
+    display: grid;
+    /* ทำให้แสดงผล 2-4 รายการต่อแถว ขึ้นอยู่กับขนาดหน้าจอ */
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+    gap: 25px;
+    margin-top: 20px;
+}
+
+/* ---- การ์ดสินค้าแต่ละชิ้น ---- */
+.shop-item-card {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 16px; /* ทำให้มนขึ้นเล็กน้อย */
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden; /* ซ่อนส่วนที่เกินขอบเขตของการ์ด */
+    display: flex;
+    flex-direction: column; /* จัดเรียงเนื้อหาแนวตั้ง */
+}
+
+.shop-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+/* ---- รูปภาพตัวอย่างสินค้า (แบนเนอร์) ---- */
+.shop-item-preview {
+    width: 100%;
+    height: 120px;
+    border-radius: 8px;
+    background-color: var(--border-color);
+    margin-bottom: 15px;
+    object-fit: cover; /* ทำให้รูปเต็มพื้นที่โดยไม่เสียสัดส่วน */
+    border: 1px solid var(--border-color);
+}
+
+/* ---- ชื่อสินค้า ---- */
+.shop-item-name {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: auto; /* [Trick] ดันให้ชื่ออยู่บน และปุ่มอยู่ล่างสุด */
+    padding-bottom: 8px;
+}
+
+/* ---- ราคา ---- */
+.shop-item-price {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-weight: 700;
+    font-size: 1.1rem; /* เพิ่มขนาดราคาเล็กน้อย */
+    color: var(--accent-color);
+    margin: 8px 0;
+}
+.shop-item-price .feather-dollar-sign {
+    width: 1em;
+    height: 1em;
+}
+
+/* ---- ปุ่มซื้อ/สถานะ ---- */
+.shop-item-card .btn-buy {
+    width: 100%;
+    margin-top: 5px; /* เพิ่มระยะห่างจากราคา */
+}
+
+.shop-item-card .btn-buy.disabled {
+    opacity: 0.7; /* ทำให้ปุ่มที่กดไม่ได้ดูจางลง */
+    cursor: default;
+}
+.shop-item-card .btn-buy.disabled:hover {
+    transform: none; /* ไม่ต้องมี hover effect */
+}
+/* สไตล์เฉพาะสำหรับปุ่มที่เป็นเจ้าของแล้ว */
+.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"] {
+    background-color: var(--success-color);
+}
+.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"]:hover {
+    background-color: var(--success-color);
+}
+
+
+/* ---- ป้าย "เป็นเจ้าของแล้ว" ---- */
+.owned-tag {
+    position: absolute;
+    top: 10px;
+    right: -40px; /* ซ่อนไว้นอกจอตอนแรก */
+    background-color: var(--success-color);
+    color: white;
+    padding: 5px 40px;
+    font-size: 0.8em;
+    font-weight: 500;
+    transform: rotate(45deg); /* ทำให้เป็นแถบคาดเฉียง */
+    transition: right 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ทำให้ป้ายแสดงผลเมื่อเป็นเจ้าของ */
+.shop-item-card:has(.owned-tag) .owned-tag {
+    right: -40px; 
+}
+/* แก้ไขป้าย "เป็นเจ้าของแล้ว" ให้สวยขึ้น */
+.owned-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: var(--success-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}

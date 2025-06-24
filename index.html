@@ -35,6 +35,7 @@
             <li><a href="#" class="nav-link" data-page="focus"><i data-feather="clock"></i>จับเวลาโฟกัส</a></li>
             <li><a href="#" class="nav-link" data-page="mood"><i data-feather="smile"></i>บันทึกอารมณ์</a></li>
             <li><a href="#" class="nav-link" data-page="community"><i data-feather="users"></i>เพื่อนและแชท</a></li>
+            <li><a href="#" class="nav-link" data-page="shop"><i data-feather="shopping-cart"></i>ร้านค้า</a></li>
             <li><a href="#" class="nav-link" data-page="rewards"><i data-feather="award"></i>รางวัลและความสำเร็จ</a></li>
             <li><a href="#" class="nav-link" data-page="settings"><i data-feather="settings"></i>การตั้งค่า</a></li>
             <li><a href="#" class="nav-link" data-page="profile"><i data-feather="user"></i>โปรไฟล์ของฉัน</a></li>
@@ -142,7 +143,19 @@
                 </div>
             </div>
         </div>
+    <!-- ==================== Shop Page ==================== -->
+    <div id="shop-page" class="page">
+        <h1><i data-feather="shopping-cart"></i> ร้านค้า</h1>
+        <p class="subtle-text" style="text-align: center; margin-top: -1.5rem; margin-bottom: 2rem;">ใช้ Coins ที่คุณสะสมมาเพื่อปลดล็อกของตกแต่งโปรไฟล์สุดพิเศษ!</p>
 
+        <!-- ส่วนของแบนเนอร์โปรไฟล์ -->
+        <section class="card">
+            <h2><i data-feather="image"></i> แบนเนอร์โปรไฟล์ (Banners)</h2>
+            <div id="shop-banners-container" class="shop-grid">
+                <!-- สินค้าจะถูกสร้างโดย JS -->
+            </div>
+        </section>
+    </div>
         <!-- Revisit Page -->
     <div id="revisit-page" class="page">
     <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
@@ -397,10 +410,12 @@
         <div class="community-container">
             <div id="friend-list-panel" class="card">
                 <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="friends">กำลังติดตาม</button> <!-- เปลี่ยนชื่อจาก เพื่อน -->
+                    <button class="tab-btn active" data-tab="following">กำลังติดตาม</button> <!-- เปลี่ยน data-tab -->
+                    <button class="tab-btn" data-tab="followers">ผู้ติดตาม</button> <!-- เพิ่มแท็บนี้ -->
                     <button class="tab-btn" data-tab="requests">คำขอ<span id="request-count-badge" class="badge hidden">0</span></button>
                 </div>
-                <div id="friends-tab-content" class="tab-content active"><ul id="friends-list" class="user-list"></ul></div>
+                <div id="following-tab-content" class="tab-content active"><ul id="following-list" class="user-list"></ul></div>
+                <div id="followers-tab-content" class="tab-content"><ul id="followers-list" class="user-list"></ul></div>
                 <div id="requests-tab-content" class="tab-content"><ul id="friend-requests-list" class="user-list"></ul></div>
             </div>
 
@@ -415,7 +430,8 @@
         </div>
     </div>
 
-        <!-- Rewards Page -->
+    
+    <!-- Rewards Page -->
         <div id="rewards-page" class="page">
             <h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1>
             <section class="card exp-total-card"><p>EXP สะสมทั้งหมด</p><div id="total-exp-display">0</div></section><section class="card"><h2>เหรียญตราสะสม (Badges)</h2><div id="badges-container" class="badges-grid"></div></section>
