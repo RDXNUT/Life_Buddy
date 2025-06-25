@@ -473,102 +473,96 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderProfilePage() {
-        const page = document.getElementById('profile-page');
-        // 1. ตรวจสอบเบื้องต้นว่าควรจะ render หรือไม่
-        if (!page || !page.classList.contains('active') || !currentUser) {
-            return;
-        }
+    const page = document.getElementById('profile-page');
+    // 1. ตรวจสอบเบื้องต้นว่าควรจะ render หรือไม่
+    if (!page || !page.classList.contains('active') || !currentUser) {
+        return;
+    }
     
-        // 2. สลับไปที่โหมดแสดงผล (View Mode) และซ่อนโหมดแก้ไข
-        document.getElementById('profile-view-mode').classList.remove('hidden');
-        document.getElementById('profile-edit-mode').classList.add('hidden');
+    // 2. ทำให้ View Mode แสดงผล และซ่อน Edit Mode (เป็นค่าเริ่มต้นเสมอเมื่อเข้าหน้านี้)
+    const viewMode = document.getElementById('profile-view-mode');
+    const editMode = document.getElementById('profile-edit-mode');
+    if (viewMode) viewMode.classList.remove('hidden');
+    if (editMode) editMode.classList.add('hidden');
 
-        // 3. === [ส่วนสำคัญ] การแสดงผล Banner ===
-        const bannerEl = document.querySelector('#profile-view-mode .profile-banner');
-        if (bannerEl) {
-            // ดึง ID ของ banner ที่ผู้ใช้กำลังติดตั้งอยู่
-            const bannerId = state.profile.currentBanner;
+    // 3. แสดงผล Banner ที่ผู้ใช้ติดตั้งอยู่
+    const bannerEl = viewMode.querySelector('.profile-banner');
+    if (bannerEl) {
+        const bannerId = state.profile.currentBanner;
+        const allShopItems = Object.values(state.shopItems || {}).flatMap(category => category);
+        const bannerData = allShopItems.find(item => item.id === bannerId);
 
-            // ค้นหาข้อมูลของ Banner จาก state.shopItems เพื่อให้ได้ path ของรูปภาพ
-            // (ใช้ .flatMap เผื่อในอนาคตมีไอเทมประเภทอื่นในร้านค้า)
-            const allShopItems = Object.values(state.shopItems || {}).flatMap(category => category);
-            const bannerData = allShopItems.find(item => item.id === bannerId);
-
-            if (bannerData && bannerData.image) {
-                // ถ้าพบข้อมูล Banner และมี Path ของรูปภาพ
-                bannerEl.style.backgroundImage = `url('${bannerData.image}')`;
-                bannerEl.style.backgroundSize = 'cover';
-                bannerEl.style.backgroundPosition = 'center';
-                bannerEl.style.backgroundColor = ''; // ไม่ใช้สีพื้นหลังเมื่อมีรูป
-            } else {
-                // กรณีไม่พบข้อมูล (เช่น เป็นค่าเริ่มต้น 'banner_default' หรือข้อมูลผิดพลาด)
-                // ให้กลับไปใช้สี Gradient แบบเดิม
-                bannerEl.style.backgroundImage = '';
-                bannerEl.style.background = 'linear-gradient(135deg, var(--primary-color), var(--accent-color))';
-            }
+        if (bannerData && bannerData.image) {
+            bannerEl.style.backgroundImage = `url('${bannerData.image}')`;
+            bannerEl.style.backgroundSize = 'cover';
+            bannerEl.style.backgroundPosition = 'center';
+            bannerEl.style.backgroundColor = '';
+        } else {
+            bannerEl.style.backgroundImage = '';
+            bannerEl.style.background = 'linear-gradient(135deg, var(--primary-color), var(--accent-color))';
         }
+    }
 
-        // 4. แสดงข้อมูลโปรไฟล์หลัก
-        const displayName = state.profile.displayName || currentUser.displayName || 'User';
-        renderProfilePicture(state.profile.photoURL, document.getElementById('profile-view-photo'));
+    // 4. แสดงข้อมูลโปรไฟล์หลักใน View Mode
+    const displayName = state.profile.displayName || currentUser.displayName || 'User';
+    renderProfilePicture(state.profile.photoURL, document.getElementById('profile-view-photo'));
     
-        document.getElementById('profile-view-name').textContent = displayName;
+    document.getElementById('profile-view-name').textContent = displayName;
     
-        const { level } = calculateLevel(state.exp);
-        const profileLevelEl = document.getElementById('profile-view-level');
-        if (profileLevelEl) {
-            profileLevelEl.textContent = `Level ${level}`;
-        }
+    const { level } = calculateLevel(state.exp);
+    const profileLevelEl = document.getElementById('profile-view-level');
+    if (profileLevelEl) {
+        profileLevelEl.textContent = `Level ${level}`;
+    }
     
-        document.getElementById('profile-view-lifebuddy-id').textContent = state.profile.lifebuddyId || '';
-        document.getElementById('profile-view-bio').textContent = state.profile.bio || 'ยังไม่มีคำอธิบายตัวตน...';
+    document.getElementById('profile-view-lifebuddy-id').textContent = state.profile.lifebuddyId || '';
+    document.getElementById('profile-view-bio').textContent = state.profile.bio || 'ยังไม่มีคำอธิบายตัวตน...';
 
-        // 5. แสดงข้อมูลวันเข้าร่วม
-        if (currentUser.metadata.creationTime) {
-            const joinDate = dayjs(currentUser.metadata.creationTime).format('D MMMM YYYY');
-            document.getElementById('profile-view-joindate').innerHTML = `<i data-feather="calendar"></i> เข้าร่วมเมื่อ ${joinDate}`;
-        }
+    // 5. แสดงข้อมูลวันเข้าร่วม
+    if (currentUser.metadata.creationTime) {
+        const joinDate = dayjs(currentUser.metadata.creationTime).format('D MMMM YYYY');
+        document.getElementById('profile-view-joindate').innerHTML = `<i data-feather="calendar"></i> เข้าร่วมเมื่อ ${joinDate}`;
+    }
 
-        // 6. แสดงสถิติการติดตาม (Follow Stats)
-        const followersCount = (state.followers || []).length;
-        const followingCount = (state.following || []).length;
-        document.getElementById('profile-stat-followers').textContent = followersCount;
-        document.getElementById('profile-stat-following').textContent = followingCount;
+    // 6. แสดงสถิติการติดตาม
+    const followersCount = (state.followers || []).length;
+    const followingCount = (state.following || []).length;
+    document.getElementById('profile-stat-followers').textContent = followersCount;
+    document.getElementById('profile-stat-following').textContent = followingCount;
 
-        // 7. แสดงสถิติการใช้งานแอป
-        document.getElementById('profile-stat-streak').textContent = state.streak || 0;
-        document.getElementById('profile-stat-total-exp').textContent = state.exp || 0;
-        document.getElementById('profile-stat-focus').textContent = state.focus?.totalSessions || 0;
-        document.getElementById('profile-stat-moods').textContent = Object.keys(state.moods || {}).length;
+    // 7. แสดงสถิติการใช้งานแอป
+    document.getElementById('profile-stat-streak').textContent = state.streak || 0;
+    document.getElementById('profile-stat-total-exp').textContent = state.exp || 0;
+    document.getElementById('profile-stat-focus').textContent = state.focus?.totalSessions || 0;
+    document.getElementById('profile-stat-moods').textContent = Object.keys(state.moods || {}).length;
 
-        // 8. แสดงความสำเร็จ (Achievements) ที่ปลดล็อกแล้ว (แสดงผลแบบย่อ)
-        const achievementsContainer = document.getElementById('profile-achievements-container');
-        if (achievementsContainer) {
-            const badgeData = [ 
-                { id: 'focus10', title: 'นักโฟกัสหน้าใหม่', icon: '🎯'}, 
-                { id: 'plan5', title: 'นักวางแผนตัวยง', icon: '📝'}, 
-                { id: 'mood7', title: 'จิตใจเบิกบาน', icon: '😊'}, 
-                { id: 'review20', title: 'ยอดนักทบทวน', icon: '🎓'} 
-            ];
-            // กรองเฉพาะ Badge ที่ผู้ใช้มีใน state.badges
-            const unlockedBadges = badgeData.filter(badge => state.badges && state.badges[badge.id]);
+    // 8. แสดงความสำเร็จ (Achievements) ที่ปลดล็อกแล้ว
+    const achievementsContainer = document.getElementById('profile-achievements-container');
+    if (achievementsContainer) {
+        const badgeData = [ 
+            { id: 'focus10', title: 'นักโฟกัสหน้าใหม่', icon: '🎯'}, 
+            { id: 'plan5', title: 'นักวางแผนตัวยง', icon: '📝'}, 
+            { id: 'mood7', title: 'จิตใจเบิกบาน', icon: '😊'}, 
+            { id: 'review20', title: 'ยอดนักทบทวน', icon: '🎓'} 
+        ];
+        const unlockedBadges = badgeData.filter(badge => state.badges && state.badges[badge.id]);
         
-            if (unlockedBadges.length > 0) {
-                // แสดง Badge ที่ปลดล็อกแล้ว
-                achievementsContainer.innerHTML = unlockedBadges.map(badge => 
-                    `<div class="stat-item">
-                        <span class="stat-icon">${badge.icon}</span>
-                        <span class="stat-value" style="font-size: 1rem; color: var(--text-color); margin: 4px 0;">${badge.title}</span>
-                        <span class="stat-label">ปลดล็อกแล้ว</span>
-                    </div>`
-                ).join('');
-            } else {
-                // ข้อความกรณียังไม่มี Badge
-                achievementsContainer.innerHTML = '<p class="subtle-text">ยังไม่มีความสำเร็จ... มาเริ่มสะสมกันเลย!</p>';
-            }
+        if (unlockedBadges.length > 0) {
+            achievementsContainer.innerHTML = unlockedBadges.map(badge => 
+                `<div class="stat-item">
+                    <span class="stat-icon">${badge.icon}</span>
+                    <span class="stat-value" style="font-size: 1rem; color: var(--text-color); margin: 4px 0;">${badge.title}</span>
+                    <span class="stat-label">ปลดล็อกแล้ว</span>
+                 </div>`
+            ).join('');
+        } else {
+            achievementsContainer.innerHTML = '<p class="subtle-text">ยังไม่มีความสำเร็จ... มาเริ่มสะสมกันเลย!</p>';
         }
-
-        // 9. เตรียมข้อมูลสำหรับหน้าแก้ไขโปรไฟล์ (Edit Mode)
+    }
+    
+    // 9. เตรียมข้อมูลสำหรับหน้าแก้ไขโปรไฟล์ (Edit Mode) ให้พร้อมเสมอ
+    // โดยการดึงข้อมูลล่าสุดจาก state มาใส่ในฟอร์มที่ซ่อนอยู่
+    if (editMode) {
         renderProfilePicture(state.profile.photoURL, document.getElementById('profile-edit-photo'));
         document.getElementById('profile-edit-name').textContent = displayName;
         document.getElementById('profile-edit-email').textContent = currentUser.email;
@@ -577,10 +571,83 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('age').value = state.profile?.age || '';
         document.getElementById('bio').value = state.profile?.bio || '';
         document.getElementById('show-email-toggle').checked = state.settings?.showEmail ?? true;
-    
-        // 10. สั่งให้ Feather Icons ทำงานใหม่เพื่อแสดงผลไอคอนที่อาจถูกสร้างขึ้นมา
-        feather.replace();
     }
+
+    // 10. สั่งให้ Feather Icons ทำงานใหม่เพื่อแสดงผลไอคอนที่อาจถูกสร้างขึ้นมา
+    feather.replace();
+}
+
+    //เปิดหน้าต่าง Modal สำหรับเลือก Banner
+    function openBannerSelector() {
+        renderBannerSelector(); // สร้างรายการแบนเนอร์ก่อน
+        document.getElementById('banner-selector-modal').classList.remove('hidden');
+    }
+
+    //สร้างและแสดงผลรายการ Banner ที่ผู้ใช้เป็นเจ้าของใน Modal
+    function renderBannerSelector() {
+        const container = document.getElementById('banner-selector-body');
+        if (!container) return;
+
+        const ownedBannerIds = state.unlocks?.banners || [];
+        const allBanners = state.shopItems?.banners || [];
+        const currentBannerId = state.profile?.currentBanner;
+
+        // 1. สร้างรายการ Banner ที่ผู้ใช้เป็นเจ้าของทั้งหมด
+        const ownedBanners = allBanners.filter(banner => ownedBannerIds.includes(banner.id));
+
+        // 2. เพิ่ม Banner เริ่มต้น (Default) เข้าไปในรายการเสมอ
+        const defaultBanner = {
+            id: 'banner_default',
+            name: 'แบนเนอร์เริ่มต้น',
+            image: null // ไม่มีรูปภาพ, จะใช้ CSS gradient แทน
+        };
+        // ใส่ default banner ไว้ข้างหน้าสุด
+        const displayList = [defaultBanner, ...ownedBanners];
+
+        // 3. สร้าง HTML สำหรับแต่ละรายการ
+        container.innerHTML = displayList.map(banner => {
+            const isSelected = banner.id === currentBannerId;
+            const backgroundStyle = banner.image ? `style="background-image: url('${banner.image}')"` : '';
+            const isGradient = !banner.image ? 'data-gradient="true"' : '';
+
+            return `
+                <div class="banner-option-card ${isSelected ? 'selected' : ''}" onclick="handleSelectBanner('${banner.id}')">
+                    <div class="banner-option-preview" ${backgroundStyle} ${isGradient}></div>
+                    <div class="banner-option-info">
+                        ${banner.name}
+                    </div>
+                    <div class="selected-tick">
+                        <i data-feather="check"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        feather.replace(); // สั่งให้ icon ทำงาน
+    }
+
+    /**
+    * //จัดการเมื่อผู้ใช้เลือก Banner ใหม่
+     * @param {string} bannerId - ID ของ Banner ที่ถูกเลือก
+    */
+    window.handleSelectBanner = (bannerId) => {
+        if (!currentUser) return;
+
+        // 1. อัปเดต state
+        state.profile.currentBanner = bannerId;
+
+        // 2. บันทึกข้อมูลลง Firestore
+        saveState();
+
+        // 3. ปิด Modal
+        document.getElementById('banner-selector-modal').classList.add('hidden');
+
+        // 4. อัปเดตหน้าโปรไฟล์ทันทีเพื่อแสดงผลการเปลี่ยนแปลง
+        renderProfilePage();
+
+        // 5. แจ้งเตือนผู้ใช้
+        showToast('เปลี่ยนแบนเนอร์สำเร็จแล้ว!');
+    };
 
     // =========================================
     // ===== 6. FEATURE-SPECIFIC FUNCTIONS =====
@@ -2017,10 +2084,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'settings-timer-btn': 
                     document.getElementById('timer-settings').classList.toggle('hidden'); 
                     break;
-                case 'go-to-edit-profile-btn': 
-                    document.getElementById('profile-view-mode').classList.add('hidden'); 
-                    document.getElementById('profile-edit-mode').classList.remove('hidden'); 
+                case 'go-to-edit-profile-btn': // ปุ่มดินสอในหน้าโปรไฟล์
+                    openBannerSelector(); // เรียกฟังก์ชันเปิดหน้าต่างเลือกแบนเนอร์
                     break;
+                case 'change-banner-btn': // ปุ่มรูปภาพบนแบนเนอร์
+                    openBannerSelector();
+                    break;             
+                case 'main-edit-profile-btn': // ปุ่ม "แก้ไขข้อมูลโปรไฟล์"
+                    document.getElementById('profile-view-mode').classList.add('hidden');
+                    document.getElementById('profile-edit-mode').classList.remove('hidden');
+                    break;                
                 case 'cancel-edit-profile-btn': 
                     document.getElementById('profile-edit-mode').classList.add('hidden'); 
                     document.getElementById('profile-view-mode').classList.remove('hidden'); 

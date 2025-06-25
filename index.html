@@ -487,91 +487,120 @@
     
 </div>
         
-        <!-- Profile Page -->
-        <div id="profile-page" class="page">
-            <!-- ===== VIEW MODE (หน้าแสดงผลโปรไฟล์) ===== -->
-            <div id="profile-view-mode">
-                <div class="profile-header-card">
-                    <div class="profile-banner">
-                        <img id="profile-view-photo" src="" alt="Profile Photo" class="avatar-display">
-                        <button id="go-to-edit-profile-btn" class="edit-profile-fab" title="แก้ไขโปรไฟล์">
-                            <i data-feather="edit-2"></i>
-                        </button>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="profile-view-name">ชื่อผู้ใช้</h2>
-                        <span class="level-badge" id="profile-view-level">Level 1</span>
-                        <div id="lifebuddy-id-container" class="id-container"></div>
-                        <p id="profile-view-lifebuddy-id" class="subtle-text"><em>lifebuddy_id#0000</em></p>
-                         <button id="copy-id-btn" class="icon-button" title="คัดลอก ID">
-                            <i data-feather="copy"></i>
-                        </button>
-                        
-                        <p id="profile-view-bio" class="bio-text">คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ...</p>
+    <!-- Profile Page -->
+    <div id="profile-page" class="page">
 
-                        <div class="profile-follow-stats">
-                         <div class="follow-stat-item">
-                            <span class="follow-stat-value" id="profile-stat-followers">0</span>
-                            <span class="follow-stat-label">ผู้ติดตาม</span>
-                        </div>
-                        <div class="follow-stat-item">
-                            <span class="follow-stat-value" id="profile-stat-following">0</span>
-                            <span class="follow-stat-label">กำลังติดตาม</span>
-                        </div>
-                    </div>
-
-                        <p id="profile-view-joindate" class="subtle-text join-date"><i data-feather="calendar"></i> เข้าร่วมเมื่อ...</p>
-                    </div>
-                </div>
-                <section class="card stats-grid">
-                    <h2><i data-feather="bar-chart-2"></i> สถิติของฉัน</h2>
-                    <div class="stats-container">
-                        <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value" id="profile-stat-streak">0</span><span class="stat-label">วันต่อเนื่อง</span></div>
-                        <div class="stat-item"><span class="stat-icon">⚡️</span><span class="stat-value" id="profile-stat-total-exp">0</span><span class="stat-label">XP ทั้งหมด</span></div>
-                        <div class="stat-item"><span class="stat-icon">🎯</span><span class="stat-value" id="profile-stat-focus">0</span><span class="stat-label">รอบการโฟกัส</span></div>
-                        <div class="stat-item"><span class="stat-icon">😊</span><span class="stat-value" id="profile-stat-moods">0</span><span class="stat-label">ครั้งที่บันทึกอารมณ์</span></div>
-                    
-                    </div>
-                </section>
-                <section class="card">
-                    <div class="card-header-actions">
-                        <h2><i data-feather="award"></i> ความสำเร็จ</h2>
-                        <a href="#" class="view-all-link" onclick="showPage('rewards')">ดูทั้งหมด <i data-feather="chevron-right"></i></a>
-                    </div>
-                    <div id="profile-achievements-container" class="achievements-grid"></div>
-                </section>
+    <!-- ===== VIEW MODE (หน้าแสดงผลโปรไฟล์) ===== -->
+    <div id="profile-view-mode">
+        <div class="profile-header-card">
+            <!-- ส่วน Banner -->
+            <div class="profile-banner">
+                <!-- [ปุ่มที่ 1] ปุ่มเปลี่ยนแบนเนอร์ จะอยู่ที่นี่ -->
+                <button id="change-banner-btn" class="edit-profile-fab" title="เปลี่ยนแบนเนอร์">
+                    <i data-feather="image"></i>
+                </button>
             </div>
+            
+            <!-- รูปโปรไฟล์ -->
+            <img id="profile-view-photo" src="" alt="Profile Photo" class="avatar-display">
+            
+    
+    <!-- ส่วนข้อมูลใต้ Banner -->
+            <div class="profile-info">
+                <!-- ชื่อและ Level -->
+                <h2 id="profile-view-name">ชื่อผู้ใช้</h2>
+                <span class="level-badge" id="profile-view-level">Level 1</span>
+                
+                <!-- LifeBuddy ID และปุ่มคัดลอก -->
+                <div id="lifebuddy-id-container" class="id-container">
+                    <p id="profile-view-lifebuddy-id" class="subtle-text"><em>lifebuddy_id#0000</em></p>
+                    <button id="copy-id-btn" class="icon-button" title="คัดลอก ID">
+                        <i data-feather="copy"></i>
+                    </button>
+                </div>
 
-            <!-- ===== EDIT MODE (หน้าแก้ไขโปรไฟล์) ===== -->
-            <div id="profile-edit-mode" class="hidden">
-                <h1><i data-feather="user"></i> แก้ไขโปรไฟล์</h1>
-                <div class="profile-container">
-                    <div class="card profile-card">
-                        <div class="profile-picture-wrapper">
-                            <img id="profile-edit-photo" src="" alt="Profile Photo" class="avatar-display">
-                            <button id="edit-profile-picture-btn" class="photo-upload-label" title="เปลี่ยนรูปโปรไฟล์"><i data-feather="edit-2"></i></button>
-                        </div>
-                        <h2 id="profile-edit-name"></h2>
-                        <p id="profile-edit-email" class="subtle-text"></p>
+                <!-- Bio -->
+                <p id="profile-view-bio" class="bio-text">คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ...</p>
+
+                <!-- สถิติผู้ติดตาม / กำลังติดตาม -->
+                <div class="profile-follow-stats">
+                    <div class="follow-stat-item">
+                        <span class="follow-stat-value" id="profile-stat-followers">0</span>
+                        <span class="follow-stat-label">ผู้ติดตาม</span>
                     </div>
-                    <div class="card profile-details-card">
-                        <h2>แก้ไขข้อมูลส่วนตัว</h2>
-                        <form id="profile-form">
-                            <div class="form-group"><label for="display-name">ชื่อเล่น (Display Name)</label><input type="text" id="display-name" placeholder="ชื่อที่คุณต้องการให้แสดง"></div>
-                            <div class="form-group"><label for="gender">เพศ</label><select id="gender"><option value="unspecified">ไม่ระบุ</option><option value="male">ชาย</option><option value="female">หญิง</option></select></div>
-                            <div class="form-group"><label for="age">อายุ</label><input type="number" id="age" placeholder="กรอกอายุของคุณ" min="1"></div>
-                            <div class="form-group"><label for="bio">เกี่ยวกับฉัน (Bio)</label><textarea id="bio" placeholder="คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ..." maxlength="150"></textarea></div>
-                            <div class="form-group privacy-setting">
-                                <label for="show-email-toggle">แสดงอีเมลในโปรไฟล์สาธารณะ</label>
-                                <div class="toggle-switch-container"><input type="checkbox" id="show-email-toggle" class="toggle-switch"><label for="show-email-toggle" class="toggle-label"></label></div>
-                            </div>
-                            <button type="submit" id="save-profile-btn"><span class="btn-text">บันทึกการเปลี่ยนแปลง</span><span class="btn-loader hidden"></span></button>
-                            <button type="button" id="cancel-edit-profile-btn" class="btn-secondary">ยกเลิก</button>
-                        </form>
+                    <div class="follow-stat-item">
+                        <span class="follow-stat-value" id="profile-stat-following">0</span>
+                        <span class="follow-stat-label">กำลังติดตาม</span>
                     </div>
                 </div>
+
+            <!-- [ปุ่มที่ 2] ปุ่มแก้ไขข้อมูลโปรไฟล์ จะอยู่ที่นี่ -->
+                <button id="main-edit-profile-btn" class="small-btn" style="margin-top: 15px; width: auto; padding: 8px 25px;">
+                    <i data-feather="edit-2"></i> แก้ไขข้อมูลโปรไฟล์
+                </button>   
+
+                <!-- วันที่เข้าร่วม -->
+                <p id="profile-view-joindate" class="subtle-text join-date" style="margin-top: 20px;">
+                    <i data-feather="calendar"></i> เข้าร่วมเมื่อ...
+                </p>
+            </div>
         </div>
-    </main>
+
+        <!-- การ์ดแสดงสถิติการใช้งาน -->
+        <section class="card stats-grid">
+            <h2><i data-feather="bar-chart-2"></i> สถิติของฉัน</h2>
+            <div class="stats-container">
+                <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value" id="profile-stat-streak">0</span><span class="stat-label">วันต่อเนื่อง</span></div>
+                <div class="stat-item"><span class="stat-icon">⚡️</span><span class="stat-value" id="profile-stat-total-exp">0</span><span class="stat-label">XP ทั้งหมด</span></div>
+                <div class="stat-item"><span class="stat-icon">🎯</span><span class="stat-value" id="profile-stat-focus">0</span><span class="stat-label">รอบการโฟกัส</span></div>
+                <div class="stat-item"><span class="stat-icon">😊</span><span class="stat-value" id="profile-stat-moods">0</span><span class="stat-label">ครั้งที่บันทึกอารมณ์</span></div>
+            </div>
+        </section>
+
+        <!-- การ์ดแสดงความสำเร็จ (Achievements) -->
+        <section class="card">
+            <div class="card-header-actions">
+                <h2><i data-feather="award"></i> ความสำเร็จ</h2>
+                <a href="#" class="view-all-link" onclick="showPage('rewards')">ดูทั้งหมด <i data-feather="chevron-right"></i></a>
+            </div>
+            <div id="profile-achievements-container" class="achievements-grid">
+                <!-- Achievements จะถูก render โดย JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== EDIT MODE (หน้าแก้ไขโปรไฟล์) ===== -->
+    <div id="profile-edit-mode" class="hidden">
+        <h1><i data-feather="user-check"></i> แก้ไขข้อมูลโปรไฟล์</h1>
+        <div class="profile-container">
+            <!-- การ์ดด้านซ้ายสำหรับรูปและชื่อ -->
+            <div class="card profile-card">
+                <div class="profile-picture-wrapper">
+                    <img id="profile-edit-photo" src="" alt="Profile Photo" class="avatar-display">
+                    <button id="edit-profile-picture-btn" class="photo-upload-label" title="เปลี่ยนรูปโปรไฟล์"><i data-feather="camera"></i></button>
+                </div>
+                <h2 id="profile-edit-name"></h2>
+                <p id="profile-edit-email" class="subtle-text"></p>
+            </div>
+            <!-- การ์ดด้านขวาสำหรับฟอร์มแก้ไข -->
+            <div class="card profile-details-card">
+                <h2>แก้ไขข้อมูลส่วนตัว</h2>
+                <form id="profile-form">
+                    <div class="form-group"><label for="display-name">ชื่อที่แสดง (Display Name)</label><input type="text" id="display-name" placeholder="ชื่อที่คุณต้องการให้แสดง"></div>
+                    <div class="form-group"><label for="gender">เพศ</label><select id="gender"><option value="unspecified">ไม่ระบุ</option><option value="male">ชาย</option><option value="female">หญิง</option></select></div>
+                    <div class="form-group"><label for="age">อายุ</label><input type="number" id="age" placeholder="กรอกอายุของคุณ" min="1"></div>
+                    <div class="form-group"><label for="bio">เกี่ยวกับฉัน (Bio)</label><textarea id="bio" placeholder="คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ..." maxlength="150"></textarea></div>
+                    <div class="form-group privacy-setting">
+                        <label for="show-email-toggle">แสดงอีเมลในโปรไฟล์สาธารณะ</label>
+                        <div class="toggle-switch-container"><input type="checkbox" id="show-email-toggle" class="toggle-switch"><label for="show-email-toggle" class="toggle-label"></label></div>
+                    </div>
+                    <button type="submit" id="save-profile-btn"><span class="btn-text">บันทึกการเปลี่ยนแปลง</span><span class="btn-loader hidden"></span></button>
+                    <button type="button" id="cancel-edit-profile-btn" class="btn-secondary">ยกเลิก</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
     
     <!-- Modals -->
     <div id="auth-modal" class="modal-overlay hidden">
@@ -628,6 +657,19 @@
             </div>
             <div class="profile-selector-body">
                 <!-- Profile pictures will be rendered here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Selector Modal -->
+    <div id="banner-selector-modal" class="modal-overlay hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>เลือกแบนเนอร์โปรไฟล์ของคุณ</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="banner-selector-body" class="banner-selector-body">
+                <!-- รายการแบนเนอร์ที่ผู้ใช้เป็นเจ้าของจะถูกสร้างโดย JS ที่นี่ -->
             </div>
         </div>
     </div>

@@ -518,42 +518,87 @@ button:active { transform: scale(0.98); }
 .toggle-switch:checked + .toggle-label::after { 
     transform: translateX(21px); }
 
+/* ======================================= */
+/* ====== Profile Header Card Styles ===== */
+/* ======================================= */
+
+/* 1. การ์ดหลักที่เป็นกรอบทั้งหมด */
 .profile-header-card { 
     background-color: var(--card-bg-color); 
-    border-radius: 16px; box-shadow: var(--shadow); 
-    margin-bottom: 20px; overflow: hidden; }
+    border-radius: 16px; 
+    box-shadow: var(--shadow); 
+    margin-bottom: 20px; 
+    position: relative;     /* [สำคัญ] ทำให้เป็นกรอบอ้างอิงสำหรับ element ลูก */
+    overflow: visible;      /* [สำคัญ] อนุญาตให้รูปโปรไฟล์ล้นออกมาได้ */
+}
 
+/* 2. ส่วนแบนเนอร์ด้านบน */
 .profile-banner { 
     height: 180px; 
     background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); 
-    position: relative; 
-    display: flex; justify-content: center; }
-    
-#profile-view-photo { 
-    width: 150px; 
-    height: 150px; 
-    position: absolute; 
-    bottom: -75px; }
+    position: relative; /* จำเป็นสำหรับปุ่มแก้ไขที่อยู่ข้างใน */
+    border-radius: 16px 16px 0 0; /* ทำให้มุมบนของการ์ดโค้งมน */
+}
 
-.edit-profile-fab { 
+/* 3. ปุ่มแก้ไข/เปลี่ยนแบนเนอร์ (ปุ่มลอยบนแบนเนอร์) */
+.profile-banner .edit-profile-fab { /* ทำให้เฉพาะปุ่มใน banner เท่านั้นที่ใช้สไตล์นี้ */
     position: absolute; 
-    top: 15px; right: 15px; 
+    top: 15px; 
+    right: 15px; 
     background-color: rgba(255, 255, 255, 0.2); 
     backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.3); 
-    color: white; width: 44px; height: 44px; 
+    color: white; 
+    width: 44px; 
+    height: 44px; 
     border-radius: 50%; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;       /* [ปรับปรุง] ใช้ flexbox เพื่อจัดไอคอนให้อยู่กลาง */
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 3; /* ทำให้ปุ่มอยู่เหนือทุกอย่างใน banner */
+}
+.profile-banner .edit-profile-fab:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
 
+
+/* 4. รูปโปรไฟล์ (Avatar) ที่ลอยอยู่ตรงกลาง */
+/* [ถูกต้อง] โค้ดส่วนนี้ของคุณถูกต้องแล้วครับ */
+#profile-view-photo.avatar-display { 
+    width: 150px; 
+    height: 150px; 
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid var(--card-bg-color);
+    background-color: var(--border-color); /* สีพื้นหลังเผื่อรูปไม่โหลด */
+
+    /* --- Positioning Magic --- */
+    position: absolute;
+    top: 180px;  /* ให้ขอบบนของรูปอยู่ที่เดียวกับขอบล่างของแบนเนอร์ (180px คือความสูงของ banner) */
+    left: 50%;
+    transform: translate(-50%, -50%); /* จัดกลางแนวนอนและแนวตั้ง */
+    z-index: 2;  /* ทำให้รูปอยู่เหนือพื้นหลัง แต่ใต้ปุ่ม */
+}
+
+/* 5. ส่วนข้อมูลทั้งหมดที่อยู่ใต้แบนเนอร์ */
+/* [สำคัญ] รวม .profile-info ที่ซ้ำซ้อนกัน และปรับปรุง padding */
 .profile-info { 
-    padding: 90px 25px 25px; 
-    text-align: center; }
+    text-align: center; 
+    padding: 90px 25px 25px; /*เว้นที่ด้านบน 90px สำหรับรูปโปรไฟล์ที่ลอยอยู่*/
+}
 
 .profile-info h2 { 
     border-bottom: none; 
     padding-bottom: 0; 
     margin-bottom: 5px; 
-    justify-content: center; }
+    justify-content: center; /* สำหรับจัดไอคอนกับข้อความ (ถ้ามี) */
+}
+
+/* ไม่จำเป็นต้องเขียนสไตล์ของ #profile-view-lifebuddy-id ที่นี่อีก
+   เพราะมันถูกกำหนดไว้ในที่อื่นของ CSS ของคุณแล้ว */
 
 #profile-view-lifebuddy-id { 
     font-size: 1rem; 
@@ -1730,4 +1775,75 @@ label.reason-option:has(input:checked) .reason-icon-group {
     padding: 15px 20px;
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
+}
+
+/* ======================================= */
+/* ====== Banner Selector Modal CSS ====== */
+/* ======================================= */
+
+.banner-selector-body {
+    padding: 25px;
+    display: grid;
+    /* แสดง 2-3 รายการต่อแถว ขึ้นอยู่กับขนาดจอ */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.banner-option-card {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    background-color: var(--bg-color);
+}
+
+.banner-option-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow);
+}
+
+.banner-option-card.selected {
+    border-color: var(--success-color);
+    box-shadow: 0 0 15px var(--success-color);
+}
+
+.banner-option-preview {
+    width: 100%;
+    height: 140px;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--border-color); /* สีพื้นหลังสำหรับ banner ที่ไม่มีรูป */
+}
+
+/* ทำให้ banner ที่เป็นสี gradient แสดงผลได้ */
+.banner-option-preview[data-gradient="true"] {
+    background-image: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+}
+
+.banner-option-info {
+    padding: 15px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.banner-option-card .selected-tick {
+    display: none; /* ซ่อนติ๊กถูกไว้ก่อน */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--success-color);
+    color: white;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+}
+.banner-option-card.selected .selected-tick {
+    display: flex; /* แสดงติ๊กถูกเมื่อถูกเลือก */
 }
