@@ -404,32 +404,49 @@
     </div>
 </div>
 
-        <!-- Community Page -->
+        <!-- Community Page (REPLACED with Instagram-like UI) -->
     <div id="community-page" class="page">
-        <h1><i data-feather="users"></i> เพื่อนและแชท</h1>
-        <div class="community-container">
-            <div id="friend-list-panel" class="card">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="following">กำลังติดตาม</button> <!-- เปลี่ยน data-tab -->
-                    <button class="tab-btn" data-tab="followers">ผู้ติดตาม</button> <!-- เพิ่มแท็บนี้ -->
-                    <button class="tab-btn" data-tab="requests">คำขอ<span id="request-count-badge" class="badge hidden">0</span></button>
+        <h1><i data-feather="message-circle"></i> แชท</h1>
+        <div class="community-container-new">
+            <!-- === [ส่วนที่ 1: แผงด้านซ้าย - รายการแชท] === -->
+            <div id="chat-list-panel" class="card">
+                <div class="chat-list-header">
+                    <h3>แชททั้งหมด</h3>
+                    <!-- ปุ่มค้นหาเพื่อนจะอยู่ที่นี่ -->
+                    <button id="search-friends-btn-from-chat" class="icon-button" title="ค้นหาเพื่อนใหม่">
+                        <i data-feather="user-plus"></i>
+                    </button>
                 </div>
-                <div id="following-tab-content" class="tab-content active"><ul id="following-list" class="user-list"></ul></div>
-                <div id="followers-tab-content" class="tab-content"><ul id="followers-list" class="user-list"></ul></div>
-                <div id="requests-tab-content" class="tab-content"><ul id="friend-requests-list" class="user-list"></ul></div>
+                <ul id="chat-list" class="chat-list">
+                </ul>
             </div>
 
+            <!-- === [ส่วนที่ 2: แผงด้านขวา - หน้าต่างสนทนา] === -->
             <div id="chat-panel" class="card">
-                <div id="chat-welcome-view"><i data-feather="message-circle"></i><p>เลือกเพื่อนเพื่อเริ่มการสนทนา</p></div>
-                <div id="chat-conversation-view" class="hidden">
-                    <div class="chat-header"><img id="chat-partner-photo" src="" alt="Friend's Photo" class="profile-pic"><h3 id="chat-partner-name"></h3></div>
+                <!-- มุมมองเริ่มต้น เมื่อยังไม่ได้เลือกแชท -->
+                <div id="chat-welcome-view" class="chat-view active">
+                    <i data-feather="send"></i>
+                    <h2>ข้อความของคุณ</h2>
+                    <p>เลือกเพื่อนเพื่อเริ่มการสนทนา</p>
+                </div>
+                <!-- มุมมองการสนทนา (เหมือนเดิม แต่จะถูกควบคุมโดย JS) -->
+                <div id="chat-conversation-view" class="chat-view hidden">
+                    <div class="chat-header">
+                        <img id="chat-partner-photo" src="" alt="Friend's Photo" class="profile-pic">
+                        <div class="chat-header-info">
+                            <h3 id="chat-partner-name"></h3>
+                            <p id="chat-partner-level" class="subtle-text"></p>
+                        </div>
+                    </div>
                     <div id="chat-messages" class="chat-messages-container"></div>
-                    <form id="chat-form" class="chat-input-area"><input type="text" id="chat-input" placeholder="พิมพ์ข้อความ..." autocomplete="off" required><button type="submit" aria-label="ส่งข้อความ"><i data-feather="send"></i></button></form>
+                    <form id="chat-form" class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="พิมพ์ข้อความ..." autocomplete="off" required>
+                        <button type="submit" aria-label="ส่งข้อความ"><i data-feather="send"></i></button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-
     
     <!-- Rewards Page -->
         <div id="rewards-page" class="page">

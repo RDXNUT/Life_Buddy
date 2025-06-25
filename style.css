@@ -1564,3 +1564,170 @@ label.reason-option:has(input:checked) .reason-icon-group {
     font-weight: 500;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+/* ======================================= */
+/* === Community Page (Instagram Style) === */
+/* ======================================= */
+
+/* โครงสร้างหลักแบบใหม่ */
+.community-container-new {
+    display: grid;
+    grid-template-columns: 350px 1fr; /* คอลัมน์ซ้ายสำหรับรายการแชท, ขวาสำหรับหน้าต่างแชท */
+    gap: 0; /* ไม่มีช่องว่างระหว่าง card */
+    height: calc(100vh - 120px); /* ความสูงเต็มจอ ลบ header และ padding */
+    max-height: 800px; /* กำหนดความสูงสูงสุด */
+}
+
+@media (max-width: 900px) {
+    .community-container-new {
+        grid-template-columns: 1fr; /* จอเล็กให้แสดงผลเต็มจอเดียว */
+    }
+    /* ซ่อนหน้าต่างแชทเมื่ออยู่จอเล็กและยังไม่ได้เลือก */
+    #chat-list-panel.has-active-chat ~ #chat-panel {
+        display: flex;
+    }
+    #chat-list-panel {
+        display: flex;
+        flex-direction: column;
+    }
+    #chat-list-panel.has-active-chat {
+        display: none; /* ซ่อนรายการแชทเมื่อกำลังแชทอยู่ */
+    }
+}
+
+
+/* แผงรายการแชทด้านซ้าย */
+#chat-list-panel {
+    border-radius: 16px 0 0 16px;
+    border-right: 1px solid var(--border-color);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.chat-list-header h3 {
+    margin: 0;
+}
+
+/* รายการแชท (UL) */
+.chat-list {
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* แต่ละรายการในแชท (LI) */
+.chat-list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-left: 4px solid transparent;
+}
+.chat-list-item:hover {
+    background-color: var(--bg-color);
+}
+.chat-list-item.active {
+    background-color: var(--bg-color);
+    border-left-color: var(--primary-color);
+}
+
+.chat-list-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.chat-list-info {
+    overflow: hidden;
+    flex-grow: 1;
+}
+
+.chat-list-name {
+    font-weight: 500;
+    display: block;
+    color: var(--text-color);
+}
+
+.chat-list-last-message {
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* แสดง ... เมื่อข้อความยาวเกิน */
+    margin: 0;
+}
+
+/* แผงหน้าต่างสนทนาด้านขวา */
+#chat-panel {
+    border-radius: 0 16px 16px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.chat-view.hidden { display: none; }
+
+#chat-welcome-view {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: var(--subtle-text-color);
+}
+#chat-welcome-view .feather {
+    width: 60px;
+    height: 60px;
+    stroke-width: 1.5;
+    margin-bottom: 20px;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.chat-header .profile-pic {
+    width: 45px;
+    height: 45px;
+    margin-right: 15px;
+}
+.chat-header-info h3, .chat-header-info p {
+    margin: 0;
+    line-height: 1.3;
+}
+.chat-header-info h3 {
+    font-size: 1.1rem;
+}
+.chat-messages-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+.chat-input-area {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}

@@ -266,7 +266,11 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'mood': 
                 renderMoodCalendar(currentMoodDate); 
                 break;
-            case 'community':
+            case 'community': 
+                // เมื่อเปิดหน้า community ให้ render Chat List
+                document.getElementById('chat-conversation-view').classList.add('hidden');
+                document.getElementById('chat-welcome-view').classList.remove('hidden');
+                renderChatList(); 
                 break;
             case 'shop': 
                 renderShop(); 
@@ -470,66 +474,101 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function renderProfilePage() {
         const page = document.getElementById('profile-page');
-        if (!page || !page.classList.contains('active') || !currentUser) return;
-        
+        // 1. ตรวจสอบเบื้องต้นว่าควรจะ render หรือไม่
+        if (!page || !page.classList.contains('active') || !currentUser) {
+            return;
+        }
+    
+        // 2. สลับไปที่โหมดแสดงผล (View Mode) และซ่อนโหมดแก้ไข
         document.getElementById('profile-view-mode').classList.remove('hidden');
         document.getElementById('profile-edit-mode').classList.add('hidden');
 
-        const displayName = state.profile.displayName || currentUser.displayName || 'User';
-
-        const bannerEl = document.querySelector('.profile-banner');
+        // 3. === [ส่วนสำคัญ] การแสดงผล Banner ===
+        const bannerEl = document.querySelector('#profile-view-mode .profile-banner');
         if (bannerEl) {
-            const bannerId = state.profile.currentBanner || 'banner_default';
-            if (bannerId === 'banner_default') {
-                bannerEl.style.backgroundImage = '';
-            } else {
-                bannerEl.style.backgroundImage = `url('assets/banner/${bannerId}')`; 
+            // ดึง ID ของ banner ที่ผู้ใช้กำลังติดตั้งอยู่
+            const bannerId = state.profile.currentBanner;
+
+            // ค้นหาข้อมูลของ Banner จาก state.shopItems เพื่อให้ได้ path ของรูปภาพ
+            // (ใช้ .flatMap เผื่อในอนาคตมีไอเทมประเภทอื่นในร้านค้า)
+            const allShopItems = Object.values(state.shopItems || {}).flatMap(category => category);
+            const bannerData = allShopItems.find(item => item.id === bannerId);
+
+            if (bannerData && bannerData.image) {
+                // ถ้าพบข้อมูล Banner และมี Path ของรูปภาพ
+                bannerEl.style.backgroundImage = `url('${bannerData.image}')`;
                 bannerEl.style.backgroundSize = 'cover';
                 bannerEl.style.backgroundPosition = 'center';
+                bannerEl.style.backgroundColor = ''; // ไม่ใช้สีพื้นหลังเมื่อมีรูป
+            } else {
+                // กรณีไม่พบข้อมูล (เช่น เป็นค่าเริ่มต้น 'banner_default' หรือข้อมูลผิดพลาด)
+                // ให้กลับไปใช้สี Gradient แบบเดิม
+                bannerEl.style.backgroundImage = '';
+                bannerEl.style.background = 'linear-gradient(135deg, var(--primary-color), var(--accent-color))';
             }
         }
 
+        // 4. แสดงข้อมูลโปรไฟล์หลัก
+        const displayName = state.profile.displayName || currentUser.displayName || 'User';
         renderProfilePicture(state.profile.photoURL, document.getElementById('profile-view-photo'));
-        
+    
         document.getElementById('profile-view-name').textContent = displayName;
+    
         const { level } = calculateLevel(state.exp);
         const profileLevelEl = document.getElementById('profile-view-level');
         if (profileLevelEl) {
             profileLevelEl.textContent = `Level ${level}`;
         }
+    
         document.getElementById('profile-view-lifebuddy-id').textContent = state.profile.lifebuddyId || '';
         document.getElementById('profile-view-bio').textContent = state.profile.bio || 'ยังไม่มีคำอธิบายตัวตน...';
 
+        // 5. แสดงข้อมูลวันเข้าร่วม
         if (currentUser.metadata.creationTime) {
             const joinDate = dayjs(currentUser.metadata.creationTime).format('D MMMM YYYY');
             document.getElementById('profile-view-joindate').innerHTML = `<i data-feather="calendar"></i> เข้าร่วมเมื่อ ${joinDate}`;
         }
 
+        // 6. แสดงสถิติการติดตาม (Follow Stats)
         const followersCount = (state.followers || []).length;
         const followingCount = (state.following || []).length;
         document.getElementById('profile-stat-followers').textContent = followersCount;
         document.getElementById('profile-stat-following').textContent = followingCount;
+
+        // 7. แสดงสถิติการใช้งานแอป
         document.getElementById('profile-stat-streak').textContent = state.streak || 0;
         document.getElementById('profile-stat-total-exp').textContent = state.exp || 0;
         document.getElementById('profile-stat-focus').textContent = state.focus?.totalSessions || 0;
         document.getElementById('profile-stat-moods').textContent = Object.keys(state.moods || {}).length;
 
+        // 8. แสดงความสำเร็จ (Achievements) ที่ปลดล็อกแล้ว (แสดงผลแบบย่อ)
         const achievementsContainer = document.getElementById('profile-achievements-container');
         if (achievementsContainer) {
             const badgeData = [ 
-                { id: 'focus10', title: 'นักโฟกัสหน้าใหม่'}, 
-                { id: 'plan5', title: 'นักวางแผนตัวยง'}, 
-                { id: 'mood7', title: 'จิตใจเบิกบาน'}, 
-                { id: 'review20', title: 'ยอดนักทบทวน'} 
+                { id: 'focus10', title: 'นักโฟกัสหน้าใหม่', icon: '🎯'}, 
+                { id: 'plan5', title: 'นักวางแผนตัวยง', icon: '📝'}, 
+                { id: 'mood7', title: 'จิตใจเบิกบาน', icon: '😊'}, 
+                { id: 'review20', title: 'ยอดนักทบทวน', icon: '🎓'} 
             ];
+            // กรองเฉพาะ Badge ที่ผู้ใช้มีใน state.badges
             const unlockedBadges = badgeData.filter(badge => state.badges && state.badges[badge.id]);
+        
             if (unlockedBadges.length > 0) {
-                achievementsContainer.innerHTML = unlockedBadges.map(badge => `<div class="stat-item">${badge.title}</div>`).join('');
+                // แสดง Badge ที่ปลดล็อกแล้ว
+                achievementsContainer.innerHTML = unlockedBadges.map(badge => 
+                    `<div class="stat-item">
+                        <span class="stat-icon">${badge.icon}</span>
+                        <span class="stat-value" style="font-size: 1rem; color: var(--text-color); margin: 4px 0;">${badge.title}</span>
+                        <span class="stat-label">ปลดล็อกแล้ว</span>
+                    </div>`
+                ).join('');
             } else {
+                // ข้อความกรณียังไม่มี Badge
                 achievementsContainer.innerHTML = '<p class="subtle-text">ยังไม่มีความสำเร็จ... มาเริ่มสะสมกันเลย!</p>';
             }
         }
 
+        // 9. เตรียมข้อมูลสำหรับหน้าแก้ไขโปรไฟล์ (Edit Mode)
         renderProfilePicture(state.profile.photoURL, document.getElementById('profile-edit-photo'));
         document.getElementById('profile-edit-name').textContent = displayName;
         document.getElementById('profile-edit-email').textContent = currentUser.email;
@@ -538,7 +577,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('age').value = state.profile?.age || '';
         document.getElementById('bio').value = state.profile?.bio || '';
         document.getElementById('show-email-toggle').checked = state.settings?.showEmail ?? true;
-        
+    
+        // 10. สั่งให้ Feather Icons ทำงานใหม่เพื่อแสดงผลไอคอนที่อาจถูกสร้างขึ้นมา
         feather.replace();
     }
 
@@ -1297,6 +1337,75 @@ document.addEventListener('DOMContentLoaded', () => {
             listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
         }
     }
+
+    async function renderChatList() {
+        if (!currentUser) return;
+        const listEl = document.getElementById('chat-list');
+        if (!listEl) return;
+
+        listEl.innerHTML = '<li>กำลังโหลดรายการแชท...</li>';
+
+        // 1. หาเพื่อนที่ติดตามกันและกัน (Mutuals)
+        const following = state.following || [];
+        const followers = state.followers || [];
+        const mutualFriendIds = following.filter(id => followers.includes(id));
+
+        if (mutualFriendIds.length === 0) {
+            listEl.innerHTML = '<li style="text-align: center; color: var(--subtle-text-color); padding: 20px;">หาเพื่อนและติดตามกันเพื่อเริ่มแชท!</li>';
+            return;
+        }
+
+        // 2. ดึงข้อมูลโปรไฟล์และข้อมูลแชทล่าสุดของเพื่อนทุกคน
+        const chatDataPromises = mutualFriendIds.map(async (friendId) => {
+            const chatId = [currentUser.uid, friendId].sort().join('_');
+        
+            // ดึงข้อมูลโปรไฟล์ของเพื่อน และ ข้อมูลแชทล่าสุดพร้อมกัน
+            const [friendDoc, chatDoc] = await Promise.all([
+                db.collection('users').doc(friendId).get(),
+                db.collection('chats').doc(chatId).get()
+            ]);
+
+            if (!friendDoc.exists) return null;
+
+            return {
+                friendProfile: friendDoc.data().profile,
+                friendId: friendId,
+                lastMessage: chatDoc.exists ? chatDoc.data().lastMessage : null
+            };
+        });
+
+        let chatItems = (await Promise.all(chatDataPromises)).filter(item => item !== null);
+
+        // 3. จัดเรียงรายการแชทตามเวลาของข้อความล่าสุด
+        chatItems.sort((a, b) => {
+            if (!a.lastMessage) return 1;
+            if (!b.lastMessage) return -1;
+            // Firestore Timestamps สามารถเปรียบเทียบได้โดยตรง
+            return b.lastMessage.timestamp.toMillis() - a.lastMessage.timestamp.toMillis();
+        });
+
+        // 4. สร้าง HTML แล้วแสดงผล
+        listEl.innerHTML = chatItems.map(item => {
+            const { friendProfile, friendId, lastMessage } = item;
+            let lastMessageText = "เริ่มการสนทนา...";
+            if (lastMessage) {
+                const prefix = lastMessage.senderId === currentUser.uid ? "คุณ: " : "";
+                lastMessageText = prefix + lastMessage.text;
+            }
+
+            const isActive = currentChatId === [currentUser.uid, friendId].sort().join('_');
+
+            return `
+                <li class="chat-list-item ${isActive ? 'active' : ''}" onclick="window.startChat('${friendId}')">
+                    <img src="${friendProfile.photoURL || 'assets/profiles/startprofile.png'}" alt="${friendProfile.displayName}" class="chat-list-avatar">
+                    <div class="chat-list-info">
+                        <span class="chat-list-name">${friendProfile.displayName || 'User'}</span>
+                        <p class="chat-list-last-message">${lastMessageText}</p>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
     
     async function handleFriendSearch(e) {
         e.preventDefault();
@@ -1470,18 +1579,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // eslint-disable-next-line no-unused-vars
     window.startChat = async (friendId) => {
+        // ซ่อน/แสดง panel ที่ถูกต้องสำหรับจอเล็ก
+        const chatListPanel = document.getElementById('chat-list-panel');
+        if (chatListPanel) chatListPanel.classList.add('has-active-chat');
+
         currentChatId = [currentUser.uid, friendId].sort().join('_');
         if (unsubscribeChatListener) { unsubscribeChatListener(); }
+
+        // ทำให้รายการที่เลือกอยู่ active
+        await renderChatList(); 
+
         const friendDoc = await db.collection('users').doc(friendId).get();
         if(!friendDoc.exists) return;
-        const friendData = friendDoc.data().profile;
-        const displayName = friendData.displayName || 'User';
-        renderProfilePicture(friendData.photoURL, document.getElementById('chat-partner-photo'));
-        document.getElementById('chat-partner-name').textContent = displayName;
+
+        const friendData = friendDoc.data();
+        const profile = friendData.profile;
+        const { level } = calculateLevel(friendData.exp || 0);
+
+        renderProfilePicture(profile.photoURL, document.getElementById('chat-partner-photo'));
+        document.getElementById('chat-partner-name').textContent = profile.displayName || 'User';
+        document.getElementById('chat-partner-level').textContent = `Level ${level}`;
+    
         document.getElementById('chat-welcome-view').classList.add('hidden');
         document.getElementById('chat-conversation-view').classList.remove('hidden');
+    
         const messagesContainer = document.getElementById('chat-messages');
         messagesContainer.innerHTML = ''; 
+
         const chatQuery = db.collection('chats').doc(currentChatId).collection('messages').orderBy('timestamp', 'asc').limitToLast(50);
         unsubscribeChatListener = chatQuery.onSnapshot(snapshot => {
             snapshot.docChanges().forEach(change => {
@@ -1499,18 +1623,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
-    }
+    };
+
 
     async function sendMessage(text) {
         if (!currentChatId || !text.trim()) return;
-        const message = {
+
+        const messageData = {
             text: text.trim(),
             senderId: currentUser.uid,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            imestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
+    
         const chatRef = db.collection('chats').doc(currentChatId);
-        await chatRef.collection('messages').add(message);
-        await chatRef.set({ participants: currentChatId.split('_') }, { merge: true });
+
+        // 1. เพิ่มข้อความใหม่เข้าไปใน sub-collection 'messages'
+        await chatRef.collection('messages').add(messageData);
+    
+        // เพื่อให้เราดึงข้อมูลไปแสดงในรายการแชทได้เร็ว
+        const lastMessageUpdate = {
+            text: messageData.text,
+            senderId: messageData.senderId,
+            timestamp: messageData.timestamp // ใช้ timestamp เดียวกัน
+        };
+
+        await chatRef.set({
+            participants: currentChatId.split('_'),
+            lastMessage: lastMessageUpdate
+        }, { merge: true }); // ใช้ merge: true เพื่อไม่ให้ลบข้อมูลอื่น
     }
 
     // =========================================
@@ -1707,23 +1847,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (senderId) handleDeclineFollowRequest(senderId);
                 return;
             }
-
-            const communityTabBtn = closest('.tab-btn');
-            if (communityTabBtn && closest('#friend-list-panel')) {
-                const tab = communityTabBtn.dataset.tab;
-                document.querySelectorAll('#friend-list-panel .tab-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('#friend-list-panel .tab-content').forEach(content => content.classList.remove('active'));
-                communityTabBtn.classList.add('active');
-                const contentToShow = document.getElementById(`${tab}-tab-content`);
-                if (contentToShow) {
-                    contentToShow.classList.add('active');
-                }
-                if (tab === 'following') renderFollowingList();
-                else if (tab === 'followers') renderFollowersList();
-                else if (tab === 'requests') renderFollowRequests();
-                return;
-            }
-
+            
+            // --- จัดการ Navigation Link หลัก ---
             const navLink = closest('.nav-link'); 
             if (navLink) { 
                 e.preventDefault(); 
@@ -1731,12 +1856,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
+            // --- จัดการปุ่มปิด Modal ---
             if (closest('.close-btn')) { 
                 const modal = closest('.modal-overlay'); 
                 if (modal) modal.classList.add('hidden'); 
                 return; 
             }
             
+            // --- จัดการการเลือก Mood Emoji ---
             const emojiOption = closest('.emoji-option');
             if (emojiOption) {
                 document.querySelectorAll('.emoji-option').forEach(opt => opt.classList.remove('selected'));
@@ -1749,6 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
+            // --- จัดการการเลือกรูปโปรไฟล์ใน Modal ---
             const profileOption = closest('.profile-option');
             if (profileOption) {
                 document.querySelectorAll('.profile-option.selected').forEach(opt => opt.classList.remove('selected'));
@@ -1762,6 +1890,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
+            // --- จัดการแท็บสถิติในหน้า Focus ---
             const statsTabBtn = closest('.stats-tab-btn');
             if (statsTabBtn) {
                 document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -1771,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // --- จัดการการติ๊ก To-Do List ---
             if (e.target.matches('#todo-list input[type="checkbox"]')) {
                 const todoId = parseInt(e.target.dataset.id);
                 const todo = state.todos.find(t => t.id === todoId);
@@ -1787,13 +1917,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             state.todos = state.todos.filter(t => t.id !== todoId);
                             saveState();
                             updateHomePageUI(); 
-                        }, 300000);
+                        }, 300000); // ลบออกจากลิสต์หลังจาก 5 นาที
                     }
                     saveState();
                 }
                 return;
             }
 
+            // --- จัดการการลบ Activity และ Advice ---
             const deleteActivityBtn = closest('.delete-activity-btn');
             if (deleteActivityBtn) {
                 const index = parseInt(deleteActivityBtn.dataset.index);
@@ -1812,6 +1943,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            // --- Switch-Case สำหรับจัดการปุ่มต่างๆ ตาม ID ---
             const targetId = e.target.id || closest('[id]')?.id;    
             switch(targetId) {  //=====click=====//
                 case 'login-btn': 
