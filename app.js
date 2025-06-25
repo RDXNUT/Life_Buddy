@@ -472,6 +472,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if (expProgressBarEl) expProgressBarEl.style.width = `${progress}%`;
     }
     
+    async function showUserListModal(listType, userIds) {
+        if (!userIds || userIds.length === 0) {
+            showToast("ไม่มีรายชื่อให้แสดง");
+            return;
+        }
+    
+        const modal = document.getElementById('user-list-modal');
+        const titleEl = document.getElementById('user-list-modal-title');
+        const bodyEl = document.getElementById('user-list-modal-body');
+    
+        titleEl.textContent = listType === 'followers' ? 'ผู้ติดตาม' : 'กำลังติดตาม';
+        bodyEl.innerHTML = '<p>กำลังโหลด...</p>';
+        modal.classList.remove('hidden');
+
+        const userPromises = userIds.map(uid => db.collection('users').doc(uid).get());
+        const userDocs = await Promise.all(userPromises);
+
+        bodyEl.innerHTML = userDocs.map(doc => {
+            if (!doc.exists) return '';
+            const userData = doc.data().profile;
+            return `
+                <div class="user-list-modal-item">
+                    <img src="${userData.photoURL || 'assets/profiles/startprofile.png'}" class="profile-pic">
+                    <div class="user-info">
+                        <h4>${userData.displayName || 'User'}</h4>
+                        <p class="subtle-text">${userData.lifebuddyId}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
     function renderProfilePage() {
     const page = document.getElementById('profile-page');
     // 1. ตรวจสอบเบื้องต้นว่าควรจะ render หรือไม่
@@ -530,6 +562,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('profile-stat-followers').textContent = followersCount;
     document.getElementById('profile-stat-following').textContent = followingCount;
 
+    const followersDiv = document.getElementById('profile-stat-followers').parentElement;
+    const followingDiv = document.getElementById('profile-stat-following').parentElement;
+
+    followersDiv.style.cursor = "pointer";
+    followersDiv.onclick = () => showUserListModal('followers', state.followers);
+    
+    followingDiv.style.cursor = "pointer";
+    followingDiv.onclick = () => showUserListModal('following', state.following);
+
     // 7. แสดงสถิติการใช้งานแอป
     document.getElementById('profile-stat-streak').textContent = state.streak || 0;
     document.getElementById('profile-stat-total-exp').textContent = state.exp || 0;
@@ -575,6 +616,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 10. สั่งให้ Feather Icons ทำงานใหม่เพื่อแสดงผลไอคอนที่อาจถูกสร้างขึ้นมา
     feather.replace();
+}
+
+    async function showFriendProfile(friendId) {
+    if (friendId === currentUser.uid) {
+        showPage('profile'); // ถ้าเป็น ID ตัวเอง ให้ไปหน้าโปรไฟล์ปกติ
+        return;
+    }
+
+    const modal = document.getElementById('friend-profile-modal');
+    const contentEl = document.getElementById('friend-profile-content');
+    contentEl.innerHTML = '<div class="loader" style="margin: 50px auto;"></div>';
+    modal.classList.remove('hidden');
+
+    try {
+        const doc = await db.collection('users').doc(friendId).get();
+        if (!doc.exists) {
+            contentEl.innerHTML = '<p>ไม่พบผู้ใช้นี้</p>';
+            return;
+        }
+        const friendData = doc.data();
+
+        // [ส่วนสำคัญ] เราจะ "ยืม" โครงสร้าง HTML จากหน้าโปรไฟล์หลักมาใช้
+        // นี่เป็นวิธีที่รวดเร็ว แต่ในระยะยาวอาจจะสร้างเป็น component แยก
+        
+        // ตรวจสอบสถานะการติดตาม
+        const amIFollowing = (state.following || []).includes(friendId);
+        const requestSent = (state.sentFollowRequests || []).includes(friendId);
+        let followButtonHtml = '';
+        if (amIFollowing) {
+            followButtonHtml = `<button class="small-btn btn-secondary" disabled>กำลังติดตาม</button>`;
+        } else if (requestSent) {
+            followButtonHtml = `<button class="small-btn" disabled>ส่งคำขอแล้ว</button>`;
+        } else {
+            followButtonHtml = `<button class="small-btn" onclick="handleSendFollowRequest('${friendId}')">ติดตาม</button>`;
+        }
+
+        const bannerId = friendData.profile.currentBanner;
+        const allShopItems = Object.values(state.shopItems || {}).flatMap(category => category);
+        const bannerData = allShopItems.find(item => item.id === bannerId);
+        const bannerStyle = (bannerData && bannerData.image) 
+            ? `background-image: url('${bannerData.image}'); background-size: cover; background-position: center;`
+            : 'background: linear-gradient(135deg, var(--primary-color), var(--accent-color));';
+
+        const { level } = calculateLevel(friendData.exp || 0);
+
+        contentEl.innerHTML = `
+            <div id="profile-view-mode">
+                <div class="profile-header-card">
+                    <div class="profile-banner" style="${bannerStyle}"></div>
+                    <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="avatar-display">
+                    <div class="profile-info">
+                        <h2>${friendData.profile.displayName || 'User'}</h2>
+                        <span class="level-badge">Level ${level}</span>
+                        <p class="subtle-text"><em>${friendData.profile.lifebuddyId}</em></p>
+                        <p class="bio-text">${friendData.profile.bio || '...'}</p>
+                        <div class="profile-follow-stats">
+                            <div class="follow-stat-item">
+                                <span class="follow-stat-value">${(friendData.followers || []).length}</span>
+                                <span class="follow-stat-label">ผู้ติดตาม</span>
+                            </div>
+                            <div class="follow-stat-item">
+                                <span class="follow-stat-value">${(friendData.following || []).length}</span>
+                                <span class="follow-stat-label">กำลังติดตาม</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">${followButtonHtml}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error("Error showing friend profile:", error);
+        contentEl.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+    }
 }
 
     //เปิดหน้าต่าง Modal สำหรับเลือก Banner
@@ -1405,35 +1521,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function renderChatList() {
-        if (!currentUser) return;
-        const listEl = document.getElementById('chat-list');
-        if (!listEl) return;
+    // ใน app.js, แทนที่ฟังก์ชัน renderChatList เดิมด้วยเวอร์ชันนี้
 
-        listEl.innerHTML = '<li>กำลังโหลดรายการแชท...</li>';
+async function renderChatList() {
+    // 1. ตรวจสอบเบื้องต้นและเตรียม Element
+    if (!currentUser) return;
+    const listEl = document.getElementById('chat-list');
+    if (!listEl) return;
 
-        // 1. หาเพื่อนที่ติดตามกันและกัน (Mutuals)
-        const following = state.following || [];
-        const followers = state.followers || [];
-        const mutualFriendIds = following.filter(id => followers.includes(id));
+    listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลดรายการแชท...</li>';
 
-        if (mutualFriendIds.length === 0) {
-            listEl.innerHTML = '<li style="text-align: center; color: var(--subtle-text-color); padding: 20px;">หาเพื่อนและติดตามกันเพื่อเริ่มแชท!</li>';
-            return;
-        }
+    // 2. === [ส่วนแสดงคำขอติดตาม] ===
+    const requestIds = state.followRequests || [];
+    let requestHtml = '';
 
-        // 2. ดึงข้อมูลโปรไฟล์และข้อมูลแชทล่าสุดของเพื่อนทุกคน
+    if (requestIds.length > 0) {
+        // ดึงข้อมูลโปรไฟล์ของผู้ที่ส่งคำขอทั้งหมด
+        const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
+        const requestDocs = await Promise.all(requestPromises);
+        
+        // สร้าง HTML สำหรับแต่ละคำขอ
+        const requestItemsHtml = requestDocs.map(doc => {
+            if (!doc.exists) return ''; // ถ้าหา user ไม่เจอ ให้ข้ามไป
+            const senderData = doc.data();
+            return `
+                <div class="follow-request-item">
+                    <img src="${senderData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="chat-list-avatar">
+                    <div class="request-info">
+                        <strong>${senderData.profile.displayName || 'User'}</strong>
+                        <span>ส่งคำขอติดตามคุณ</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')">ยอมรับ</button>
+                        <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')">ลบ</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // รวมเป็น Section ของคำขอติดตาม
+        requestHtml = `
+            <li class="chat-list-section-header">
+                <h4>คำขอติดตาม (${requestIds.length})</h4>
+            </li>
+            <li class="follow-request-container">${requestItemsHtml}</li>
+        `;
+    }
+
+    // 3. === [ส่วนแสดงรายการแชท] ===
+    const following = state.following || [];
+    const followers = state.followers || [];
+    // กรองหาเฉพาะเพื่อนที่ติดตามกันและกัน (Mutual Friends)
+    const mutualFriendIds = following.filter(id => followers.includes(id));
+
+    let chatItemsHtml = '';
+
+    // ตรวจสอบว่าถ้าไม่มีทั้งคำขอและเพื่อน ให้แสดงข้อความว่าง
+    if (mutualFriendIds.length === 0 && requestIds.length === 0) {
+        listEl.innerHTML = '<li class="empty-placeholder">หาเพื่อนและติดตามกันเพื่อเริ่มแชท!</li>';
+        return;
+    }
+
+    if (mutualFriendIds.length > 0) {
+        // ดึงข้อมูลโปรไฟล์และข้อความล่าสุดของเพื่อนทุกคน
         const chatDataPromises = mutualFriendIds.map(async (friendId) => {
             const chatId = [currentUser.uid, friendId].sort().join('_');
-        
-            // ดึงข้อมูลโปรไฟล์ของเพื่อน และ ข้อมูลแชทล่าสุดพร้อมกัน
             const [friendDoc, chatDoc] = await Promise.all([
                 db.collection('users').doc(friendId).get(),
                 db.collection('chats').doc(chatId).get()
             ]);
-
             if (!friendDoc.exists) return null;
-
             return {
                 friendProfile: friendDoc.data().profile,
                 friendId: friendId,
@@ -1441,29 +1598,30 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
+        // รอให้ข้อมูลทั้งหมดโหลดเสร็จ
         let chatItems = (await Promise.all(chatDataPromises)).filter(item => item !== null);
 
-        // 3. จัดเรียงรายการแชทตามเวลาของข้อความล่าสุด
+        // จัดเรียงรายการแชทตามเวลาของข้อความล่าสุด (ใหม่สุดอยู่บน)
         chatItems.sort((a, b) => {
-            if (!a.lastMessage) return 1;
+            if (!a.lastMessage) return 1; // แชทที่ยังไม่เคยคุยจะอยู่ล่างสุด
             if (!b.lastMessage) return -1;
-            // Firestore Timestamps สามารถเปรียบเทียบได้โดยตรง
+            // เปรียบเทียบเวลาของ Firestore Timestamp
             return b.lastMessage.timestamp.toMillis() - a.lastMessage.timestamp.toMillis();
         });
 
-        // 4. สร้าง HTML แล้วแสดงผล
-        listEl.innerHTML = chatItems.map(item => {
+        // สร้าง HTML สำหรับแต่ละรายการแชท
+        chatItemsHtml = chatItems.map(item => {
             const { friendProfile, friendId, lastMessage } = item;
             let lastMessageText = "เริ่มการสนทนา...";
             if (lastMessage) {
                 const prefix = lastMessage.senderId === currentUser.uid ? "คุณ: " : "";
                 lastMessageText = prefix + lastMessage.text;
             }
-
             const isActive = currentChatId === [currentUser.uid, friendId].sort().join('_');
-
+            
+            // เพิ่ม data-friend-id เพื่อให้ click listener รู้ว่าจะต้องจัดการกับเพื่อนคนไหน
             return `
-                <li class="chat-list-item ${isActive ? 'active' : ''}" onclick="window.startChat('${friendId}')">
+                <li class="chat-list-item ${isActive ? 'active' : ''}" data-friend-id="${friendId}">
                     <img src="${friendProfile.photoURL || 'assets/profiles/startprofile.png'}" alt="${friendProfile.displayName}" class="chat-list-avatar">
                     <div class="chat-list-info">
                         <span class="chat-list-name">${friendProfile.displayName || 'User'}</span>
@@ -1473,6 +1631,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('');
     }
+
+    // 4. รวม HTML ทั้งหมด (คำขอ + รายการแชท) แล้วแสดงผลในหน้าเว็บ
+    listEl.innerHTML = requestHtml + chatItemsHtml;
+}
     
     async function handleFriendSearch(e) {
         e.preventDefault();
@@ -1876,6 +2038,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
+
+            const chatListItem = closest('.chat-list-item');
+            if (chatListItem) {
+                const friendId = chatListItem.dataset.friendId;
+                if (!friendId) return;
+
+                // ตรวจสอบว่าคลิกที่รูปหรือชื่อ (เพื่อไปดูโปรไฟล์) หรือคลิกที่พื้นที่อื่น (เพื่อเปิดแชท)
+                if (closest('.chat-list-avatar') || closest('.chat-list-name')) {
+                    e.stopPropagation(); // หยุดไม่ให้ event bubble ไปเปิดแชท
+                    showFriendProfile(friendId);
+                } else {
+                    // ถ้าคลิกที่พื้นที่ว่างๆ ของรายการ ให้เปิดแชท
+                 window.startChat(friendId);
+                }
+                return; // จบการทำงานในส่วนนี้
+            }
 
             const calendarNavBtn = closest('.calendar-nav-btn');
             if (calendarNavBtn) {

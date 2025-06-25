@@ -1847,3 +1847,73 @@ label.reason-option:has(input:checked) .reason-icon-group {
 .banner-option-card.selected .selected-tick {
     display: flex; /* แสดงติ๊กถูกเมื่อถูกเลือก */
 }
+
+/* ======================================== */
+/* === Follow Request in Chat List CSS === */
+/* ======================================== */
+.chat-list-section-header {
+    padding: 15px 20px 5px;
+    color: var(--subtle-text-color);
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.follow-request-container {
+    padding: 5px 10px;
+}
+.follow-request-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    background-color: var(--bg-color);
+}
+.request-info {
+    flex-grow: 1;
+    margin: 0 10px;
+    line-height: 1.3;
+}
+.request-info strong {
+    display: block;
+    color: var(--text-color);
+}
+.request-info span {
+    font-size: 0.85em;
+    color: var(--subtle-text-color);
+}
+.request-actions {
+    display: flex;
+    gap: 8px;
+}
+.request-actions .small-btn {
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+
+/* Placeholder styles */
+.loading-placeholder, .empty-placeholder {
+    text-align: center;
+    color: var(--subtle-text-color);
+    padding: 40px 20px;
+}
+/* ======================================== */
+/* ======== User List Modal CSS =========== */
+/* ======================================== */
+#user-list-modal-body {
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 10px 0 20px !important; /* Override default padding */
+}
+.user-list-modal-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 25px;
+    gap: 15px;
+}
+.user-list-modal-item:hover {
+    background-color: var(--bg-color);
+}
+.user-list-modal-item .user-info {
+    text-align: left;
+}

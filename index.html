@@ -674,6 +674,29 @@
         </div>
     </div>
 
+    <!-- User List Modal (สำหรับ Follower/Following) -->
+    <div id="user-list-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="user-list-modal-title">รายชื่อ</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="user-list-modal-body" class="user-list-modal-body">
+                <!-- รายชื่อจะถูกสร้างโดย JS ที่นี่ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Friend Profile Modal -->
+    <div id="friend-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content large" style="padding: 0; max-width: 800px;">
+            <!-- เนื้อหาโปรไฟล์จะถูก render ด้วย JS โดยใช้โครงสร้างเดียวกับหน้าโปรไฟล์หลัก -->
+            <div id="friend-profile-content"></div>
+            <button class="close-btn" style="top: 10px; right: 10px; z-index: 10;">×</button>
+        </div>
+    </div>
+
+
     <!-- Toast Notification -->
     <div id="toast-notification" class="hidden"></div>
 
