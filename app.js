@@ -2093,6 +2093,25 @@ async function renderChatList() {
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
 
+            const toggleBtn = closest('.password-toggle-btn');
+            if (toggleBtn) {
+                const targetId = toggleBtn.dataset.target;
+                const passwordInput = document.getElementById(targetId);
+                const icon = toggleBtn.querySelector('i');
+
+                if (passwordInput && icon) {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.dataset.feather = 'eye-off';
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.dataset.feather = 'eye';
+                    }
+                    feather.replace(); // สั่งให้ Feather Icons วาดไอคอนใหม่
+                }
+                return; // จบการทำงานในส่วนนี้ ไม่ต้องไปเช็ค event อื่นต่อ
+            }
+
             const chatListItem = closest('.chat-list-item');
             if (chatListItem) {
                 const friendId = chatListItem.dataset.friendId;

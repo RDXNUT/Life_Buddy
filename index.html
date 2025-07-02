@@ -608,9 +608,18 @@
             <div id="login-view">
                 <h2>เข้าสู่ระบบ</h2>
                 <form id="login-form">
-                    <input type="email" id="login-email" placeholder="อีเมล" required>
-                    <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
-                    <!-- ตรวจสอบปุ่มนี้ด้วย -->
+                    <div class="form-group">
+                        <input type="email" id="login-email" placeholder="อีเมล" required>
+                    </div>
+                    <!-- ===== [ครอบช่องรหัสผ่านและเพิ่มปุ่ม] ===== -->
+                    <div class="form-group">
+                        <div class="input-with-icon-wrapper">
+                            <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
+                            <button type="button" class="password-toggle-btn" data-target="login-password" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                                <i data-feather="eye"></i>
+                            </button>
+                        </div>
+                    </div>
                     <button type="submit">เข้าสู่ระบบ</button>
                 </form>
                 <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a>
@@ -623,30 +632,36 @@
             <div class="form-group">
                 <input type="email" id="signup-email" placeholder="อีเมล" required>
             </div>
-    
-            <!-- ===== [ส่วนรหัสผ่านหลัก + ตัววัดความปลอดภัย] ===== -->
+            
             <div class="form-group">
-                <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
-                <!-- Element สำหรับแสดงแถบความปลอดภัย -->
+                <!-- ===== [เพิ่ม wrapper และปุ่มที่นี่] ===== -->
+                <div class="input-with-icon-wrapper">
+                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+                    <button type="button" class="password-toggle-btn" data-target="signup-password" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                        <i data-feather="eye"></i>
+                    </button>
+                </div>
                 <div id="password-strength-meter" class="hidden">
                     <div class="strength-bar"></div>
                     <div class="strength-bar"></div>
                     <div class="strength-bar"></div>
                 </div>
             </div>
-    
-            <!-- ===== [ส่วนยืนยันรหัสผ่าน + ไอคอนติ๊กถูก] ===== -->
+            
             <div class="form-group">
-                <!-- เราจะครอบ input และ icon ไว้ด้วยกันเพื่อการจัดตำแหน่ง -->
                 <div class="input-with-icon-wrapper">
                     <input type="password" id="signup-password-confirm" placeholder="ยืนยันรหัสผ่าน" required>
-                    <!-- Element สำหรับแสดงไอคอนติ๊กถูก -->
+                    <!-- ===== [ไอคอนติ๊กถูกเดิม] ===== -->
                     <div id="password-match-indicator" class="hidden">
                         <i data-feather="check"></i>
                     </div>
+                    <!-- ===== [เพิ่มปุ่มที่นี่] ===== -->
+                    <button type="button" class="password-toggle-btn" data-target="signup-password-confirm" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                        <i data-feather="eye"></i>
+                    </button>
                 </div>
             </div>
-    
+            
             <button type="submit">สมัครสมาชิก</button>
         </form>
         <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a>

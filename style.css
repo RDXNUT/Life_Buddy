@@ -1979,3 +1979,30 @@ label.reason-option:has(input:checked) .reason-icon-group {
 #password-strength-meter.strong .strength-bar:nth-child(-n+3) {
     background-color: var(--success-color);
 }
+
+/* ======================================== */
+/* ======== Password Toggle Button ======== */
+/* ======================================== */
+
+.password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 15px; /* ตำแหน่งของไอคอนรูปตา */
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    color: var(--subtle-text-color);
+    line-height: 1; /* ป้องกันปุ่มขยับ layout */
+}
+
+.password-toggle-btn:hover {
+    color: var(--text-color);
+}
+
+/* ปรับตำแหน่งไอคอนติ๊กถูก ไม่ให้ทับกับไอคอนรูปตา */
+#password-match-indicator {
+    right: 45px; /* ขยับไปทางซ้ายเล็กน้อย */
+}
