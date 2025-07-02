@@ -2066,19 +2066,22 @@ async function renderChatList() {
     function setupAllEventListeners() {
         if (areListenersSetup) return;
         
+    // --- Listener สำหรับ Google Sign-in ---
         const googleBtn = document.getElementById('google-signin-btn');
         if (googleBtn) {
             googleBtn.addEventListener('click', () => {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 auth.signInWithPopup(provider)
                     .catch(error => {
-                        const errorMessage = getFriendlyAuthError(error);
-                        const authErrorEl = document.getElementById('auth-error');
-                        if (authErrorEl) authErrorEl.textContent = errorMessage;
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: getFriendlyAuthError(error),
+                        });
                     });
             });
         }
-
+     // --- Listeners สำหรับตรวจสอบความปลอดภัยรหัสผ่านแบบ Real-time ---
         const signupPasswordInput = document.getElementById('signup-password');
         const signupPasswordConfirmInput = document.getElementById('signup-password-confirm');
 
@@ -2088,30 +2091,53 @@ async function renderChatList() {
                 checkPasswordMatch();
             });
             signupPasswordConfirmInput.addEventListener('input', checkPasswordMatch);
-        }
-        
+        } 
+    // ===== 2. EVENT LISTENER หลักสำหรับจัดการการ CLICK ทั้งหมด =====
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
 
-            const toggleBtn = closest('.password-toggle-btn');
-            if (toggleBtn) {
-                const targetId = toggleBtn.dataset.target;
-                const passwordInput = document.getElementById(targetId);
-                const icon = toggleBtn.querySelector('i');
+        // ===== [จัดการปุ่มดูรหัสผ่านเป็นอันดับแรก] =====
+        const toggleBtn = closest('.password-toggle-btn');
+        if (toggleBtn) {
+            const targetId = toggleBtn.dataset.target;
+            const oldInput = document.getElementById(targetId);
+            if (!oldInput) return;
 
-                if (passwordInput && icon) {
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        icon.dataset.feather = 'eye-off';
-                    } else {
-                        passwordInput.type = 'password';
-                        icon.dataset.feather = 'eye';
-                    }
-                    feather.replace(); // สั่งให้ Feather Icons วาดไอคอนใหม่
+            // 1. สร้าง input element ใหม่ขึ้นมา
+            const newInput = document.createElement('input');
+
+            // 2. คัดลอก attribute ทั้งหมดจาก input เก่ามายัง input ใหม่
+            // เราจะคัดลอกทุกอย่างยกเว้น 'type' ที่เราจะกำหนดเอง
+            for (const attr of oldInput.attributes) {
+                if (attr.name !== 'type') {
+                    newInput.setAttribute(attr.name, attr.value);
                 }
-                return; // จบการทำงานในส่วนนี้ ไม่ต้องไปเช็ค event อื่นต่อ
             }
 
+            // 3. กำหนด type ใหม่ และคัดลอกค่า (value) ที่ผู้ใช้พิมพ์ไว้
+            if (oldInput.type === 'password') {
+                newInput.type = 'text';
+            } else {
+                newInput.type = 'password';
+            }
+            newInput.value = oldInput.value;
+
+            // 4. นำ input ใหม่ไปแทนที่ input เก่าใน DOM
+            oldInput.parentNode.replaceChild(newInput, oldInput);
+
+            // 5. เปลี่ยนไอคอนของปุ่มที่กด
+            const icon = toggleBtn.querySelector('i');
+            if (icon) {
+                icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
+                feather.replace();
+            }
+            
+            // 6. ทำให้ cursor กลับไปอยู่ที่เดิมหลังจากเปลี่ยน input
+            newInput.focus();
+            
+            return; 
+        }
+        // --- จัดการ Chat List Item ---
             const chatListItem = closest('.chat-list-item');
             if (chatListItem) {
                 const friendId = chatListItem.dataset.friendId;
@@ -2127,7 +2153,7 @@ async function renderChatList() {
                 }
                 return; // จบการทำงานในส่วนนี้
             }
-
+        // --- จัดการปุ่มปฏิทิน ---
             const calendarNavBtn = closest('.calendar-nav-btn');
             if (calendarNavBtn) {
                 const btnId = calendarNavBtn.id;
@@ -2151,14 +2177,13 @@ async function renderChatList() {
                 }
                 return; 
             }
-            
+         // --- จัดการปุ่มคำขอติดตาม ---    
             const acceptButton = closest('.btn-accept-request');
             if (acceptButton) {
                 const senderId = acceptButton.dataset.senderId;
                 if (senderId) handleAcceptFollowRequest(senderId);
                 return;
             }
-
             const declineButton = closest('.btn-decline-request');
             if (declineButton) {
                 const senderId = declineButton.dataset.senderId;
@@ -2441,6 +2466,7 @@ async function renderChatList() {
             }
         });
 
+        // ===== 3. EVENT LISTENER หลักสำหรับจัดการการ SUBMIT ทั้งหมด =====
         document.body.addEventListener('submit', (e) => {
             e.preventDefault();
             switch (e.target.id) {
@@ -2454,7 +2480,8 @@ async function renderChatList() {
                         saveState(); 
                     } 
                     break;
-                case 'revisit-form': handleRevisitFormSubmit(e); break;
+                case 'revisit-form': 
+                handleRevisitFormSubmit(e); break;
                 case 'planner-form': handlePlannerFormSubmit(e); break;
                 case 'mood-form': handleMoodFormSubmit(e); break;
                 case 'profile-form': handleProfileFormSubmit(e); break;
@@ -2620,6 +2647,7 @@ async function renderChatList() {
         document.getElementById('signup-view').classList.add('hidden');
         document.getElementById('login-view').classList.remove('hidden');
         document.getElementById('auth-error').textContent = '';
+        feather.replace();
     }
 
     function renderActivityList() {

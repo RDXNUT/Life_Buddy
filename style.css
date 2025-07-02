@@ -1985,21 +1985,37 @@ label.reason-option:has(input:checked) .reason-icon-group {
 /* ======================================== */
 
 .password-toggle-btn {
+    /* --- คุณสมบัติหลัก --- */
     position: absolute;
     top: 50%;
-    right: 15px; /* ตำแหน่งของไอคอนรูปตา */
+    right: 15px;
     transform: translateY(-50%);
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
     cursor: pointer;
     color: var(--subtle-text-color);
-    line-height: 1; /* ป้องกันปุ่มขยับ layout */
+    
+    /* === [ส่วนสำคัญ] ยกเลิกสไตล์ปุ่มทั่วไป === */
+    background: transparent !important; /* พื้นหลังโปร่งใส */
+    border: none !important;           /* ไม่มีขอบ */
+    padding: 5px !important;            /* เพิ่ม padding เล็กน้อยเพื่อให้กดง่าย */
+    width: auto !important;             /* ความกว้างอัตโนมัติ */
+    height: auto !important;            /* ความสูงอัตโนมัติ */
+    line-height: 1;                     /* จัดแนวไอคอน */
+    
+    /* ป้องกันไม่ให้มี event แปลกๆ ตอนกด */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .password-toggle-btn:hover {
+    background-color: transparent !important; /* ทำให้พื้นหลังไม่เปลี่ยนสีตอน hover */
     color: var(--text-color);
+}
+
+/* ทำให้ปุ่มไม่มี focus effect สีน้ำเงิน */
+.password-toggle-btn:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 /* ปรับตำแหน่งไอคอนติ๊กถูก ไม่ให้ทับกับไอคอนรูปตา */
