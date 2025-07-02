@@ -618,16 +618,16 @@
             </div>
         
             <div id="signup-view" class="hidden">
-            <h2>สมัครสมาชิกใหม่</h2>
-            <form id="signup-form">
-                <input type="email" id="signup-email" placeholder="อีเมล" required>
-                <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
-                
-                <button type="submit">สมัครสมาชิก</button>
-            </form>
-            <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a>
-            </p>
-        </div>
+        <h2>สมัครสมาชิกใหม่</h2>
+        <form id="signup-form">
+            <input type="email" id="signup-email" placeholder="อีเมล" required>
+            <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+            <input type="password" id="signup-password-confirm" placeholder="ยืนยันรหัสผ่าน" required>
+            <button type="submit">สมัครสมาชิก</button>
+        </form>
+        <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a>
+        </p>
+    </div>
         
         <p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div>
     </div>

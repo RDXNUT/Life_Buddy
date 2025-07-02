@@ -2407,33 +2407,92 @@ async function renderChatList() {
                         showToast('เพิ่มคำแนะนำใหม่แล้ว!'); 
                     } 
                     break;
-                case 'signup-form': 
-                    const signupEmailInput = document.getElementById('signup-email');
-                    const signupPasswordInput = document.getElementById('signup-password');
-                    const authErrorEl = document.getElementById('auth-error');
-                    if (!signupEmailInput || !signupPasswordInput || !authErrorEl) {
-                        console.error("Signup form elements not found!");
-                        return;
+                case 'signup-form':
+                    const signupEmail = document.getElementById('signup-email').value;
+                    const signupPassword = document.getElementById('signup-password').value;
+                    const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
+
+                // --- 1. ตรวจสอบรหัสผ่านตรงกันหรือไม่ ---
+                if (signupPassword !== signupPasswordConfirm) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'รหัสผ่านไม่ตรงกัน',
+                        text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน',
+                    });
+                    return; // หยุดการทำงาน
+                }
+
+                // --- 2. ตรวจสอบความยาวรหัสผ่าน ---
+                if (signupPassword.length < 6) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'รหัสผ่านสั้นเกินไป',
+                        text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร',
+                    });
+                    return; // หยุดการทำงาน
+                }
+
+                // --- 3. แสดงสถานะกำลังโหลด ---
+                Swal.fire({
+                    title: 'กำลังสร้างบัญชี...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                    const emailS = signupEmailInput.value;
-                    const passwordS = signupPasswordInput.value;
-                    authErrorEl.textContent = 'กำลังสมัครสมาชิก...';
-                    authErrorEl.style.color = 'var(--subtle-text-color)';
-                    auth.createUserWithEmailAndPassword(emailS, passwordS)
-                        .catch(error => {
-                            authErrorEl.textContent = getFriendlyAuthError(error);
-                            authErrorEl.style.color = 'var(--danger-color)';
+                });
+
+                // --- 4. ส่งข้อมูลไป Firebase ---
+                auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
+                    .then(userCredential => {
+                        // สมัครสำเร็จ, Firebase onAuthStateChanged จะจัดการ UI ต่อ
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สมัครสมาชิกสำเร็จ!',
+                            text: `ยินดีต้อนรับสู่ Life Buddy, ${userCredential.user.email}!`,
+                            timer: 2000,
+                            showConfirmButton: false
                         });
-                    break;
-                case 'login-form': 
-                    const emailL = document.getElementById('login-email').value; 
-                    const passwordL = document.getElementById('login-password').value;
-                    auth.signInWithEmailAndPassword(emailL, passwordL)
-                        .catch(error => {
-                            const authErrorEl = document.getElementById('auth-error');
-                            if (authErrorEl) authErrorEl.textContent = getFriendlyAuthError(error);
-                        }); 
-                    break;
+                        // ไม่ต้องทำอะไรเพิ่ม `onAuthStateChanged` จะทำงานเอง
+                    })
+                    .catch(error => {
+                        // --- 5. แสดงข้อผิดพลาดด้วย Pop-up ---
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: getFriendlyAuthError(error),
+                        });
+                    });
+                break;
+
+            case 'login-form':
+                const loginEmail = document.getElementById('login-email').value;
+                const loginPassword = document.getElementById('login-password').value;
+
+                // --- 1. แสดงสถานะกำลังโหลด ---
+                Swal.fire({
+                    title: 'กำลังเข้าสู่ระบบ...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // --- 2. ส่งข้อมูลไป Firebase ---
+                auth.signInWithEmailAndPassword(loginEmail, loginPassword)
+                    .then(() => {
+                        // ไม่ต้องทำอะไรที่นี่ เพราะ onAuthStateChanged จะจัดการปิด modal และอัปเดต UI
+                        // Swal จะปิดตัวเองเมื่อมีการเปลี่ยนหน้า
+                    })
+                    .catch(error => {
+                        // --- 3. แสดงข้อผิดพลาดด้วย Pop-up ---
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เข้าสู่ระบบไม่สำเร็จ',
+                            text: getFriendlyAuthError(error),
+                        });
+                    });
+                break;
                 case 'flashcard-form':
                     const flashcardForm = e.target;
                     const subject = flashcardForm.dataset.subject;
