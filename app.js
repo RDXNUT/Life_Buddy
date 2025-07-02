@@ -2024,7 +2024,14 @@ async function renderChatList() {
     function updatePasswordStrength() {
         const password = document.getElementById('signup-password').value;
         const strengthMeter = document.getElementById('password-strength-meter');
-        if (!strengthMeter) return;
+        if (strengthMeter && strengthMeter.classList.contains('weak')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'รหัสผ่านไม่ปลอดภัย',
+                text: 'กรุณาตั้งรหัสผ่านให้คาดเดายากขึ้น (แนะนำ: 8 ตัวอักษรขึ้นไป, มีตัวเลข, อักษรใหญ่-เล็ก)',
+            });
+            return; // หยุดการทำงานถ้าอ่อนแอเกินไป
+        }
 
         if (password.length === 0) {
             strengthMeter.classList.add('hidden');
@@ -2141,7 +2148,7 @@ async function renderChatList() {
             newInput.focus();
             return;
         }
-        
+
         // --- จัดการ Chat List Item ---
             const chatListItem = closest('.chat-list-item');
             if (chatListItem) {
@@ -2516,7 +2523,6 @@ async function renderChatList() {
                     const signupEmail = document.getElementById('signup-email').value;
                     const signupPassword = document.getElementById('signup-password').value;
                     const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
-
                     // --- 1. ตรวจสอบรหัสผ่านตรงกันหรือไม่ ---
                     if (signupPassword !== signupPasswordConfirm) {
                         Swal.fire({
@@ -2550,11 +2556,25 @@ async function renderChatList() {
 
                     // --- ส่งข้อมูลไป Firebase ---
                     auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
-                        .then(userCredential => {
+                        .then(async (userCredential) => { 
+                            const user = userCredential.user;
+                            
+                            // ===== สร้างข้อมูลโปรไฟล์เริ่มต้นใน Firestore ทันที =====
+                            const initialName = user.email.split('@')[0];
+                            const randomTag = Math.floor(1000 + Math.random() * 9000);
+                            
+                            // ใช้ `initialState` เป็นแม่แบบ
+                            const newUserProfileData = JSON.parse(JSON.stringify(initialState));
+                            newUserProfileData.profile.displayName = initialName;
+                            newUserProfileData.profile.lifebuddyId = `${initialName}#${randomTag}`;
+
+                            // เขียนข้อมูลลง Firestore
+                            await db.collection('users').doc(user.uid).set(newUserProfileData);
+                            
                             Swal.fire({
                                 icon: 'success',
                                 title: 'สมัครสมาชิกสำเร็จ!',
-                                text: `ยินดีต้อนรับสู่ Life Buddy, ${userCredential.user.email}!`,
+                                text: `ยินดีต้อนรับสู่ Life Buddy, ${user.email}!`,
                                 timer: 2000,
                                 showConfirmButton: false
                             });
@@ -2595,7 +2615,7 @@ async function renderChatList() {
                             text: getFriendlyAuthError(error),
                         });
                     });
-                break;
+                    break;
                 case 'flashcard-form':
                     const flashcardForm = e.target;
                     const subject = flashcardForm.dataset.subject;
