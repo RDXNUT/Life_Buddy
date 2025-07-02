@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loading-overlay').style.opacity = '0';
         setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 500);
     }
+        
     
     // =============================
     // ===== 4. CORE FUNCTIONS =====
@@ -2020,6 +2021,48 @@ async function renderChatList() {
         addExp(15);
     }
 
+    function updatePasswordStrength() {
+        const password = document.getElementById('signup-password').value;
+        const strengthMeter = document.getElementById('password-strength-meter');
+        if (!strengthMeter) return;
+
+        if (password.length === 0) {
+            strengthMeter.classList.add('hidden');
+            return;
+        }
+        strengthMeter.classList.remove('hidden');
+
+        let score = 0;
+        if (password.length >= 8) score++; // ความยาว
+        if (/\d/.test(password)) score++; // มีตัวเลข
+        if (/[a-z]/.test(password)) score++; // มีตัวอักษรเล็ก
+        if (/[A-Z]/.test(password)) score++; // มีตัวอักษรใหญ่
+        if (/[^A-Za-z0-9]/.test(password)) score++; // มีอักขระพิเศษ
+
+        strengthMeter.className = 'password-strength-meter'; // Reset class
+        if (score <= 2) {
+            strengthMeter.classList.add('weak');
+        } else if (score <= 4) {
+            strengthMeter.classList.add('medium');
+        } else {
+            trengthMeter.classList.add('strong');
+        }
+    }
+
+    function checkPasswordMatch() {
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-password-confirm').value;
+        const matchIndicator = document.getElementById('password-match-indicator');
+        if (!matchIndicator) return;
+
+        if (confirmPassword.length > 0 && password === confirmPassword) {
+            matchIndicator.classList.remove('hidden');
+            feather.replace(); // สั่งให้วาดไอคอน
+        } else {
+            matchIndicator.classList.add('hidden');
+        }
+    }
+    
     function setupAllEventListeners() {
         if (areListenersSetup) return;
         
@@ -2034,6 +2077,17 @@ async function renderChatList() {
                         if (authErrorEl) authErrorEl.textContent = errorMessage;
                     });
             });
+        }
+
+        const signupPasswordInput = document.getElementById('signup-password');
+        const signupPasswordConfirmInput = document.getElementById('signup-password-confirm');
+
+        if (signupPasswordInput && signupPasswordConfirmInput) {
+            signupPasswordInput.addEventListener('input', () => {
+                updatePasswordStrength();
+                checkPasswordMatch();
+            });
+            signupPasswordConfirmInput.addEventListener('input', checkPasswordMatch);
         }
         
         document.body.addEventListener('click', (e) => {
@@ -2412,58 +2466,56 @@ async function renderChatList() {
                     const signupPassword = document.getElementById('signup-password').value;
                     const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
 
-                // --- 1. ตรวจสอบรหัสผ่านตรงกันหรือไม่ ---
-                if (signupPassword !== signupPasswordConfirm) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'รหัสผ่านไม่ตรงกัน',
-                        text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน',
-                    });
-                    return; // หยุดการทำงาน
-                }
-
-                // --- 2. ตรวจสอบความยาวรหัสผ่าน ---
-                if (signupPassword.length < 6) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'รหัสผ่านสั้นเกินไป',
-                        text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร',
-                    });
-                    return; // หยุดการทำงาน
-                }
-
-                // --- 3. แสดงสถานะกำลังโหลด ---
-                Swal.fire({
-                    title: 'กำลังสร้างบัญชี...',
-                    text: 'กรุณารอสักครู่',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // --- 4. ส่งข้อมูลไป Firebase ---
-                auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
-                    .then(userCredential => {
-                        // สมัครสำเร็จ, Firebase onAuthStateChanged จะจัดการ UI ต่อ
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'สมัครสมาชิกสำเร็จ!',
-                            text: `ยินดีต้อนรับสู่ Life Buddy, ${userCredential.user.email}!`,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        // ไม่ต้องทำอะไรเพิ่ม `onAuthStateChanged` จะทำงานเอง
-                    })
-                    .catch(error => {
-                        // --- 5. แสดงข้อผิดพลาดด้วย Pop-up ---
+                    // --- 1. ตรวจสอบรหัสผ่านตรงกันหรือไม่ ---
+                    if (signupPassword !== signupPasswordConfirm) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'เกิดข้อผิดพลาด',
-                            text: getFriendlyAuthError(error),
+                            itle: 'รหัสผ่านไม่ตรงกัน',
+                            text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน',
                         });
+                        return;
+                    }
+    
+                    // ===== การตรวจสอบความปลอดภัยของรหัสผ่าน =====
+                    const strengthMeter = document.getElementById('password-strength-meter');
+                    if (strengthMeter && strengthMeter.classList.contains('weak')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'รหัสผ่านไม่ปลอดภัย',
+                            text: 'กรุณาตั้งรหัสผ่านให้คาดเดายากขึ้น (แนะนำ: 8 ตัวอักษรขึ้นไป, มีตัวเลข, อักษรใหญ่-เล็ก)',
+                        });
+                        return; // หยุดการทำงานถ้าอ่อนแอเกินไป
+                    }
+
+                    // --- แสดงสถานะกำลังโหลด ---
+                    Swal.fire({
+                        title: 'กำลังสร้างบัญชี...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
-                break;
+
+                    // --- ส่งข้อมูลไป Firebase ---
+                    auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
+                        .then(userCredential => {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'สมัครสมาชิกสำเร็จ!',
+                                text: `ยินดีต้อนรับสู่ Life Buddy, ${userCredential.user.email}!`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: getFriendlyAuthError(error),
+                            });
+                        });
+                    break;
 
             case 'login-form':
                 const loginEmail = document.getElementById('login-email').value;

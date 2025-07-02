@@ -1917,3 +1917,65 @@ label.reason-option:has(input:checked) .reason-icon-group {
 .user-list-modal-item .user-info {
     text-align: left;
 }
+
+/* ======================================== */
+/* == Password Strength & Match Indicator === */
+/* ======================================== */
+
+/* จัดการกับ form group ที่เราสร้างขึ้นใหม่ */
+.modal-content .form-group {
+    margin-bottom: 15px;
+    text-align: left;
+    position: relative; /* สำคัญสำหรับการจัดตำแหน่ง icon */
+}
+.modal-content .form-group input {
+    margin-bottom: 0; /* เอา margin เดิมออก */
+}
+
+/* Container สำหรับ Input ที่มี Icon ด้านใน */
+.input-with-icon-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* ไอคอนติ๊กถูกเมื่อรหัสผ่านตรงกัน */
+#password-match-indicator {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: var(--success-color);
+    transition: opacity 0.3s;
+}
+
+#password-match-indicator .feather {
+    stroke-width: 3;
+}
+
+/* แถบวัดความปลอดภัยของรหัสผ่าน */
+#password-strength-meter {
+    display: flex;
+    gap: 5px;
+    margin-top: 8px;
+    height: 6px;
+}
+
+.strength-bar {
+    flex-grow: 1;
+    background-color: var(--border-color);
+    border-radius: 3px;
+    transition: background-color 0.3s;
+}
+
+/* สีของแถบตามระดับความปลอดภัย */
+#password-strength-meter.weak .strength-bar:nth-child(1) {
+    background-color: var(--danger-color);
+}
+
+#password-strength-meter.medium .strength-bar:nth-child(-n+2) {
+    background-color: var(--accent-color);
+}
+
+#password-strength-meter.strong .strength-bar:nth-child(-n+3) {
+    background-color: var(--success-color);
+}
