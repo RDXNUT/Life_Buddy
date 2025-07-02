@@ -2065,6 +2065,24 @@ async function renderChatList() {
     
     function setupAllEventListeners() {
         if (areListenersSetup) return;
+
+        function addPasswordInputListeners(inputId) {
+            const inputElement = document.getElementById(inputId);
+            if (!inputElement) return;
+
+            if (inputId === 'signup-password') {
+                inputElement.addEventListener('input', () => {
+                    updatePasswordStrength();
+                    checkPasswordMatch();
+                });
+            } else if (inputId === 'signup-password-confirm') {
+                inputElement.addEventListener('input', checkPasswordMatch);
+            }
+        }
+
+    // --- ผูก Event ครั้งแรกตอนโหลดหน้าเว็บ ---
+        addPasswordInputListeners('signup-password');
+        addPasswordInputListeners('signup-password-confirm');
         
     // --- Listener สำหรับ Google Sign-in ---
         const googleBtn = document.getElementById('google-signin-btn');
@@ -2081,17 +2099,6 @@ async function renderChatList() {
                     });
             });
         }
-     // --- Listeners สำหรับตรวจสอบความปลอดภัยรหัสผ่านแบบ Real-time ---
-        const signupPasswordInput = document.getElementById('signup-password');
-        const signupPasswordConfirmInput = document.getElementById('signup-password-confirm');
-
-        if (signupPasswordInput && signupPasswordConfirmInput) {
-            signupPasswordInput.addEventListener('input', () => {
-                updatePasswordStrength();
-                checkPasswordMatch();
-            });
-            signupPasswordConfirmInput.addEventListener('input', checkPasswordMatch);
-        } 
     // ===== 2. EVENT LISTENER หลักสำหรับจัดการการ CLICK ทั้งหมด =====
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
@@ -2102,19 +2109,16 @@ async function renderChatList() {
             const targetId = toggleBtn.dataset.target;
             const oldInput = document.getElementById(targetId);
             if (!oldInput) return;
+            
+            // ใช้ wrapper ที่ครอบ input อยู่เป็นตัวอ้างอิง
+            const wrapper = oldInput.closest('.input-with-icon-wrapper');
+            if (!wrapper) return;
 
-            // 1. สร้าง input element ใหม่ขึ้นมา
             const newInput = document.createElement('input');
-
-            // 2. คัดลอก attribute ทั้งหมดจาก input เก่ามายัง input ใหม่
-            // เราจะคัดลอกทุกอย่างยกเว้น 'type' ที่เราจะกำหนดเอง
             for (const attr of oldInput.attributes) {
-                if (attr.name !== 'type') {
-                    newInput.setAttribute(attr.name, attr.value);
-                }
+                newInput.setAttribute(attr.name, attr.value);
             }
 
-            // 3. กำหนด type ใหม่ และคัดลอกค่า (value) ที่ผู้ใช้พิมพ์ไว้
             if (oldInput.type === 'password') {
                 newInput.type = 'text';
             } else {
@@ -2122,21 +2126,22 @@ async function renderChatList() {
             }
             newInput.value = oldInput.value;
 
-            // 4. นำ input ใหม่ไปแทนที่ input เก่าใน DOM
-            oldInput.parentNode.replaceChild(newInput, oldInput);
+            // *** [ส่วนสำคัญ] แทนที่ input เก่าภายใน wrapper ***
+            wrapper.replaceChild(newInput, oldInput);
 
-            // 5. เปลี่ยนไอคอนของปุ่มที่กด
+            // *** [ส่วนสำคัญ] ผูก Event Listener ให้กับ input ใหม่ ***
+            addPasswordInputListeners(targetId);
+
             const icon = toggleBtn.querySelector('i');
             if (icon) {
                 icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
                 feather.replace();
             }
             
-            // 6. ทำให้ cursor กลับไปอยู่ที่เดิมหลังจากเปลี่ยน input
             newInput.focus();
-            
-            return; 
+            return;
         }
+        
         // --- จัดการ Chat List Item ---
             const chatListItem = closest('.chat-list-item');
             if (chatListItem) {
