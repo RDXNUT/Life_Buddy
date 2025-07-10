@@ -2607,53 +2607,59 @@ async function renderChatList() {
                         didOpen: () => { Swal.showLoading(); }
                     });
 
-                    auth.fetchSignInMethodsForEmail(loginEmail)
-                        .then((signInMethods) => {
-                            
-                            if (signInMethods.length === 0) {
+                    // [LOGIC ใหม่] ลอง Sign-in ดูก่อนเลย
+                    auth.signInWithEmailAndPassword(loginEmail, loginPassword)
+                        .then((userCredential) => {
+                            // --- กรณีสำเร็จ ---
+                            const user = userCredential.user;
+                            if (!user.emailVerified) {
+                                auth.signOut();
                                 Swal.fire({
-                                    icon: 'error',
-                                    title: 'ไม่พบบัญชีผู้ใช้',
-                                    text: `ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่`,
+                                    icon: 'warning',
+                                    title: 'บัญชียังไม่ถูกเปิดใช้งาน',
+                                    html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
                                 });
-                            } 
-                            else if (signInMethods.includes('google.com')) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                    html: `เนื่องจากอีเมลนี้ได้ถูกใช้ลงทะเบียนผ่าน Google ไปแล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
-                                    confirmButtonText: 'เข้าใจแล้ว',
-                                });
-                            } 
-                            else if (signInMethods.includes('password')) {
-                                auth.signInWithEmailAndPassword(loginEmail, loginPassword)
-                                    .then((userCredential) => {
-                                        const user = userCredential.user;
-                                        if (!user.emailVerified) {
-                                            auth.signOut();
-                                            Swal.fire({
-                                                icon: 'warning',
-                                                title: 'บัญชียังไม่ถูกเปิดใช้งาน',
-                                                html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
-                                            });
-                                        }
-                                    })
-                                    .catch(error => {
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                            text: getFriendlyAuthError(error),
-                                        });
-                                    });
                             }
+                            // ถ้า verified แล้ว onAuthStateChanged จะทำงานต่อเอง
                         })
                         .catch(error => {
-                            console.error("Error fetching sign in methods:", error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: 'ไม่สามารถตรวจสอบข้อมูลบัญชีได้ กรุณาลองใหม่อีกครั้งในภายหลัง',
-                            });
+                            // --- กรณีเกิด Error ---
+                            // [ส่วนสำคัญ] เราจะมาเช็ค Error กันตรงนี้
+                            
+                            // 1. ตรวจสอบ Error ยอดนิยม: รหัสผ่านผิด หรือ ไม่พบบัญชี
+                            if (error.code === 'auth/wrong-password' || 
+                                error.code === 'auth/user-not-found' || 
+                            (error.code === 'auth/internal-error' && error.message.includes('INVALID_LOGIN_CREDENTIALS'))) {
+                                
+                                // 2. เมื่อรู้ว่ารหัสผ่านผิด/ไม่พบบัญชี, เราจะลองเช็คดูว่าอีเมลนี้ผูกกับ Google หรือไม่
+                                auth.fetchSignInMethodsForEmail(loginEmail)
+                                    .then(methods => {
+                                        // 3. ถ้าเจอว่าผูกกับ Google จริงๆ ให้แสดงข้อความที่คุณต้องการ
+                                        if (methods.includes('google.com')) {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'ไม่สามารถเข้าสู่ระบบได้',
+                                                html: `เนื่องจากผู้ใช้ได้ลงทะเบียนด้วยอีเมลนี้ผ่าน Google แล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong>`,
+                                            });
+                                        } else {
+                                            // 4. ถ้าไม่เจอว่าผูกกับ Google ก็แสดงว่าเป็นรหัสผ่านผิดจริงๆ
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'เข้าสู่ระบบไม่สำเร็จ',
+                                                text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+                                            });
+                                        }
+                                    });
+
+                            } 
+                            // 5. จัดการกับ Error อื่นๆ ที่ไม่ใช่เรื่องรหัสผ่าน
+                            else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: getFriendlyAuthError(error),
+                                });
+                            }
                         });
                     break;
                 case 'flashcard-form':
