@@ -1,3 +1,5 @@
+เรากำลังทำเว้ปเป็นตัวช่วยด้านการเรียนและชีวิต เราจะส่งโค้ดให้แบะให้คุณวิเคราะห์เวลาเราส่งคำสั่งมาแก้ไขในแต่ละส่วนนะ
+html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -49,23 +51,15 @@
         <div class="header-right">
             <div id="guest-header" class="guest-container">
                 <span id="guest-mode-indicator">โหมดทดลองเล่น</span>
-                <button id="login-btn" class="small-btn">เข้าสู่ระบบ / สมัคร</button>
+                <button id="login-btn" class="small-btn pill-btn">เข้าสู่ระบบ / สมัคร</button>
             </div>
             <div id="user-header" class="user-stats hidden">
                 <button id="search-friends-btn" class="icon-button" title="ค้นหาเพื่อน"><i data-feather="search"></i></button>
                 <button id="community-btn" class="icon-button" title="เพื่อนและแชท"><i data-feather="message-square"></i><span id="unread-notification-dot" class="notification-dot hidden"></span></button>
-                
-                <!-- ซ่อนรูปโปรไฟล์ -->
-                <a href="#" id="profile-link" title="แก้ไขโปรไฟล์" class="hidden"><img id="user-photo" src="" alt="User Photo" class="profile-pic"></a>
-                
-                <!-- ซ่อนเหรียญ -->
-                <span id="coin-display" title="เหรียญของคุณ" class="hidden"><i data-feather="dollar-sign"></i> 0</span>
-                
+                <a href="#" id="profile-link" title="แก้ไขโปรไฟล์"><img id="user-photo" src="" alt="User Photo" class="profile-pic"></a>
+                <span id="coin-display" title="เหรียญของคุณ"><i data-feather="dollar-sign"></i> 0</span>
                 <span id="streak-display" title="สตรีคการเช็คอิน">🔥 <span id="streak-count">0</span></span>
-                
-                <!-- ซ่อน Level -->
-                <span id="level-header-display" title="ระดับของคุณ" class="level-badge-header hidden"><i data-feather="star"></i> Level 1</span>
-                
+                <span id="level-header-display" title="ระดับของคุณ" class="level-badge-header"><i data-feather="star"></i> Level 1</span>
                 <button id="check-in-btn"><span class="check-in-text">เช็คอิน</span><i data-feather="check" class="check-in-icon hidden"></i></button>
                 <button id="logout-btn" class="icon-button" title="ออกจากระบบ"><i data-feather="log-out"></i></button>
             </div>
@@ -168,28 +162,16 @@
     <div id="revisit-page" class="page">
     <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
 
-    <!-- ===== VIEW 1: รายการหัวข้อ  ===== -->
+    <!-- View สำหรับแสดงรายการหัวข้อตามหมวดหมู่ -->
     <div id="revisit-list-view">
         <section class="card">
             <h2><i data-feather="plus-circle"></i> เพิ่มหัวข้อใหม่สำหรับทบทวน</h2>
             <form id="revisit-form">
                 <!-- เลือกหมวดหมู่วิชา -->
                 <div class="form-group">
-                    <label for="revisit-subject">เลือกวิชา</label>
-                    <select id="revisit-subject" required>
-                        <option value="" disabled selected>-- เลือกวิชา --</option>
-                        <option value="math">คณิตศาสตร์</option>
-                        <option value="physics">ฟิสิกส์</option>
-                        <option value="chemistry">เคมี</option>
-                        <option value="biology">ชีววิทยา</option>
-                        <option value="english">ภาษาอังกฤษ</option>
-                        <option value="thai">ภาษาไทย</option>
-                        <option value="social">สังคมศึกษา</option>
-                        <option value="history">ประวัติศาสตร์</option>
-                        <option value="tech">เทคโนโลยี</option>
-                        <option value="health">สุขศึกษา</option>
-                        <option value="art">ศิลปะ</option>
-                    </select>
+                    <label for="revisit-subject-display">เลือกวิชา</label>
+                    <input type="text" id="revisit-subject-display" placeholder="-- เลือกวิชา --" readonly>
+                    <input type="hidden" id="revisit-subject-value" required>
                 </div>
                 <!-- ชื่อหัวข้อ -->
                 <div class="form-group">
@@ -227,108 +209,106 @@
         </section>
     </div>
 
-     <!-- ===== VIEW 2: หน้าจัดการควิซ  ===== -->
-    <div id="quiz-manager-view" class="page-view hidden">
-        <button id="back-to-revisit-list-btn" class="small-btn" style="margin-bottom: 20px;"><i data-feather="arrow-left"></i> กลับไปรายการหัวข้อ</button>
-        
-            <section class="card">
-                <h2 id="quiz-manager-topic-title">จัดการควิซสำหรับ: [ชื่อหัวข้อ]</h2>
-                <p id="quiz-manager-topic-notes" class="subtle-text" style="margin-top: -1rem; margin-bottom: 1.5rem;">[โน้ตย่อของหัวข้อ]</p>
+    <!-- ===== [VIEW 2] หน้าจัดการและสร้างควิซ (Quiz Creation View) ===== -->
+    <div id="quiz-creation-view" class="page-view hidden">
+        <button id="back-to-revisit-list-from-creation" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปที่รายการหัวข้อ</button>
 
-                <!-- ส่วนแสดงรายการควิซที่มีอยู่แล้ว -->
-                <div id="existing-quizzes-list">
-                    <!-- รายการควิซจะถูกสร้างโดย JS ที่นี่ -->
-                </div>
-
-                <button id="start-quiz-btn" class="hidden" style="width: 100%; margin: 20px 0; font-size: 1.2rem; padding: 15px;"><i data-feather="play"></i> เริ่มทำควิซ!</button>
-            </section>
-
-            <!-- ฟอร์มสำหรับสร้างควิซใหม่ -->
-            <section class="card">
-                <h3><i data-feather="plus-circle"></i> สร้างควิซใหม่</h3>
-                <form id="quiz-creator-form">
-                    <!-- คำถาม -->
-                    <div class="form-group">
-                        <label for="quiz-question-input">คำถาม</label>
-                        <textarea id="quiz-question-input" placeholder="ใส่คำถามของคุณที่นี่..." required></textarea>
-                    </div>
-
-                    <!-- ตัวสลับประเภทคำตอบ -->
-                    <div class="form-group quiz-type-selector">
-                        <label>ประเภทคำตอบ</label>
-                        <div>
-                            <button type="button" class="quiz-type-btn active" data-type="multiple-choice">ปรนัย (Multiple Choice)</button>
-                            <button type="button" class="quiz-type-btn" data-type="typed">อัตนัย (พิมพ์คำตอบ)</button>
-                        </div>
-                    </div>
-
-                    <!-- ส่วนสำหรับคำตอบแบบปรนัย (Multiple Choice) -->
-                    <div id="mc-options-container">
-                        <label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูกต้อง)</label>
-                        <!-- ตัวเลือกจะถูกสร้างโดย JS ที่นี่ -->
-                        <button type="button" id="add-choice-btn" class="small-btn btn-secondary" style="width: auto;"><i data-feather="plus"></i> เพิ่มตัวเลือก</button>
-                    </div>
-
-                    <!-- ส่วนสำหรับคำตอบแบบอัตนัย (Typed) -->
-                    <div id="typed-answer-container" class="hidden">
-                        <label>คำตอบที่ยอมรับได้ (พิมพ์ Enter เพื่อแยกคำตอบ)</label>
-                        <div id="accepted-answers-list">
-                            <!-- รายการคำตอบที่ยอมรับได้จะแสดงที่นี่ -->
-                        </div>
-                        <input type="text" id="add-typed-answer-input" placeholder="เช่น Ecology, นิเวศวิทยา">
-                    </div>
-                    
-                    <!-- คำอธิบายเฉลย -->
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="quiz-explanation-input">คำอธิบายเพิ่มเติม (สำหรับปุ่ม "Explain")</label>
-                        <textarea id="quiz-explanation-input" placeholder="ใส่คำอธิบายเมื่อผู้ใช้ตอบคำถามเสร็จ..."></textarea>
-                    </div>
-                    
-                    <button type="submit" style="width: 100%;"><i data-feather="check"></i> บันทึกควิซข้อนี้</button>
-                </form>
-            </section>
-        </div>
-      <!-- ===== VIEW 3: หน้าทำควิซ (Quiz Taking) ===== -->
-       <div id="quiz-taking-view" class="page-view hidden">
-            <!-- Header ของหน้าทำควิซ (แบบ Duolingo) -->
-            <header class="quiz-header">
-                <button id="quit-quiz-btn" class="icon-button"><i data-feather="x"></i></button>
-                <div class="progress-bar-wrapper quiz-progress-bar-wrapper">
-                    <div id="quiz-progress-bar" class="progress-bar"></div>
-                </div>
-                <!-- ใน index.html ค้นหา div.quiz-stats แล้วแทนที่ด้วยโค้ดนี้ -->
-            <div class="quiz-stats">
-                <span id="quiz-coin-stat">
-                    <i data-feather="dollar-sign"></i> 0
-                </span>
-                <span id="quiz-lives-stat">
-                    <i data-feather="heart"></i> 5
-                </span>
-            </div>
-            </header>
-
-            <!-- พื้นที่แสดงคำถามและตัวเลือก -->
-            <main class="quiz-main-content">
-                <h2 id="quiz-question-display">คำถามจะแสดงที่นี่...?</h2>
-                <div id="quiz-answer-options-area">
-                    <!-- ตัวเลือก หรือ ช่องให้พิมพ์ จะถูกสร้างโดย JS -->
-                </div>
-            </main>
+        <section class="card">
+            <h2><i data-feather="edit"></i> สร้าง/จัดการควิซสำหรับ: <span id="creation-topic-title"></span></h2>
             
-            <!-- Footer แสดงผลลัพธ์และปุ่ม (จะแสดงหลังตอบคำถาม) -->
-            <footer id="quiz-feedback-footer" class="hidden">
-                <div id="feedback-content">
-                    <div id="feedback-header">
-                        <h3 id="feedback-title"></h3>
-                        <p id="feedback-reward"></p>
+            <!-- ส่วนแสดงรายการควิซที่สร้างไปแล้ว -->
+            <div id="created-quizzes-list-container">
+                <h3>รายการควิซในหัวข้อนี้ (<span id="quiz-count">0</span>)</h3>
+                <ul id="created-quizzes-list">
+                    <!-- รายการควิซจะถูกสร้างโดย JS ที่นี่ -->
+                </ul>
+                <button id="start-quiz-btn" class="hidden"><i data-feather="play-circle"></i> เริ่มทำควิซ</button>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- ส่วนฟอร์มสำหรับสร้างควิซใหม่ -->
+            <form id="quiz-creation-form">
+                <h3 id="creation-form-title"><i data-feather="plus-circle"></i> เพิ่มควิซใหม่</h3>
+                
+                <!-- คำถาม -->
+                <div class="form-group">
+                    <label for="quiz-question-input">คำถาม</label>
+                    <textarea id="quiz-question-input" placeholder="ใส่คำถามของควิซที่นี่..." required></textarea>
+                </div>
+                
+                <!-- ตัวเลือกประเภทควิซ -->
+                <div class="form-group">
+                    <label>ประเภทคำตอบ</label>
+                    <div class="quiz-type-selector">
+                        <label><input type="radio" name="quiz-type" value="multiple-choice" checked> หลายตัวเลือก (Choice)</label>
+                        <label><input type="radio" name="quiz-type" value="typed"> พิมพ์ตอบ</label>
                     </div>
-                    <p id="feedback-correct-answer" class="hidden"></p>
                 </div>
-                <div class="feedback-actions">
-                    <button id="explain-quiz-btn" class="btn-secondary hidden">อธิบาย (Explain)</button>
-                    <button id="continue-quiz-btn">ไปต่อ (Continue)</button>
+
+                <!-- [A] ส่วนสำหรับคำตอบแบบหลายตัวเลือก -->
+                <div id="mc-options-container">
+                    <div class="form-group">
+                        <label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูก)</label>
+                        <div id="choices-wrapper">
+                            <!-- ตัวเลือกจะถูกสร้างโดย JS ที่นี่ -->
+                        </div>
+                        <button type="button" id="add-choice-btn" class="small-btn btn-secondary"><i data-feather="plus"></i> เพิ่มตัวเลือก</button>
+                    </div>
                 </div>
-            </footer>
+                
+                <!-- [B] ส่วนสำหรับคำตอบแบบพิมพ์ -->
+                <div id="typed-answer-container" class="hidden">
+                     <div class="form-group">
+                        <label>คำตอบที่ถูกต้อง (สามารถเพิ่มได้หลายคำตอบ เช่น ภาษาไทย/อังกฤษ)</label>
+                        <div id="typed-answers-wrapper">
+                            <!-- ช่องใส่คำตอบจะถูกสร้างโดย JS ที่นี่ -->
+                        </div>
+                        <button type="button" id="add-typed-answer-btn" class="small-btn btn-secondary"><i data-feather="plus"></i> เพิ่มรูปแบบคำตอบ</button>
+                    </div>
+                </div>
+
+                <!-- คำอธิบาย -->
+                <div class="form-group">
+                    <label for="quiz-explanation-input">คำอธิบายเพิ่มเติม (จะแสดงหลังตอบคำถาม)</label>
+                    <textarea id="quiz-explanation-input" placeholder="ใส่คำอธิบาย/เหตุผลของคำตอบที่ถูกต้อง..."></textarea>
+                </div>
+
+                <input type="hidden" id="editing-quiz-id">
+                <button type="submit" id="save-quiz-btn"><i data-feather="save"></i> บันทึกควิซข้อนี้</button>
+                <button type="button" id="cancel-edit-quiz-btn" class="btn-secondary hidden">ยกเลิกการแก้ไข</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- ===== [VIEW 3] หน้าทำควิซ (Quiz Taking View) ===== -->
+    <div id="quiz-taking-view" class="page-view hidden">
+        <div class="quiz-header">
+            <button id="exit-quiz-btn" class="icon-button" title="ออกจากการทำควิซ"><i data-feather="x"></i></button>
+            <div class="progress-bar-wrapper">
+                <div id="quiz-progress-bar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="quiz-content">
+            <h2 id="quiz-question-display">คำถามจะแสดงที่นี่...?</h2>
+            <div id="quiz-answers-container">
+                <!-- ตัวเลือก หรือ ช่องพิมพ์ตอบ จะแสดงที่นี่ -->
+            </div>
+            <button id="submit-typed-answer-btn" class="hidden">ส่งคำตอบ</button>
+        </div>
+
+        <div id="quiz-feedback-footer" class="hidden">
+            <div class="feedback-content">
+                <div class="feedback-left">
+                    <h3 id="feedback-title"></h3>
+                    <p id="feedback-explanation-preview"></p>
+                </div>
+                <div class="feedback-right">
+                    <button id="explain-btn" class="small-btn btn-secondary">อธิบาย</button>
+                    <button id="continue-quiz-btn" class="small-btn">ไปต่อ</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -373,6 +353,20 @@
                 <!-- เนื้อหาสถิติจะถูกสร้างโดย JavaScript -->
             </div>
         </section>
+    
+        <div id="timer-settings" class="card hidden">
+            <h3>ตั้งค่าเวลา (นาที)</h3>
+            <div class="form-group">
+                <label for="focus-duration">เวลาโฟกัส:</label>
+                <input type="number" id="focus-duration" value="25" min="1">
+            </div>
+            <div class="form-group">
+                <label for="break-duration">เวลาพัก:</label>
+                <input type="number" id="break-duration" value="5" min="1">
+            </div>
+            <button id="save-timer-settings-btn">บันทึก</button>
+        </div>
+    </div>
 
         <!-- Mood Page -->
     <div id="mood-page" class="page">
@@ -712,10 +706,13 @@
             
             <!-- ===== [ส่วนที่ 3: เส้นคั่นและปุ่ม Google] ===== -->
             <!-- ส่วนนี้จะอยู่นอกกรอบของ login/signup แต่ยังอยู่ใน modal-content -->
-            <p class="separator"><span>หรือ</span></p>
-            <button id="google-signin-btn" class="google-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google
-            </button>
+            <div class="social-login-container">
+                <p class="separator"><span>หรือ</span></p>
+                <button id="google-signin-btn" class="google-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google
+                </button>
+            </div>
+            
             <p id="auth-error" class="error-message"></p>
         </div>
     </div>
@@ -783,29 +780,27 @@
             <button class="close-btn" style="top: 10px; right: 10px; z-index: 10;">×</button>
         </div>
     </div>
-
+    <!-- Subject Selector Modal -->
+    <div id="subject-selector-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>เลือกวิชา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="subject-selector-body" class="subject-selector-body">
+                <!-- รายการวิชาจะถูกสร้างโดย JS -->
+            </div>
+            <div class="custom-subject-footer">
+                <form id="add-custom-subject-form">
+                    <input type="text" id="custom-subject-input" placeholder="หรือเพิ่มวิชาใหม่..." required>
+                    <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast Notification -->
     <div id="toast-notification" class="hidden"></div>
-
-    <!-- Timer Settings Modal -->
-    <div id="timer-settings-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button class="close-btn">×</button>
-            <h2>ตั้งค่าเวลา (นาที)</h2>
-            <form id="timer-settings-form">
-                <div class="form-group">
-                    <label for="modal-focus-duration">เวลาโฟกัส:</label>
-                    <input type="number" id="modal-focus-duration" value="25" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label for="modal-break-duration">เวลาพัก:</label>
-                    <input type="number" id="modal-break-duration" value="5" min="1" required>
-                </div>
-                <button type="submit">บันทึกการตั้งค่า</button>
-            </form>
-        </div>
-    </div>
 
      <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
