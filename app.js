@@ -71,35 +71,39 @@ document.addEventListener('DOMContentLoaded', () => {
         chatStreaks: {}
     };
 
-    let timerInterval, timeLeft, isFocusing = true;
-    let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
-    let currentMoodDate = dayjs(), selectedMoodDate = dayjs().format('YYYY-MM-DD');
-    let currentQuizTopic = null, shuffledFlashcards = [], currentCardIndex = 0;
-    let toastTimeout, areListenersSetup = false;
-    let currentChatId = null, unsubscribeChatListener = null, friendListeners = [];
-    let lastSearchResults = [];
-    const allPages = document.querySelectorAll('.page');
-    const allNavLinks = document.querySelectorAll('.nav-link');
-
-    let currentQuizTopicData = null; // เก็บข้อมูลหัวข้อที่กำลังจัดการ/ทำควิซ
-    let quizSession = { // เก็บสถานะระหว่างการทำควิซ
-        questions: [],
-        currentIndex: 0,
-        lives: 5,
-        coins: 0
-    };
+        let timerInterval, timeLeft, isFocusing = true;
+        let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
+        let currentMoodDate = dayjs(), selectedMoodDate = dayjs().format('YYYY-MM-DD');
+        let toastTimeout, areListenersSetup = false;
+        let currentChatId = null, unsubscribeChatListener = null, friendListeners = [];
+        let lastSearchResults = [];
+        const allPages = document.querySelectorAll('.page');
+        const allNavLinks = document.querySelectorAll('.nav-link');
+        let currentQuizTopicData = null; 
+        let quizSession = { questions: [], currentIndex: 0, lives: 5, coins: 0 };
 
     // =================================
     // ===== 3. APP INITIALIZATION =====
     // =================================
     auth.onAuthStateChanged(async (user) => {
         const loadingOverlay = document.getElementById('loading-overlay');
-        loadingOverlay.classList.remove('hidden');
-        if (user) {
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.opacity = '1';
+
+        if (user && user.emailVerified) {
             currentUser = user;
             state = await loadStateFromFirestore(user.uid);
-            setupFriendListeners(user.uid);
+            if (state) {
+                setupFriendListeners(user.uid);
+            } else {
+                // กรณีร้ายแรง: โหลด state ไม่สำเร็จ
+                await auth.signOut(); // บังคับออกจากระบบ
+                return;
+            }
         } else {
+            if (user && !user.emailVerified) {
+                await auth.signOut();
+            }
             currentUser = null;
             state = JSON.parse(JSON.stringify(initialState));
             if (friendListeners.length > 0) {
@@ -107,7 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 friendListeners = [];
             }
         }
+        
+        // เรียก runApp เพื่อตั้งค่า UI และ Listeners
         runApp();
+
+        // [สำคัญ] ซ่อน Loading Screen ที่นี่ หลังจากทุกอย่างเสร็จสิ้น
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+            loadingOverlay.classList.add('hidden');
+        }, 500);
     });
 
     async function loadStateFromFirestore(userId) {
@@ -134,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function runApp() {
+        // ตั้งค่าพื้นฐานเสมอ ไม่ว่าะจะล็อกอินหรือไม่
         if (!areListenersSetup) {
             setupAllEventListeners();
             areListenersSetup = true;
@@ -141,13 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
         applySettings();
         updateUIForLoginStatus();
         checkDailyReset();
-        checkForIdleCoins();
+
+        // แสดงหน้าตาม URL hash หรือไปที่หน้า home
         const hash = window.location.hash.substring(1);
-        showPage(hash || 'home');
-        document.getElementById('loading-overlay').style.opacity = '0';
-        setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 500);
+        const pageToLoad = (hash && document.getElementById(`${hash}-page`)) ? hash : 'home';
+        showPage(pageToLoad);
     }
-        
+            
     
     // =============================
     // ===== 4. CORE FUNCTIONS =====
@@ -236,61 +249,62 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHeaderUI(); 
         updateSettingsUI();
     }
+
+    function updateCoins(amount, reason) { 
+        if (!currentUser) return; 
+        state.coins = (state.coins || 0) + amount; 
+        showToast(`${amount > 0 ? "ได้รับ" : "ใช้"} ${Math.abs(amount)} Coins! (${reason})`); 
+        if (!state.coinHistory) state.coinHistory = []; 
+        state.coinHistory.unshift({ amount, reason, date: new Date().toISOString() }); 
+        if (state.coinHistory.length > 50) state.coinHistory.pop(); 
+        updateHeaderUI(); 
+        if (document.getElementById('shop-page').classList.contains('active')) renderShop();
+    }
     
     // ==================================
     // ===== 5. UI & PAGE RENDERING =====
     // ==================================
     window.showPage = (pageId) => {
         if (!pageId) pageId = 'home';
-        const protectedPages = ['profile', 'rewards', 'settings', 'community', 'shop'];
-        if (protectedPages.includes(pageId) && !currentUser) { 
-            openAuthModal(); 
+
+        const protectedPages = ['profile', 'rewards', 'settings', 'community', 'shop', 'mood', 'planner', 'revisit', 'focus'];
+        
+        // [สำคัญ] ตรวจสอบสิทธิ์การเข้าถึงอีกครั้ง
+        if (protectedPages.includes(pageId) && !currentUser) {
+            openAuthModal();
+            // ถ้าเข้าหน้าป้องกันไม่ได้ ให้กลับไปหน้า home เพื่อไม่ให้หน้าขาว
+            if (pageId !== 'home') showPage('home'); 
             return; 
         }
-        allPages.forEach(p => p.classList.toggle('active', p.id === `${pageId}-page`));
+
+        allPages.forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(`${pageId}-page`);
+        
+        if (targetPage) {
+            targetPage.classList.add('active');
+        } else {
+            document.getElementById('home-page').classList.add('active');
+            pageId = 'home'; // อัปเดต pageId ให้ตรงกับหน้าจริง
+        }
+
         allNavLinks.forEach(l => l.classList.toggle('active', l.dataset.page === pageId));
         
-        if (history.pushState) { 
+        if (history.pushState && `#${pageId}` !== window.location.hash) { 
             history.pushState(null, null, `#${pageId}`); 
-        } else { 
-            location.hash = `#${pageId}`; 
         }
         
+        // Render content for the specific page
         switch(pageId) {
-            case 'home': 
-                updateHomePageUI(); 
-                break;
-            case 'planner': 
-                renderPlannerCalendar(currentPlannerDate); 
-                break;
-            case 'revisit':
-                showRevisitSubView('revisit-list-view');
-                renderRevisitList(); 
-                break;
-            case 'focus': 
-                resetTimer(); 
-                renderFocusStats('day');
-                break;
-            case 'mood': 
-                renderMoodCalendar(currentMoodDate); 
-                break;
-            case 'community': 
-                document.getElementById('chat-conversation-view').classList.add('hidden');
-                document.getElementById('chat-welcome-view').classList.remove('hidden');
-                renderChatList(); 
-                break;
-            case 'shop': 
-                renderShop(); 
-                break;
-            case 'rewards': 
-                updateRewardsUI(); 
-                break;
-            case 'settings': 
-                updateSettingsUI(); 
-                break;
-            case 'profile': 
-                renderProfilePage(); 
-                break;
+            case 'home': updateHomePageUI(); break;
+            case 'planner': renderPlannerCalendar(currentPlannerDate); break;
+            case 'revisit': showRevisitSubView('revisit-list-view'); renderRevisitList(); break;
+            case 'focus': resetTimer(); renderFocusStats('day'); break;
+            case 'mood': renderMoodCalendar(currentMoodDate); break;
+            case 'community': renderChatList(); break;
+            case 'shop': renderShop(); break;
+            case 'rewards': updateRewardsUI(); break;
+            case 'settings': updateSettingsUI(); break;
+            case 'profile': renderProfilePage(); break;
         }
         feather.replace();
         closeSidebar();
@@ -311,37 +325,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHeaderUI() {
-        if (!currentUser) return;
-        renderProfilePicture(state.profile.photoURL, document.getElementById('user-photo'));
-        
-        document.getElementById('coin-display').innerHTML = `<i data-feather="dollar-sign"></i> ${state.coins || 0}`;
-        const streakCountEl = document.getElementById('streak-count');
-        if (streakCountEl) {
-            streakCountEl.textContent = state.streak || 0;
-        }
-        const { level } = calculateLevel(state.exp);
-        const levelHeaderEl = document.getElementById('level-header-display');
-        if (levelHeaderEl) {
-            levelHeaderEl.innerHTML = `<i data-feather="star"></i> Level ${level}`;
-        }
-
+        if (!currentUser || !state) return;
         const checkInBtn = document.getElementById('check-in-btn');
         if (checkInBtn) {
             const checkInText = checkInBtn.querySelector('.check-in-text');
             const checkInIcon = checkInBtn.querySelector('.check-in-icon');
-            if (state.lastCheckIn === dayjs().format('YYYY-MM-DD')) {
-                checkInBtn.disabled = true;
-                checkInBtn.classList.add('checked');
-                if(checkInText) checkInText.classList.add('hidden');
-                if(checkInIcon) checkInIcon.classList.remove('hidden');
-            } else {
-                checkInBtn.disabled = false;
-                checkInBtn.classList.remove('checked');
-                if(checkInText) checkInText.classList.remove('hidden');
-                if(checkInIcon) checkInIcon.classList.add('hidden');
-            }
+            const isCheckedIn = state.lastCheckIn === dayjs().format('YYYY-MM-DD');
+            checkInBtn.disabled = isCheckedIn;
+            checkInBtn.classList.toggle('checked', isCheckedIn);
+            if(checkInText) checkInText.classList.toggle('hidden', isCheckedIn);
+            if(checkInIcon) checkInIcon.classList.toggle('hidden', !isCheckedIn);
         }
-        feather.replace();
+        const streakCountEl = document.getElementById('streak-count');
+        if (streakCountEl) streakCountEl.textContent = state.streak || 0;
     }
     
     function updateHomePageUI() {
@@ -775,28 +771,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     // ===== 6. FEATURE-SPECIFIC FUNCTIONS =====
     // =========================================
+
      // --- REVISIT & QUIZ SYSTEM FUNCTIONS ---
     function showRevisitSubView(viewId) {
         const page = document.getElementById('revisit-page');
         if (!page) return;
-        page.querySelectorAll('.page-view').forEach(view => view.classList.add('hidden'));
+
+        const allSubViews = page.querySelectorAll('.page-view, #revisit-list-view');
+        allSubViews.forEach(view => view.classList.add('hidden'));
         
-        // เราต้องซ่อน/แสดง View หลักของหน้านี้ด้วย
-        const listView = document.getElementById('revisit-list-view');
-        const managerView = document.getElementById('quiz-manager-view');
-        const takingView = document.getElementById('quiz-taking-view');
-
-        if(listView) listView.style.display = 'none';
-        if(managerView) managerView.classList.add('hidden');
-        if(takingView) takingView.classList.add('hidden');
-
-        if(viewId === 'revisit-list-view') {
-            if(listView) listView.style.display = 'block';
-        } else {
-            const viewToShow = document.getElementById(viewId);
-            if (viewToShow) {
-                viewToShow.classList.remove('hidden');
-            }
+        const viewToShow = document.getElementById(viewId);
+        if (viewToShow) {
+            viewToShow.classList.remove('hidden');
         }
     }
 
@@ -804,11 +790,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const topic = state.revisitTopics[subject]?.find(t => t.id === topicId);
         if (!topic) {
             console.error("Topic not found!", { subject, topicId });
-            showToast("เกิดข้อผิดพลาด: ไม่พบข้อมูลหัวข้อ");
-            return;
+            return showToast("เกิดข้อผิดพลาด: ไม่พบข้อมูลหัวข้อ");
         }
         currentQuizTopicData = JSON.parse(JSON.stringify(topic)); 
-        currentQuizTopicData.subjectRef = subject; 
+        currentQuizTopicData.subjectRef = subject;
         currentQuizTopicData.topicId = topicId; 
         showRevisitSubView('quiz-manager-view');
         renderQuizManager();
@@ -2045,285 +2030,182 @@ async function renderChatList() {
     // =========================================
     // ===== 7. EVENT LISTENERS & HANDLERS =====
     // =========================================
-    function handleCheckIn() { 
-        if (document.getElementById('check-in-btn').disabled) return; 
-        const todayStr = dayjs().format('YYYY-MM-DD'); 
-        if (state.lastCheckIn !== todayStr) { 
-            const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD'); 
-            state.streak = state.lastCheckIn === yesterdayStr ? (state.streak || 0) + 1 : 1; 
-            state.lastCheckIn = todayStr; 
-            addExp(40); 
-            updateCoins(5, "เช็คอินรายวัน"); 
-            saveState(); 
-            updateHeaderUI(); 
-            checkForDailyBonus(); 
-        } 
+    
+    function handleLoginFormSubmit(e) {
+        e.preventDefault();
+        const loginEmail = document.getElementById('login-email').value;
+        const loginPassword = document.getElementById('login-password').value;
+
+        if (!loginEmail || !loginPassword) {
+            return Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณากรอกอีเมลและรหัสผ่าน' });
+        }
+
+        Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        auth.signInWithEmailAndPassword(loginEmail, loginPassword)
+            .then(userCredential => {
+                const user = userCredential.user;
+                if (!user.emailVerified) {
+                    auth.signOut();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'บัญชียังไม่ถูกเปิดใช้งาน',
+                        html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
+                    });
+                } else {
+                    Swal.close(); // ปิด loading popup เมื่อสำเร็จ
+                }
+            })
+            .catch(error => {
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    auth.fetchSignInMethodsForEmail(loginEmail)
+                        .then(methods => {
+                            if (methods.includes('google.com')) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ไม่สามารถเข้าสู่ระบบได้',
+                                    html: `ผู้ใช้ได้ลงทะเบียนด้วยอีเมลนี้ผ่าน Google แล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
+                                });
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
+                            }
+                        });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: getFriendlyAuthError(error) });
+                }
+            });
+    }
+    function handleSignupFormSubmit(e) {
+        e.preventDefault();
+        const signupEmail = document.getElementById('signup-email').value;
+        const signupPassword = document.getElementById('signup-password').value;
+        const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
+
+        if (signupPassword !== signupPasswordConfirm) {
+            return Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ตรงกัน', text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน' });
+        }
+        if (signupPassword.length < 6) {
+            return Swal.fire({ icon: 'error', title: 'รหัสผ่านสั้นเกินไป', text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร' });
+        }
+
+        Swal.fire({ title: 'กำลังสร้างบัญชี...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
+            .then(async (userCredential) => {
+                const user = userCredential.user;
+                await user.sendEmailVerification();
+
+                const initialName = user.email.split('@')[0];
+                const randomTag = Math.floor(1000 + Math.random() * 9000);
+                const newUserProfileData = JSON.parse(JSON.stringify(initialState));
+                newUserProfileData.profile.displayName = initialName;
+                newUserProfileData.profile.lifebuddyId = `${initialName}#${randomTag}`;
+                
+                await db.collection('users').doc(user.uid).set(newUserProfileData);
+                await auth.signOut();
+
+                Swal.fire({
+                    icon: 'info',
+                    title: 'สมัครสมาชิกเกือบสำเร็จ!',
+                    html: `เราได้ส่งลิงก์ยืนยันไปยัง <strong>${user.email}</strong><br/>กรุณาตรวจสอบกล่องจดหมายและคลิกลิงก์เพื่อเปิดใช้งานบัญชีของคุณ`,
+                    confirmButtonText: 'เข้าใจแล้ว',
+                    allowOutsideClick: false
+                }).then(() => {
+                    showAuthView('login-view');
+                });
+            })
+            .catch(error => {
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: getFriendlyAuthError(error) });
+            });
+    }
+    function handleGoogleSignIn() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).catch(error => {
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: getFriendlyAuthError(error) });
+        });
+    }
+    function showAuthView(viewId) {
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('signup-view').classList.add('hidden');
+        document.getElementById(viewId).classList.remove('hidden');
+        document.getElementById('auth-error').textContent = '';
+    }
+     function handlePasswordToggle(button) {
+        const targetId = button.dataset.target;
+        const passwordInput = document.getElementById(targetId);
+        if (passwordInput) {
+            const newType = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = newType;
+            button.querySelector('i').dataset.feather = newType === 'password' ? 'eye' : 'eye-off';
+            feather.replace();
+        }
     }
 
-    function handleProfileFormSubmit(e) { 
-        e.preventDefault(); 
-        if (!currentUser) return; 
-        Swal.fire({ 
-            title: 'ยืนยันการบันทึก', 
-            text: "คุณต้องการบันทึกการเปลี่ยนแปลงข้อมูลใช่หรือไม่?", 
-            icon: 'question', 
-            showCancelButton: true, 
-            confirmButtonColor: 'var(--primary-color)', 
-            cancelButtonColor: 'var(--danger-color)', 
-            confirmButtonText: 'ใช่, บันทึกเลย!', 
-            cancelButtonText: 'ยกเลิก' 
-        }).then(async (result) => { 
-            if (result.isConfirmed) { 
-                state.profile.displayName = document.getElementById('display-name').value.trim(); 
-                state.profile.gender = document.getElementById('gender').value; 
-                state.profile.age = document.getElementById('age').value; 
-                state.profile.bio = document.getElementById('bio').value; 
-                state.settings.showEmail = document.getElementById('show-email-toggle').checked; 
-                await saveState(); 
-                updateHeaderUI(); 
-                Swal.fire('บันทึกสำเร็จ!', 'ข้อมูลโปรไฟล์ของคุณถูกอัปเดตแล้ว', 'success').then(() => { 
-                    document.getElementById('profile-edit-mode').classList.add('hidden'); 
-                    document.getElementById('profile-view-mode').classList.remove('hidden'); 
-                    renderProfilePage(); 
-                }); 
-            } 
-        }); 
-    }
-    
-    function handleMoodFormSubmit(e) { 
-        e.preventDefault(); 
-        const selectedMood = document.getElementById('selected-mood').value; 
-        if (!selectedMood) { 
-            showToast("กรุณาเลือกอารมณ์ของคุณก่อน"); 
-            return; 
-        } 
-        const notes = document.getElementById('mood-notes').value; 
-        const reasons = Array.from(document.querySelectorAll('input[name="mood-reason"]:checked')).map(el => el.value); 
-        const dateToSave = selectedMoodDate; 
-        if (!state.moods) {
-            state.moods = {}; 
-        }
-        const hadPreviousEntry = !!state.moods[dateToSave]; 
-        state.moods[dateToSave] = { mood: selectedMood, notes: notes, reasons: reasons }; 
-        if (!hadPreviousEntry) { 
-            updateCoins(5, "บันทึกอารมณ์");
-            addExp(25);
-        } 
-        document.getElementById('mood-form').reset(); 
-        document.querySelectorAll('.emoji-option.selected').forEach(el => el.classList.remove('selected')); 
-        saveState(); 
-        renderMoodCalendar(currentMoodDate);
-        showToast("บันทึกอารมณ์เรียบร้อยแล้ว!"); 
-        if (dateToSave === dayjs().format('YYYY-MM-DD')) {
+    function handleCheckIn() {
+        if (document.getElementById('check-in-btn').disabled) return;
+        const todayStr = dayjs().format('YYYY-MM-DD');
+        if (state.lastCheckIn !== todayStr) {
+            const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+            state.streak = state.lastCheckIn === yesterdayStr ? (state.streak || 0) + 1 : 1;
+            state.lastCheckIn = todayStr;
+            addExp(40);
+            updateCoins(5, "เช็คอินรายวัน");
+            saveState();
+            updateHeaderUI();
             checkForDailyBonus();
         }
     }
-    
-    function handlePlannerFormSubmit(e) { 
-        e.preventDefault(); 
-        const eventNameInput = document.getElementById('event-name'); 
-        const eventCategoryInput = document.getElementById('event-category'); 
-        const eventTimeInput = document.getElementById('event-time'); 
-        const eventName = eventNameInput.value.trim(); 
-        const eventCategory = eventCategoryInput.value; 
-        const eventTime = eventTimeInput.value; 
-        if (eventName && eventCategory && eventTime) { 
-            const newEvent = { name: eventName, category: eventCategory, time: eventTime }; 
-            if (!state.planner) state.planner = {}; 
-            if (!state.planner[selectedPlannerDate]) { 
-                state.planner[selectedPlannerDate] = []; 
-            } 
-            state.planner[selectedPlannerDate].push(newEvent); 
-            saveState(); 
-            renderPlannerCalendar(currentPlannerDate); 
-            renderPlannerDetails(selectedPlannerDate); 
-            eventNameInput.value = ''; 
-            eventCategoryInput.value = ''; 
-            eventTimeInput.value = ''; 
-            showToast("เพิ่มกิจกรรมเรียบร้อยแล้ว!"); 
-        } else { 
-            showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง"); 
-        } 
+    function handleRandomActivity() {
+        const activities = state.userActivities?.length > 0 ? state.userActivities : defaultActivities;
+        if (activities.length === 0) {
+            return showToast("ไม่มีกิจกรรมในรายการของคุณ");
+        }
+        const randomIndex = Math.floor(Math.random() * activities.length);
+        const suggestionEl = document.getElementById('activity-suggestion');
+        if (suggestionEl) {
+            suggestionEl.textContent = activities[randomIndex];
+        }
     }
+    function addPasswordInputListeners(inputId) {
+        const inputElement = document.getElementById(inputId);
+        if (!inputElement) return;
 
-    function handleRevisitFormSubmit(e) {
-        e.preventDefault();
-        const subject = document.getElementById('revisit-subject').value;
-        const topicName = document.getElementById('revisit-topic-name').value.trim();
-        const topicNotes = document.getElementById('revisit-topic-notes').value.trim();
-        const intervals = Array.from(document.querySelectorAll('input[name="review-interval"]:checked')).map(el => parseInt(el.value));
-        if (!subject || !topicName) {
-            showToast("กรุณาเลือกวิชาและใส่ชื่อหัวข้อ");
-            return;
+        if (inputId === 'signup-password') {
+            inputElement.addEventListener('input', () => {
+                updatePasswordStrength();
+                checkPasswordMatch();
+            });
+        } else if (inputId === 'signup-password-confirm') {
+            inputElement.addEventListener('input', checkPasswordMatch);
         }
-        if (intervals.length === 0) {
-            showToast("กรุณาเลือกรอบการทบทวนอย่างน้อย 1 รอบ");
-            return;
-        }
-        const newTopic = {
-            id: Date.now(),
-            name: topicName,
-            notes: topicNotes,
-            level: 0,
-            reviewIntervals: intervals.sort((a, b) => a - b),
-            nextReviewDate: dayjs().add(intervals[0], 'day').format('YYYY-MM-DD'),
-            quizzes: []
-        };
-        if (!state.revisitTopics[subject]) {
-            state.revisitTopics[subject] = [];
-        }
-        state.revisitTopics[subject].push(newTopic);
-        saveState();
-        renderRevisitList();
-        document.getElementById('revisit-form').reset();
-        showToast(`เพิ่มหัวข้อ "${topicName}" ในวิชา${subject}แล้ว!`);
-        addExp(15);
     }
+    function checkPasswordMatch() {
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-password-confirm').value;
+        const matchIndicator = document.getElementById('password-match-indicator');
+        if (!matchIndicator) return;
 
-    function renderQuizManager() {
-        if (!currentQuizTopicData) return;
-
-        // แสดงชื่อและโน้ตย่อของหัวข้อ
-        document.getElementById('quiz-manager-topic-title').textContent = `จัดการควิซสำหรับ: ${currentQuizTopicData.name}`;
-        document.getElementById('quiz-manager-topic-notes').textContent = currentQuizTopicData.notes || "ไม่มีโน้ตย่อสำหรับหัวข้อนี้";
-
-        // ===== [ส่วนที่แก้ไขและสำคัญมาก] =====
-        // ตรวจสอบก่อนว่ามี quizzes หรือไม่ ถ้าไม่มีให้สร้างเป็น Array ว่าง
-        if (!currentQuizTopicData.quizzes) {
-            currentQuizTopicData.quizzes = [];
-        }
-        const quizzes = currentQuizTopicData.quizzes; // ใช้ตัวแปรที่ปลอดภัยแล้ว
-        // ===== [สิ้นสุดส่วนที่แก้ไข] =====
-
-        // แสดงรายการควิซที่มีอยู่
-        const listContainer = document.getElementById('existing-quizzes-list');
-        if (quizzes.length > 0) {
-            listContainer.innerHTML = quizzes.map((quiz, index) => `
-                <div class="quiz-list-item">
-                    <p>${index + 1}. ${quiz.question}</p>
-                    <span class="quiz-type-tag">${quiz.type === 'typed' ? 'อัตนัย' : 'ปรนัย'}</span>
-                    <button class="icon-button delete-quiz-btn" data-index="${index}" title="ลบควิซข้อนี้"><i data-feather="trash"></i></button>
-                </div>
-            `).join('');
+        if (confirmPassword.length > 0 && password === confirmPassword) {
+            matchIndicator.classList.remove('hidden');
             feather.replace();
         } else {
-            listContainer.innerHTML = '<p class="subtle-text" style="text-align:center; padding: 20px 0;">ยังไม่มีควิซในหัวข้อนี้... มาสร้างกันเลย!</p>';
+            matchIndicator.classList.add('hidden');
         }
-
-        // แสดง/ซ่อนปุ่ม "เริ่มทำควิซ"
-        document.getElementById('start-quiz-btn').classList.toggle('hidden', quizzes.length === 0);
-
-        // รีเซ็ตฟอร์มสร้างควิซ
-        resetQuizCreatorForm();
-    }
-
-    /**
-     * รีเซ็ตฟอร์มสำหรับสร้างควิซให้กลับเป็นค่าเริ่มต้น
-     */
-    function resetQuizCreatorForm() {
-        document.getElementById('quiz-creator-form').reset();
-        document.querySelector('.quiz-type-btn[data-type="multiple-choice"]').click(); // ตั้งเป็นปรนัยเสมอ
-        document.getElementById('mc-options-container').innerHTML = `
-            <label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูกต้อง)</label>
-            <button type="button" id="add-choice-btn" class="small-btn btn-secondary" style="width: auto;"><i data-feather="plus"></i> เพิ่มตัวเลือก</button>
-        `;
-        addQuizChoiceOption(); // เพิ่มตัวเลือกเริ่มต้น 2 อัน
-        addQuizChoiceOption();
-        feather.replace();
-    }
-
-    /**
-     * เพิ่มช่องสำหรับกรอกตัวเลือก (Multiple Choice)
-     */
-    function addQuizChoiceOption() {
-        const container = document.getElementById('mc-options-container');
-        const choiceCount = container.querySelectorAll('.mc-choice-item').length;
-        const newChoice = document.createElement('div');
-        newChoice.className = 'mc-choice-item';
-        newChoice.innerHTML = `
-            <input type="radio" name="correct-answer-radio" id="choice-radio-${choiceCount}" required>
-            <input type="text" placeholder="เนื้อหาตัวเลือก ${choiceCount + 1}" required>
-            <button type="button" class="icon-button remove-choice-btn" title="ลบตัวเลือกนี้"><i data-feather="x-circle"></i></button>
-        `;
-        // แทรกก่อนปุ่ม "เพิ่มตัวเลือก"
-        container.insertBefore(newChoice, document.getElementById('add-choice-btn'));
-        feather.replace();
-    }
-
-    /**
-     * จัดการการ submit ฟอร์มสร้างควิซใหม่
-     */
-    function handleQuizCreatorFormSubmit(e) {
-        e.preventDefault();
-        if (!currentQuizTopicData) return;
-
-        const question = document.getElementById('quiz-question-input').value.trim();
-        const explanation = document.getElementById('quiz-explanation-input').value.trim();
-        const quizType = document.querySelector('.quiz-type-btn.active').dataset.type;
-
-        if (!question) {
-            showToast("กรุณาใส่คำถาม");
-            return;
-        }
-
-        const newQuiz = {
-            id: Date.now(),
-            question,
-            explanation,
-            type: quizType,
-        };
-
-        if (quizType === 'multiple-choice') {
-            const choices = Array.from(document.querySelectorAll('.mc-choice-item input[type="text"]')).map(input => input.value.trim());
-            const correctRadio = document.querySelector('.mc-choice-item input[type="radio"]:checked');
-            
-            if (choices.some(c => !c) || choices.length < 2) {
-                showToast("กรุณากรอกตัวเลือกอย่างน้อย 2 ข้อให้ครบถ้วน");
-                return;
-            }
-            if (!correctRadio) {
-                showToast("กรุณาเลือกคำตอบที่ถูกต้อง");
-                return;
-            }
-            
-            const correctIndex = Array.from(document.querySelectorAll('.mc-choice-item input[type="radio"]')).indexOf(correctRadio);
-            
-            newQuiz.options = choices;
-            newQuiz.correctAnswer = choices[correctIndex];
-
-        } else { // Typed answer
-            const acceptedAnswers = Array.from(document.querySelectorAll('.typed-answer-tag span')).map(span => span.textContent);
-            if (acceptedAnswers.length === 0) {
-                showToast("กรุณาเพิ่มคำตอบที่ยอมรับได้อย่างน้อย 1 คำตอบ");
-                return;
-            }
-            newQuiz.acceptedAnswers = acceptedAnswers;
-        }
-
-        if (!currentQuizTopicData.quizzes) {
-            currentQuizTopicData.quizzes = [];
-        }
-        currentQuizTopicData.quizzes.push(newQuiz);
-        
-        saveState();
-        showToast("สร้างควิซข้อใหม่สำเร็จ!");
-        renderQuizManager(); // อัปเดตรายการควิซ
     }
 
     function updatePasswordStrength() {
         const password = document.getElementById('signup-password').value;
         const strengthText = document.getElementById('password-strength-text');
-        if (!strengthText) return; // ตรวจสอบแค่ strengthText
+        if (!strengthText) return;
 
         if (password.length === 0) {
-            strengthText.classList.add('hidden'); // ซ่อนข้อความเมื่อไม่มีการพิมพ์
+            strengthText.classList.add('hidden');
             strengthText.textContent = '';
             return;
         }
         
-        strengthText.classList.remove('hidden'); // แสดงข้อความ
+        strengthText.classList.remove('hidden');
 
-        // Logic การคำนวณ score เหมือนเดิม
         let score = 0;
         if (password.length >= 8) score++;
         if (/\d/.test(password)) score++;
@@ -2331,10 +2213,8 @@ async function renderChatList() {
         if (/[A-Z]/.test(password)) score++;
         if (/[^A-Za-z0-9]/.test(password)) score++;
 
-        // Reset class ของข้อความ
         strengthText.className = 'password-feedback-text';
 
-        // กำหนด class และข้อความตาม score
         if (score <= 2) {
             strengthText.classList.add('weak');
             strengthText.textContent = 'ความปลอดภัย: อ่อนแอ';
@@ -2346,697 +2226,478 @@ async function renderChatList() {
             strengthText.textContent = 'ความปลอดภัย: แข็งแกร่ง';
         }
     }
-    function checkPasswordMatch() {
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-password-confirm').value;
-        const matchIndicator = document.getElementById('password-match-indicator');
-        if (!matchIndicator) return;
-
-        if (confirmPassword.length > 0 && password === confirmPassword) {
-            matchIndicator.classList.remove('hidden');
-            feather.replace(); // สั่งให้วาดไอคอน
+    function handleRandomAdvice() {
+        const advices = state.userAdvice?.length > 0 ? state.userAdvice : defaultAdvices;
+        if (advices.length === 0) {
+            return showToast("ไม่มีคำแนะนำในรายการของคุณ");
+        }
+        const randomAdviceIndex = Math.floor(Math.random() * advices.length);
+        const adviceEl = document.getElementById('daily-advice');
+        if (adviceEl) {
+            adviceEl.textContent = advices[randomAdviceIndex];
+        }
+    }
+    function handleCopyId() {
+        if (navigator.clipboard && state.profile?.lifebuddyId) {
+            navigator.clipboard.writeText(state.profile.lifebuddyId)
+                .then(() => {
+                    showToast('คัดลอก LifeBuddy ID สำเร็จ!');
+                })
+                .catch(err => {
+                    console.error('ไม่สามารถคัดลอก ID ได้:', err);
+                    showToast('เกิดข้อผิดพลาดในการคัดลอก');
+                });
         } else {
-            matchIndicator.classList.add('hidden');
+            showToast('ไม่สามารถใช้งานฟีเจอร์คัดลอกได้');
+        }
+    }
+
+    function handleTodoCheckboxClick(checkbox) {
+        const todoId = parseInt(checkbox.dataset.id);
+        if (isNaN(todoId)) return;
+
+        const todo = state.todos.find(t => t.id === todoId);
+        if (todo) {
+            todo.completed = checkbox.checked;
+            checkbox.closest('li')?.classList.toggle('completed', todo.completed);
+
+            if (todo.completed && !todo.rewarded) {
+                todo.rewarded = true;
+                addExp(5);
+                updateCoins(1, `ทำเป้าหมายสำเร็จ`);
+                showToast(`ทำ "${todo.text}" สำเร็จ! +1 Coin & +5 EXP`);
+                // Optionally, remove the todo after a while
+                setTimeout(() => {
+                    state.todos = state.todos.filter(t => t.id !== todoId);
+                    saveState();
+                    updateHomePageUI(); 
+                }, 300000); // 5 minutes
+            }
+            saveState();
+        }
+    }
+    function handleTodoFormSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('todo-input');
+        const text = input.value.trim();
+        if (text) {
+            if (!state.todos) state.todos = [];
+            state.todos.push({ id: Date.now(), text: text, completed: false, rewarded: false });
+            input.value = '';
+            updateHomePageUI();
+            saveState();
+        }
+    }
+    function handleTimerSettingsFormSubmit(e) {
+        e.preventDefault();
+        const newFocusDuration = parseInt(document.getElementById('modal-focus-duration').value);
+        const newBreakDuration = parseInt(document.getElementById('modal-break-duration').value);
+        
+        if (isNaN(newFocusDuration) || isNaN(newBreakDuration) || newFocusDuration < 1 || newBreakDuration < 1) {
+            return showToast("กรุณาใส่ค่าเวลาที่ถูกต้อง (ต้องมากกว่า 0)");
+        }
+
+        if (!state.settings) state.settings = {};
+        state.settings.focusDuration = newFocusDuration;
+        state.settings.breakDuration = newBreakDuration;
+        
+        saveState();
+        resetTimer(); 
+
+        document.getElementById('timer-settings-modal').classList.add('hidden');
+        showToast("บันทึกการตั้งค่าเวลาเรียบร้อยแล้ว!");
+    }
+
+    function handleTypedAnswerInput(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            e.preventDefault();
+            const answerText = e.target.value.trim();
+            const tag = document.createElement('div');
+            tag.className = 'typed-answer-tag';
+            tag.innerHTML = `<span>${answerText}</span><button type="button" class="icon-button"><i data-feather="x"></i></button>`;
+            tag.querySelector('button').addEventListener('click', () => tag.remove());
+            document.getElementById('accepted-answers-list').appendChild(tag);
+            feather.replace();
+            e.target.value = '';
         }
     }
     
+    function handleTodoCheckboxClick(checkbox) {
+        const todoId = parseInt(checkbox.dataset.id);
+        const todo = state.todos.find(t => t.id === todoId);
+        if (todo) {
+            todo.completed = checkbox.checked;
+            checkbox.closest('li').classList.toggle('completed', todo.completed);
+            if (todo.completed && !todo.rewarded) {
+                todo.rewarded = true;
+                addExp(5);
+                updateCoins(1, `ทำเป้าหมายสำเร็จ`);
+                showToast(`ทำ "${todo.text}" สำเร็จ! +1 Coin & +5 EXP`);
+            }
+            saveState();
+        }
+    }
+
+    function handleTodoFormSubmit(e){
+        e.preventDefault();
+        const input = document.getElementById('todo-input'); 
+        if (input.value.trim()) { 
+            if (!state.todos) state.todos = [];
+            state.todos.push({ id: Date.now(), text: input.value.trim(), completed: false, rewarded: false }); 
+            input.value = ''; 
+            updateHomePageUI(); 
+            saveState(); 
+        } 
+    }
+
+    function handleProfileFormSubmit(e) {
+        e.preventDefault();
+        if (!currentUser) return;
+        Swal.fire({
+            title: 'ยืนยันการบันทึก',
+            text: "คุณต้องการบันทึกการเปลี่ยนแปลงข้อมูลใช่หรือไม่?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary-color)',
+            cancelButtonColor: 'var(--danger-color)',
+            confirmButtonText: 'ใช่, บันทึกเลย!',
+            cancelButtonText: 'ยกเลิก'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                state.profile.displayName = document.getElementById('display-name').value.trim();
+                state.profile.gender = document.getElementById('gender').value;
+                state.profile.age = document.getElementById('age').value;
+                state.profile.bio = document.getElementById('bio').value;
+                state.settings.showEmail = document.getElementById('show-email-toggle').checked;
+                await saveState();
+                updateHeaderUI();
+                Swal.fire('บันทึกสำเร็จ!', 'ข้อมูลโปรไฟล์ของคุณถูกอัปเดตแล้ว', 'success').then(() => {
+                    document.getElementById('profile-edit-mode').classList.add('hidden');
+                    document.getElementById('profile-view-mode').classList.remove('hidden');
+                    renderProfilePage();
+                });
+            }
+        });
+    }
+
+    function handleMoodFormSubmit(e) {
+        e.preventDefault();
+        const selectedMood = document.getElementById('selected-mood').value;
+        if (!selectedMood) {
+            return showToast("กรุณาเลือกอารมณ์ของคุณก่อน");
+        }
+        const notes = document.getElementById('mood-notes').value;
+        const reasons = Array.from(document.querySelectorAll('input[name="mood-reason"]:checked')).map(el => el.value);
+        const dateToSave = selectedMoodDate;
+        if (!state.moods) state.moods = {};
+        const hadPreviousEntry = !!state.moods[dateToSave];
+        state.moods[dateToSave] = { mood: selectedMood, notes: notes, reasons: reasons };
+        if (!hadPreviousEntry) {
+            updateCoins(5, "บันทึกอารมณ์");
+            addExp(25);
+        }
+        document.getElementById('mood-form').reset();
+        document.querySelectorAll('.emoji-option.selected').forEach(el => el.classList.remove('selected'));
+        saveState();
+        renderMoodCalendar(currentMoodDate);
+        showToast("บันทึกอารมณ์เรียบร้อยแล้ว!");
+        if (dateToSave === dayjs().format('YYYY-MM-DD')) {
+            checkForDailyBonus();
+        }
+    }
+
+    function handlePlannerFormSubmit(e) {
+        e.preventDefault();
+        const eventNameInput = document.getElementById('event-name');
+        const eventCategoryInput = document.getElementById('event-category');
+        const eventTimeInput = document.getElementById('event-time');
+        const eventName = eventNameInput.value.trim();
+        const eventCategory = eventCategoryInput.value;
+        const eventTime = eventTimeInput.value;
+        if (eventName && eventCategory && eventTime) {
+            const newEvent = { name: eventName, category: eventCategory, time: eventTime };
+            if (!state.planner) state.planner = {};
+            if (!state.planner[selectedPlannerDate]) state.planner[selectedPlannerDate] = [];
+            state.planner[selectedPlannerDate].push(newEvent);
+            saveState();
+            renderPlannerCalendar(currentPlannerDate);
+            renderPlannerDetails(selectedPlannerDate);
+            eventNameInput.value = '';
+            eventCategoryInput.value = '';
+            eventTimeInput.value = '';
+            showToast("เพิ่มกิจกรรมเรียบร้อยแล้ว!");
+        } else {
+            showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+        }
+    }
+
+    function handleQuizTypeToggle(button) {
+        document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        const type = button.dataset.type;
+        document.getElementById('mc-options-container').classList.toggle('hidden', type !== 'multiple-choice');
+        document.getElementById('typed-answer-container').classList.toggle('hidden', type !== 'typed');
+    }
+    function handleRemoveChoice(button) {
+        if (document.querySelectorAll('.mc-choice-item').length > 2) {
+            button.closest('.mc-choice-item').remove();
+        } else {
+            showToast("ต้องมีอย่างน้อย 2 ตัวเลือก");
+        }
+    }
+    function handleDeleteQuiz(button) {
+        if (!currentQuizTopicData) return;
+        const index = parseInt(button.dataset.index);
+        if (!isNaN(index)) {
+            const { subjectRef, topicId } = currentQuizTopicData;
+            const topicInState = state.revisitTopics[subjectRef]?.find(t => t.id === topicId);
+            if (topicInState?.quizzes) {
+                topicInState.quizzes.splice(index, 1);
+                saveState();
+                // Re-render the manager view with updated data
+                currentQuizTopicData.quizzes = topicInState.quizzes;
+                renderQuizManager(); 
+                showToast("ลบควิซเรียบร้อยแล้ว");
+            }
+        }
+    }
+    function handleChatFormSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (text) {
+            sendMessage(text);
+            input.value = '';
+        }
+    }
+    function handleAddActivityFormSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('new-activity-input');
+        const newActivity = input.value.trim();
+        if (newActivity) {
+            if (!state.userActivities) state.userActivities = [];
+            state.userActivities.push(newActivity);
+            saveState();
+            renderActivityList();
+            input.value = '';
+            showToast('เพิ่มกิจกรรมใหม่แล้ว!');
+        }
+    }
+    function handleAddAdviceFormSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('new-advice-input');
+        const newAdvice = input.value.trim();
+        if (newAdvice) {
+            if (!state.userAdvice) state.userAdvice = [];
+            state.userAdvice.push(newAdvice);
+            saveState();
+            renderUserAdviceList();
+            input.value = '';
+            showToast('เพิ่มคำแนะนำใหม่แล้ว!');
+        }
+    }
+
+    async function handleFriendSearch(e) {
+        e.preventDefault();
+        const searchInput = document.getElementById('search-friends-input');
+        const query = searchInput.value.trim();
+        if (query.length < 3) {
+            return showToast("กรุณากรอกอย่างน้อย 3 ตัวอักษร");
+        }
+        const resultsContainer = document.getElementById('search-results-container');
+        resultsContainer.innerHTML = '<p>กำลังค้นหา...</p>';
+        try {
+            const nameQuery = db.collection('users').where('profile.displayName', '>=', query).where('profile.displayName', '<=', query + '\uf8ff').limit(10);
+            const idQuery = db.collection('users').where('profile.lifebuddyId', '==', query).limit(10);
+            const [nameSnapshot, idSnapshot] = await Promise.all([nameQuery.get(), idQuery.get()]);
+            const results = new Map();
+            nameSnapshot.forEach(doc => { if (doc.id !== currentUser.uid) results.set(doc.id, { id: doc.id, ...doc.data() }); });
+            idSnapshot.forEach(doc => { if (doc.id !== currentUser.uid) results.set(doc.id, { id: doc.id, ...doc.data() }); });
+            renderSearchResults(Array.from(results.values()));
+        } catch (error) {
+            console.error("Error searching for friends:", error);
+            resultsContainer.innerHTML = '<p class="error-message">เกิดข้อผิดพลาดในการค้นหา</p>';
+        }
+    }
+    function handleChatListItemClick(e, item) {
+        const friendId = item.dataset.friendId;
+        if (friendId) {
+            if (e.target.closest('.chat-list-avatar') || e.target.closest('.chat-list-name')) {
+                e.stopPropagation();
+                showFriendProfile(friendId);
+            } else {
+                window.startChat(friendId);
+            }
+        }
+    }
+    function handleDeleteActivity(button) {
+        const index = parseInt(button.dataset.index);
+        if (!isNaN(index) && state.userActivities) {
+            state.userActivities.splice(index, 1);
+            saveState();
+            renderActivityList();
+        }
+    }
+    function handleDeleteAdvice(button) {
+        const index = parseInt(button.dataset.index);
+        if (!isNaN(index) && state.userAdvice) {
+            state.userAdvice.splice(index, 1);
+            saveState();
+            renderUserAdviceList();
+        }
+    }
+    function handleProfileOptionSelect(option) {
+        const newPhotoURL = option.dataset.url;
+        state.profile.photoURL = newPhotoURL;
+        saveState();
+        renderProfilePicture(newPhotoURL, document.getElementById('profile-edit-photo'));
+        renderProfilePicture(newPhotoURL, document.getElementById('profile-view-photo'));
+        updateHeaderUI(); // To update the small icon on the header if it's visible
+        document.getElementById('profile-selector-modal').classList.add('hidden');
+        showToast('เปลี่ยนรูปโปรไฟล์เรียบร้อย!');
+    }
+    function handleCalendarNav(button) {
+        const id = button.id;
+        if (id === 'planner-prev-month') currentPlannerDate = currentPlannerDate.subtract(1, 'month');
+        else if (id === 'planner-next-month') currentPlannerDate = currentPlannerDate.add(1, 'month');
+        else if (id === 'mood-prev-month') currentMoodDate = currentMoodDate.subtract(1, 'month');
+        else if (id === 'mood-next-month') currentMoodDate = currentMoodDate.add(1, 'month');
+        
+        if (id.startsWith('planner-')) renderPlannerCalendar(currentPlannerDate);
+        if (id.startsWith('mood-')) renderMoodCalendar(currentMoodDate);
+    }
+    function openTimerSettingsModal() {
+        const focusDuration = state.settings?.focusDuration ?? 25;
+        const breakDuration = state.settings?.breakDuration ?? 5;
+        document.getElementById('modal-focus-duration').value = focusDuration;
+        document.getElementById('modal-break-duration').value = breakDuration;
+        document.getElementById('timer-settings-modal').classList.remove('hidden');
+    }
+
+    function handleQuizCreatorFormSubmit(e) {
+        e.preventDefault();
+        if (!currentQuizTopicData) return;
+        const question = document.getElementById('quiz-question-input').value.trim();
+        const explanation = document.getElementById('quiz-explanation-input').value.trim();
+        const quizType = document.querySelector('.quiz-type-btn.active').dataset.type;
+        if (!question) return showToast("กรุณาใส่คำถาม");
+        
+        const newQuiz = { id: Date.now(), question, explanation, type: quizType };
+        if (quizType === 'multiple-choice') {
+            const choices = Array.from(document.querySelectorAll('.mc-choice-item input[type="text"]')).map(input => input.value.trim());
+            const correctRadio = document.querySelector('.mc-choice-item input[type="radio"]:checked');
+            if (choices.some(c => !c) || choices.length < 2) return showToast("กรุณากรอกตัวเลือกอย่างน้อย 2 ข้อให้ครบถ้วน");
+            if (!correctRadio) return showToast("กรุณาเลือกคำตอบที่ถูกต้อง");
+            const correctIndex = Array.from(document.querySelectorAll('.mc-choice-item input[type="radio"]')).indexOf(correctRadio);
+            newQuiz.options = choices;
+            newQuiz.correctAnswer = choices[correctIndex];
+        } else {
+            const acceptedAnswers = Array.from(document.querySelectorAll('.typed-answer-tag span')).map(span => span.textContent);
+            if (acceptedAnswers.length === 0) return showToast("กรุณาเพิ่มคำตอบที่ยอมรับได้อย่างน้อย 1 คำตอบ");
+            newQuiz.acceptedAnswers = acceptedAnswers;
+        }
+
+        const { subjectRef, topicId } = currentQuizTopicData;
+        const topicInState = state.revisitTopics[subjectRef]?.find(t => t.id === topicId);
+        if (topicInState) {
+            if (!topicInState.quizzes) topicInState.quizzes = [];
+            topicInState.quizzes.push(newQuiz);
+            saveState();
+            showToast("สร้างควิซข้อใหม่สำเร็จ!");
+            currentQuizTopicData.quizzes = topicInState.quizzes; // Update local copy
+            renderQuizManager();
+        }
+    }
+    
+    // --- [STEP 2: SETUP THE MAIN EVENT LISTENER] ---
+    
     function setupAllEventListeners() {
         if (areListenersSetup) return;
-         const typedAnswerInput = document.getElementById('add-typed-answer-input');
-        
-         if (typedAnswerInput) {
-            typedAnswerInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && typedAnswerInput.value.trim()) {
-                    e.preventDefault();
-                    const answerText = typedAnswerInput.value.trim();
-                    const tag = document.createElement('div');
-                    tag.className = 'typed-answer-tag';
-                    tag.innerHTML = `<span>${answerText}</span><button type="button" class="icon-button"><i data-feather="x"></i></button>`;
-                    
-                    tag.querySelector('button').addEventListener('click', () => tag.remove());
 
-                    document.getElementById('accepted-answers-list').appendChild(tag);
-                    feather.replace();
-                    typedAnswerInput.value = '';
-                }
-            });
-        }
-        function addPasswordInputListeners(inputId) {
-            const inputElement = document.getElementById(inputId);
-            if (!inputElement) return;
-
-            if (inputId === 'signup-password') {
-                inputElement.addEventListener('input', () => {
-                    updatePasswordStrength();
-                    checkPasswordMatch();
-                });
-            } else if (inputId === 'signup-password-confirm') {
-                inputElement.addEventListener('input', checkPasswordMatch);
-            }
-        }
-
-    // --- ผูก Event ครั้งแรกตอนโหลดหน้าเว็บ ---
+        // ----- DIRECT BINDING LISTENERS -----
+        document.getElementById('timer-settings-form')?.addEventListener('submit', handleTimerSettingsFormSubmit);
+        document.getElementById('add-typed-answer-input')?.addEventListener('keydown', handleTypedAnswerInput);
+        document.getElementById('google-signin-btn')?.addEventListener('click', handleGoogleSignIn);
         addPasswordInputListeners('signup-password');
         addPasswordInputListeners('signup-password-confirm');
-        
-    // --- Listener สำหรับ Google Sign-in ---
-        const googleBtn = document.getElementById('google-signin-btn');
-        if (googleBtn) {
-            googleBtn.addEventListener('click', () => {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider)
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'เกิดข้อผิดพลาด',
-                            text: getFriendlyAuthError(error),
-                        });
-                    });
-            });
-        }
 
-        const timerSettingsBtn = document.getElementById('settings-timer-btn');
-    if (timerSettingsBtn) {
-        timerSettingsBtn.addEventListener('click', () => {
-            const focusDuration = state.settings?.focusDuration ?? 25;
-            const breakDuration = state.settings?.breakDuration ?? 5;
-            document.getElementById('modal-focus-duration').value = focusDuration;
-            document.getElementById('modal-break-duration').value = breakDuration;
-            
-            document.getElementById('timer-settings-modal').classList.remove('hidden');
-        });
-    }
-
-    // --- [ส่วนที่ 2: จัดการการบันทึกค่าจาก Modal และแก้ไข Bug] ---
-    const timerSettingsForm = document.getElementById('timer-settings-form');
-    if (timerSettingsForm) {
-        timerSettingsForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const newFocusDuration = parseInt(document.getElementById('modal-focus-duration').value);
-            const newBreakDuration = parseInt(document.getElementById('modal-break-duration').value);
-
-            if (isNaN(newFocusDuration) || isNaN(newBreakDuration) || newFocusDuration < 1 || newBreakDuration < 1) {
-                showToast("กรุณาใส่ค่าเวลาที่ถูกต้อง (ต้องมากกว่า 0)");
-                return;
-            }
-
-            state.settings.focusDuration = newFocusDuration;
-            state.settings.breakDuration = newBreakDuration;
-            
-            saveState();
-            
-            resetTimer(); 
-
-            document.getElementById('timer-settings-modal').classList.add('hidden');
-            
-            showToast("บันทึกการตั้งค่าเวลาเรียบร้อยแล้ว!");
-        });
-    }
-
-    // ===== 2. EVENT LISTENER หลักสำหรับจัดการการ CLICK ทั้งหมด =====
+        // ----- BODY CLICK DELEGATION -----
         document.body.addEventListener('click', (e) => {
-            const closest = (selector) => e.target.closest(selector);
-
-        // ===== [จัดการปุ่มดูรหัสผ่านเป็นอันดับแรก] =====
-        const toggleBtn = closest('.password-toggle-btn');
-        if (toggleBtn) {
-            const targetId = toggleBtn.dataset.target;
-            const oldInput = document.getElementById(targetId);
-            if (!oldInput) return;
+            const target = e.target;
+            const closest = (selector) => target.closest(selector);
             
-            // ใช้ wrapper ที่ครอบ input อยู่เป็นตัวอ้างอิง
-            const wrapper = oldInput.closest('.input-with-icon-wrapper');
-            if (!wrapper) return;
+            // Dynamic/Repeated elements
+            if (closest('.nav-link')) { e.preventDefault(); showPage(closest('.nav-link').dataset.page); return; }
+            if (closest('.password-toggle-btn')) { handlePasswordToggle(closest('.password-toggle-btn')); return; }
+            if (closest('.quiz-type-btn')) { handleQuizTypeToggle(closest('.quiz-type-btn')); return; }
+            if (closest('.remove-choice-btn')) { handleRemoveChoice(closest('.remove-choice-btn')); return; }
+            if (closest('.delete-quiz-btn')) { handleDeleteQuiz(closest('.delete-quiz-btn')); return; }
+            if (closest('.chat-list-item')) { handleChatListItemClick(e, closest('.chat-list-item')); return; }
+            if (target.matches('#todo-list input[type="checkbox"]')) { handleTodoCheckboxClick(target); return; }
+            if (closest('.delete-activity-btn')) { handleDeleteActivity(closest('.delete-activity-btn')); return; }
+            if (closest('.delete-advice-btn')) { handleDeleteAdvice(closest('.delete-advice-btn')); return; }
+            if (closest('.profile-option')) { handleProfileOptionSelect(closest('.profile-option')); return; }
+            if (closest('.calendar-nav-btn')) { handleCalendarNav(closest('.calendar-nav-btn')); return; }
+            if (closest('.close-btn')) { const modal = closest('.modal-overlay'); if (modal) modal.classList.add('hidden'); return; }
 
-            const newInput = document.createElement('input');
-            for (const attr of oldInput.attributes) {
-                newInput.setAttribute(attr.name, attr.value);
-            }
-
-            if (oldInput.type === 'password') {
-                newInput.type = 'text';
-            } else {
-                newInput.type = 'password';
-            }
-            newInput.value = oldInput.value;
-
-            // *** [ส่วนสำคัญ] แทนที่ input เก่าภายใน wrapper ***
-            wrapper.replaceChild(newInput, oldInput);
-
-            // *** [ส่วนสำคัญ] ผูก Event Listener ให้กับ input ใหม่ ***
-            addPasswordInputListeners(targetId);
-
-            const icon = toggleBtn.querySelector('i');
-            if (icon) {
-                icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
-                feather.replace();
-            }
-            
-            newInput.focus();
-            return;
-        }
-
-        // --- จัดการ Chat List Item ---
-            const chatListItem = closest('.chat-list-item');
-            if (chatListItem) {
-                const friendId = chatListItem.dataset.friendId;
-                if (!friendId) return;
-
-                // ตรวจสอบว่าคลิกที่รูปหรือชื่อ (เพื่อไปดูโปรไฟล์) หรือคลิกที่พื้นที่อื่น (เพื่อเปิดแชท)
-                if (closest('.chat-list-avatar') || closest('.chat-list-name')) {
-                    e.stopPropagation(); // หยุดไม่ให้ event bubble ไปเปิดแชท
-                    showFriendProfile(friendId);
-                } else {
-                    // ถ้าคลิกที่พื้นที่ว่างๆ ของรายการ ให้เปิดแชท
-                 window.startChat(friendId);
-                }
-                return; // จบการทำงานในส่วนนี้
-            }
-        // --- จัดการปุ่มปฏิทิน ---
-            const calendarNavBtn = closest('.calendar-nav-btn');
-            if (calendarNavBtn) {
-                const btnId = calendarNavBtn.id;
-                switch(btnId) {
-                    case 'planner-prev-month':
-                        currentPlannerDate = currentPlannerDate.subtract(1, 'month');
-                        renderPlannerCalendar(currentPlannerDate);
-                        break;
-                    case 'planner-next-month':
-                        currentPlannerDate = currentPlannerDate.add(1, 'month');
-                        renderPlannerCalendar(currentPlannerDate);
-                        break;
-                    case 'mood-prev-month':
-                        currentMoodDate = currentMoodDate.subtract(1, 'month');
-                        renderMoodCalendar(currentMoodDate);
-                        break;
-                    case 'mood-next-month':
-                        currentMoodDate = currentMoodDate.add(1, 'month');
-                        renderMoodCalendar(currentMoodDate);
-                        break;
-                }
-                return; 
-            }
-         // --- จัดการปุ่มคำขอติดตาม ---    
-            const acceptButton = closest('.btn-accept-request');
-            if (acceptButton) {
-                const senderId = acceptButton.dataset.senderId;
-                if (senderId) handleAcceptFollowRequest(senderId);
-                return;
-            }
-            const declineButton = closest('.btn-decline-request');
-            if (declineButton) {
-                const senderId = declineButton.dataset.senderId;
-                if (senderId) handleDeclineFollowRequest(senderId);
-                return;
-            }
-            
-            // --- จัดการ Navigation Link หลัก ---
-            const navLink = closest('.nav-link'); 
-            if (navLink) { 
-                e.preventDefault(); 
-                showPage(navLink.dataset.page); 
-                return; 
-            }
-
-            // --- จัดการปุ่มปิด Modal ---
-            if (closest('.close-btn')) { 
-                const modal = closest('.modal-overlay'); 
-                if (modal) modal.classList.add('hidden'); 
-                return; 
-            }
-            
-            // --- จัดการการเลือก Mood Emoji ---
-            const emojiOption = closest('.emoji-option');
-            if (emojiOption) {
-                document.querySelectorAll('.emoji-option').forEach(opt => opt.classList.remove('selected'));
-                emojiOption.classList.add('selected');
-                const selectedMoodValue = emojiOption.dataset.mood;
-                const selectedMoodInput = document.getElementById('selected-mood');
-                if (selectedMoodInput) {
-                    selectedMoodInput.value = selectedMoodValue;
-                }
-                return; 
-            }
-
-            // --- จัดการการเลือกรูปโปรไฟล์ใน Modal ---
-            const profileOption = closest('.profile-option');
-            if (profileOption) {
-                document.querySelectorAll('.profile-option.selected').forEach(opt => opt.classList.remove('selected'));
-                profileOption.classList.add('selected');
-                const newPhotoURL = profileOption.dataset.url;
-                state.profile.photoURL = newPhotoURL;
-                renderProfilePicture(newPhotoURL, document.getElementById('profile-edit-photo'));
-                saveState();
-                document.getElementById('profile-selector-modal').classList.add('hidden');
-                showToast('เปลี่ยนรูปโปรไฟล์เรียบร้อย!');
-                return; 
-            }
-
-            // --- จัดการแท็บสถิติในหน้า Focus ---
-            const statsTabBtn = closest('.stats-tab-btn');
-            if (statsTabBtn) {
-                document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
-                statsTabBtn.classList.add('active');
-                const period = statsTabBtn.dataset.period;
-                renderFocusStats(period);
-                return;
-            }
-
-            // --- จัดการการติ๊ก To-Do List ---
-            if (e.target.matches('#todo-list input[type="checkbox"]')) {
-                const todoId = parseInt(e.target.dataset.id);
-                const todo = state.todos.find(t => t.id === todoId);
-                if (todo) {
-                    todo.completed = e.target.checked;
-                    const listItem = e.target.closest('li');
-                    if(listItem) listItem.classList.toggle('completed', todo.completed);
-                    if (todo.completed && !todo.rewarded) {
-                        todo.rewarded = true;
-                        addExp(5);
-                        updateCoins(1, `ทำเป้าหมายสำเร็จ`);
-                        showToast(`ทำ "${todo.text}" สำเร็จ! +1 Coin & +5 EXP`);
-                        setTimeout(() => {
-                            state.todos = state.todos.filter(t => t.id !== todoId);
-                            saveState();
-                            updateHomePageUI(); 
-                        }, 300000); // ลบออกจากลิสต์หลังจาก 5 นาที
-                    }
-                    saveState();
-                }
-                return;
-            }
-
-            // --- จัดการการลบ Activity และ Advice ---
-            const deleteActivityBtn = closest('.delete-activity-btn');
-            if (deleteActivityBtn) {
-                const index = parseInt(deleteActivityBtn.dataset.index);
-                state.userActivities.splice(index, 1);
-                saveState();
-                renderActivityList();
-                return;
-            }
-
-            const deleteAdviceBtn = closest('.delete-advice-btn');
-            if (deleteAdviceBtn) {
-                const index = parseInt(deleteAdviceBtn.dataset.index);
-                state.userAdvice.splice(index, 1);
-                saveState();
-                renderUserAdviceList();
-                return;
-            }
-            
-            const quizTypeBtn = closest('.quiz-type-btn');
-            if (quizTypeBtn) {
-                document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
-                quizTypeBtn.classList.add('active');
-                const type = quizTypeBtn.dataset.type;
-                document.getElementById('mc-options-container').classList.toggle('hidden', type !== 'multiple-choice');
-                document.getElementById('typed-answer-container').classList.toggle('hidden', type !== 'typed');
-                return;
-            }
-
-            const removeChoiceBtn = closest('.remove-choice-btn');
-            if (removeChoiceBtn) {
-                if (document.querySelectorAll('.mc-choice-item').length > 2) {
-                    removeChoiceBtn.closest('.mc-choice-item').remove();
-                } else {
-                    showToast("ต้องมีอย่างน้อย 2 ตัวเลือก");
-                }
-                return;
-            }
-
-            const deleteQuizBtn = closest('.delete-quiz-btn');
-            if(deleteQuizBtn && currentQuizTopicData) {
-                const index = parseInt(deleteQuizBtn.dataset.index);
-                currentQuizTopicData.quizzes.splice(index, 1);
-                saveState();
-                renderQuizManager();
-                showToast("ลบควิซเรียบร้อยแล้ว");
-                return;
-            }
-
-            // --- Switch-Case สำหรับจัดการปุ่มต่างๆ ตาม ID ---
-            const targetId = e.target.id || closest('[id]')?.id;    
-            switch(targetId) {  //=====click=====//
-                case 'login-btn': 
-                    openAuthModal(); 
-                    break;
-                case 'show-signup-link':
-                    e.preventDefault();
-                    document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('signup-view').classList.remove('hidden');
-                    document.getElementById('auth-error').textContent = '';
-                    break;
-                case 'show-login-link':
-                    e.preventDefault();
-                    document.getElementById('signup-view').classList.add('hidden');
-                    document.getElementById('login-view').classList.remove('hidden');
-                    document.getElementById('auth-error').textContent = '';
-                    break;
-                case 'forgot-password-link':
-                    e.preventDefault();
-                    Swal.fire({
-                        title: 'รีเซ็ตรหัสผ่าน',
-                        input: 'email',
-                        inputLabel: 'กรุณากรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน',
-                        inputPlaceholder: 'อีเมลที่ลงทะเบียนไว้',
-                        showCancelButton: true,
-                        confirmButtonText: 'ส่งลิงก์',
-                        cancelButtonText: 'ยกเลิก',
-                        showLoaderOnConfirm: true,
-                        preConfirm: (email) => {
-                            if (!email) {
-                                Swal.showValidationMessage('กรุณากรอกอีเมล');
-                                return;
-                            }
-                            return auth.sendPasswordResetEmail(email)
-                                .catch(error => {
-                                    Swal.showValidationMessage(`เกิดข้อผิดพลาด: ${getFriendlyAuthError(error)}`);
-                                });
-                        },
-                        allowOutsideClick: () => !Swal.isLoading()
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            Swal.fire({
-                                title: 'ส่งสำเร็จ!',
-                                text: 'กรุณาตรวจสอบกล่องจดหมายของคุณสำหรับลิงก์รีเซ็ตรหัสผ่าน',
-                                icon: 'success'
-                            });
-                        }
-                    });
-                    break;              
-                case 'logout-btn': 
-                    auth.signOut(); 
-                    break;
-                case 'open-menu': 
-                    document.getElementById('sidebar').classList.add('show'); 
-                    document.getElementById('overlay').classList.add('show'); 
-                    break;
-                case 'close-menu': 
-                case 'overlay': 
-                    closeSidebar(); 
-                    break;
-                case 'check-in-btn': 
-                    handleCheckIn(); 
-                    break;
-                case 'start-timer-btn': 
-                    if (timerInterval) { 
-                        stopTimer(); 
-                        timerInterval = null; 
-                    } else { 
-                        startTimer(); 
-                    } 
-                    break;
+            // ID-based elements
+            const targetId = target.id || closest('[id]')?.id;
+            switch(targetId) {
+                case 'login-btn': openAuthModal(); break;
+                case 'logout-btn': auth.signOut(); break;
+                case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
+                case 'overlay': closeSidebar(); break;
+                case 'show-signup-link': e.preventDefault(); showAuthView('signup-view'); break;
+                case 'show-login-link': e.preventDefault(); showAuthView('login-view'); break;
+                case 'check-in-btn': handleCheckIn(); break;
+                case 'start-timer-btn': if (timerInterval) { stopTimer(); } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
-                case 'settings-timer-btn': 
-                    document.getElementById('timer-settings').classList.toggle('hidden'); 
-                    break;
-                case 'back-to-revisit-list-btn':
-                    showRevisitSubView('revisit-list-view');
-                    currentQuizTopicData = null; // เคลียร์ข้อมูลหัวข้อปัจจุบัน
-                    break;
-                case 'add-choice-btn':
-                    addQuizChoiceOption();
-                    break;
-
-                case 'start-quiz-btn':
-                    // (เราจะมาเขียนฟังก์ชัน startQuiz() กันในครั้งถัดไป)
-                    showToast("ฟีเจอร์เริ่มทำควิซกำลังจะมาเร็วๆ นี้!");
-                    break;
-                case 'go-to-edit-profile-btn': // ปุ่มดินสอในหน้าโปรไฟล์
-                    openBannerSelector(); // เรียกฟังก์ชันเปิดหน้าต่างเลือกแบนเนอร์
-                    break;
-                case 'change-banner-btn': // ปุ่มรูปภาพบนแบนเนอร์
-                    openBannerSelector();
-                    break;             
-                case 'main-edit-profile-btn': // ปุ่ม "แก้ไขข้อมูลโปรไฟล์"
-                    document.getElementById('profile-view-mode').classList.add('hidden');
-                    document.getElementById('profile-edit-mode').classList.remove('hidden');
-                    break;                
-                case 'cancel-edit-profile-btn': 
-                    document.getElementById('profile-edit-mode').classList.add('hidden'); 
-                    document.getElementById('profile-view-mode').classList.remove('hidden'); 
-                    renderProfilePage(); 
-                    break;
-                case 'edit-profile-picture-btn': 
-                    populateProfileSelector(); 
-                    document.getElementById('profile-selector-modal').classList.remove('hidden'); 
-                    break;
-                case 'random-activity-btn':
-                    const activities = state.userActivities && state.userActivities.length > 0 ? state.userActivities : defaultActivities;
-                    const randomIndex = Math.floor(Math.random() * activities.length);
-                    const suggestionEl = document.getElementById('activity-suggestion');
-                    if (suggestionEl) suggestionEl.textContent = activities[randomIndex];
-                    break;
-                case 'random-advice-btn':
-                    const advices = state.userAdvice && state.userAdvice.length > 0 ? state.userAdvice : defaultAdvices;
-                    const randomAdviceIndex = Math.floor(Math.random() * advices.length);
-                    const adviceEl = document.getElementById('daily-advice');
-                    if (adviceEl) adviceEl.textContent = advices[randomAdviceIndex];
-                    break;
-                case 'manage-activities-btn': 
-                    openActivityManager(); 
-                    break;
-                case 'manage-advice-btn': 
-                    openAdviceManager(); 
-                    break;
-                case 'theme-light-btn': 
-                    if (state.settings.theme !== 'light') { 
-                        state.settings.theme = 'light'; 
-                        applySettings(); 
-                        saveState(); 
-                    } 
-                    break;
-                case 'theme-dark-btn': 
-                    if (state.settings.theme !== 'dark') { 
-                        state.settings.theme = 'dark'; 
-                        applySettings(); 
-                        saveState(); 
-                    } 
-                    break;
-                case 'back-to-revisit-list':
-                    document.getElementById('flashcard-view').classList.add('hidden');
-                    document.getElementById('revisit-list-view').classList.remove('hidden');
-                    renderRevisitList();
-                    break;
-                case 'reveal-answer-btn':
-                    const flashcard = document.querySelector('#flashcard-view .flashcard');
-                    if (flashcard) flashcard.classList.add('flipped');
-                    document.getElementById('reveal-answer-btn').classList.add('hidden');
-                    document.getElementById('quiz-feedback-btns').classList.remove('hidden');
-                    break;
-                case 'quiz-understood-btn':
-                    currentCardIndex++;
-                    displayNextFlashcard();
-                    break;
-                case 'quiz-not-understood-btn':
-                    if (shuffledFlashcards[currentCardIndex]) {
-                        shuffledFlashcards.push(shuffledFlashcards[currentCardIndex]);
-                    }
-                    currentCardIndex++;
-                    displayNextFlashcard();
-                    break;
-                case 'search-friends-btn':
-                    document.getElementById('search-friends-modal').classList.remove('hidden');
-                    break;
-                case 'community-btn':
-                    showPage('community');
-                    break;
-                case 'edit-wishlist-btn':
-                    handleEditWishList();
-                    break;
-                case 'copy-id-btn':
-                    if (state.profile && state.profile.lifebuddyId) {
-                        navigator.clipboard.writeText(state.profile.lifebuddyId)
-                            .then(() => {
-                                showToast('คัดลอก ID สำเร็จ!');
-                            })
-                            .catch(err => {
-                                console.error('ไม่สามารถคัดลอก ID ได้: ', err);
-                                showToast('เกิดข้อผิดพลาดในการคัดลอก');
-                            });
-                    }
-                    break;
-                case 'google-signin-btn':
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    auth.signInWithPopup(provider)
-                        .catch(error => {
-                            const errorMessage = getFriendlyAuthError(error);
-                            const authErrorEl = document.getElementById('auth-error');
-                            if(authErrorEl) authErrorEl.textContent = errorMessage;
-                        });
-                    break;
+                case 'settings-timer-btn': openTimerSettingsModal(); break;
+                case 'main-edit-profile-btn': document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden'); break;
+                case 'cancel-edit-profile-btn': document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); break;
+                case 'edit-profile-picture-btn': populateProfileSelector(); document.getElementById('profile-selector-modal').classList.remove('hidden'); break;
+                case 'change-banner-btn': openBannerSelector(); break;
+                case 'copy-id-btn': handleCopyId(); break;
+                case 'search-friends-btn': case 'search-friends-btn-from-chat': document.getElementById('search-friends-modal').classList.remove('hidden'); break;
+                case 'random-activity-btn': handleRandomActivity(); break;
+                case 'random-advice-btn': handleRandomAdvice(); break;
+                case 'manage-activities-btn': openActivityManager(); break;
+                case 'manage-advice-btn': openAdviceManager(); break;
+                case 'edit-wishlist-btn': handleEditWishList(); break;
+                case 'back-to-revisit-list-btn': showRevisitSubView('revisit-list-view'); currentQuizTopicData = null; break;
+                case 'add-choice-btn': addQuizChoiceOption(); break;
+                case 'start-quiz-btn': startQuiz(); break;
+                case 'theme-light-btn': if (state.settings.theme !== 'light') { state.settings.theme = 'light'; applySettings(); saveState(); updateSettingsUI(); } break;
+                case 'theme-dark-btn': if (state.settings.theme !== 'dark') { state.settings.theme = 'dark'; applySettings(); saveState(); updateSettingsUI(); } break;
             }
         });
 
-        // ===== 3. EVENT LISTENER หลักสำหรับจัดการการ SUBMIT ทั้งหมด =====
+        // ----- BODY SUBMIT DELEGATION -----
         document.body.addEventListener('submit', (e) => {
             e.preventDefault();
-            switch (e.target.id) {
-                case 'todo-form': 
-                    const input = document.getElementById('todo-input'); 
-                    if (input.value.trim()) { 
-                        if (!state.todos) state.todos = [];
-                        state.todos.push({ id: Date.now(), 
-                            text: input.value.trim(), 
-                            completed: false, rewarded: false }); 
-                        input.value = ''; 
-                        updateHomePageUI(); 
-                        saveState(); 
-                    } 
-                    break;
-                case 'revisit-form': 
-                handleRevisitFormSubmit(e); break;
-                case 'planner-form': handlePlannerFormSubmit(e); break;
-                case 'mood-form': handleMoodFormSubmit(e); break;
-                case 'profile-form': handleProfileFormSubmit(e); break;
-                case 'add-activity-form': 
-                    const inputAct = document.getElementById('new-activity-input'); 
-                    if (inputAct.value.trim()) { 
-                        if (!state.userActivities) state.userActivities = [...defaultActivities]; 
-                        state.userActivities.push(inputAct.value.trim()); 
-                        saveState(); 
-                        renderActivityList(); 
-                        inputAct.value = ''; 
-                        showToast('เพิ่มกิจกรรมใหม่แล้ว!'); 
-                    } 
-                    break;
-                case 'add-advice-form': 
-                    const inputAdv = document.getElementById('new-advice-input'); 
-                    if (inputAdv.value.trim()) { 
-                        if (!state.userAdvice) state.userAdvice = []; 
-                        state.userAdvice.push(inputAdv.value.trim()); 
-                        saveState(); 
-                        renderUserAdviceList();
-                        inputAdv.value = ''; 
-                        showToast('เพิ่มคำแนะนำใหม่แล้ว!'); 
-                    } 
-                    break;
-                case 'signup-form':
-                    // ... (โค้ดตรวจสอบรหัสผ่านเหมือนเดิม) ...
-                    const signupEmail = document.getElementById('signup-email').value;
-                    const signupPassword = document.getElementById('signup-password').value;
-                    const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
-
-                    if (signupPassword !== signupPasswordConfirm) {
-                        Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ตรงกัน', text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน' });
-                        return;
-                    }
-                    const strengthMeter = document.getElementById('password-strength-meter');
-                    if (signupPassword.length < 6) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'รหัสผ่านสั้นเกินไป',
-                            text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร',
-                        });
-                        return;
-                    }
-
-                    Swal.fire({
-                        title: 'กำลังสร้างบัญชี...',
-                        allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
-
-                    auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
-                        .then(async (userCredential) => {
-                            const user = userCredential.user;
-                            
-                            // ส่งอีเมลยืนยันตัวตน
-                            await user.sendEmailVerification();
-                            // ------------------------------------
-
-                            // สร้างข้อมูลโปรไฟล์ใน 
-                            const initialName = user.email.split('@')[0];
-                            const randomTag = Math.floor(1000 + Math.random() * 9000);
-                            const newUserProfileData = JSON.parse(JSON.stringify(initialState));
-                            newUserProfileData.profile.displayName = initialName;
-                            newUserProfileData.profile.lifebuddyId = `${initialName}#${randomTag}`;
-                            
-                            await db.collection('users').doc(user.uid).set(newUserProfileData);
-                            
-                            // ออกจากระบบก่อน เพื่อบังคับให้ผู้ใช้ยืนยันตัวตน
-                            await auth.signOut();
-
-                            // --- [ส่วนสำคัญ] แสดง Pop-up ให้ไปยืนยันอีเมล ---
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'สมัครสมาชิกเกือบสำเร็จ!',
-                                html: `เราได้ส่งลิงก์ยืนยันไปยัง <strong>${user.email}</strong><br/>กรุณาตรวจสอบกล่องจดหมายและคลิกลิงก์เพื่อเปิดใช้งานบัญชีของคุณ`,
-                                confirmButtonText: 'เข้าใจแล้ว',
-                                allowOutsideClick: false
-                            }).then(() => {
-                                // กลับไปที่หน้าเข้าสู่ระบบ
-                                document.getElementById('signup-view').classList.add('hidden');
-                                document.getElementById('login-view').classList.remove('hidden');
-                            });
-                        })
-                        .catch(error => {
-                            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: getFriendlyAuthError(error) });
-                        });
-                    break;
-
-              case 'login-form':
-                const loginEmailInput = document.getElementById('login-email');
-                const loginPasswordInput = document.getElementById('login-password');
-                const loginEmail = loginEmailInput.value;
-                const loginPassword = loginPasswordInput.value;
-
-                if (!loginEmail || !loginPassword) {
-                    Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ' });
-                    return;
-                }
-
-                    Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-                    // ลองล็อกอินด้วยรหัสผ่านก่อน
-                    auth.signInWithEmailAndPassword(loginEmail, loginPassword)
-                        .then(userCredential => {
-                            // สำเร็จ: ตรวจสอบการยืนยันอีเมล
-                            const user = userCredential.user;
-                            if (!user.emailVerified) {
-                                auth.signOut();
-                                Swal.fire({ icon: 'warning', title: 'บัญชียังไม่ถูกเปิดใช้งาน', html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ` });
-                            }
-                        })
-                        .catch(error => {
-                            // ล้มเหลว: ตรวจสอบสาเหตุ
-                            // ถ้า Error คือ "ไม่พบบัญชี" เราจะไปเช็คต่อว่าผูกกับ Google หรือไม่
-                            if (error.code === 'auth/user-not-found') {
-                                auth.fetchSignInMethodsForEmail(loginEmail)
-                                    .then(methods => {
-                                        if (methods.includes('google.com')) {
-                                            // **** นี่คือข้อความที่คุณต้องการ ****
-                                            Swal.fire({
-                                                icon: 'error',
-                                                title: 'ไม่สามารถเข้าสู่ระบบได้',
-                                                html: `ผู้ใช้ได้ลงทะเบียนด้วยอีเมลนี้ผ่าน Google แล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
-                                            });
-                                        } else {
-                                            // ถ้าไม่ผูกกับ Google ก็คือไม่พบบัญชีจริงๆ
-                                            Swal.fire({ icon: 'error', title: 'ไม่พบบัญชีผู้ใช้', text: 'ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่' });
-                                        }
-                                    });
-                            } else {
-                                // ถ้าเป็น Error อื่นๆ (เช่น รหัสผิด) ให้แสดงตามปกติ
-                                Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: getFriendlyAuthError(error) });
-                            }
-                        });
-                    break;
-                
-                // ใน 'submit' listener
-                case 'quiz-creator-form':
-                    handleQuizCreatorFormSubmit(e);
-                    break;
-
-                case 'search-friends-form':
-                    handleFriendSearch(e);
-                    break;
+            const formHandlers = {
+                'login-form': handleLoginFormSubmit,
+                'signup-form': handleSignupFormSubmit,
+                'todo-form': handleTodoFormSubmit,
+                'revisit-form': handleRevisitFormSubmit,
+                'quiz-creator-form': handleQuizCreatorFormSubmit,
+                'planner-form': handlePlannerFormSubmit,
+                'mood-form': handleMoodFormSubmit,
+                'profile-form': handleProfileFormSubmit,
+                'add-activity-form': handleAddActivityFormSubmit,
+                'add-advice-form': handleAddAdviceFormSubmit,
+                'search-friends-form': handleFriendSearch,
+                'chat-form': handleChatFormSubmit
+            };
+            if (formHandlers[e.target.id]) {
+                formHandlers[e.target.id](e);
             }
         });
+
         areListenersSetup = true;
     }
+
+});
 
     // ===================================
     // ===== 8. AUTH MODAL FUNCTIONS =====
@@ -3111,5 +2772,3 @@ async function renderChatList() {
         document.getElementById('auth-modal').classList.add('hidden'); 
         document.getElementById('auth-error').textContent = ''; 
     }
-
-});
