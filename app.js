@@ -2701,6 +2701,9 @@ async function renderChatList() {
                 case 'login-btn': 
                     openAuthModal(); 
                     break;
+                case 'login-btn': 
+                    openAuthModal(); 
+                    break;
                 case 'show-signup-link':
                     e.preventDefault();
                     document.getElementById('login-view').classList.add('hidden');
