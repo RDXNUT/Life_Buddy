@@ -106,19 +106,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const docRef = db.collection('users').doc(userId);
             const doc = await docRef.get();
+
             if (doc.exists) {
+                // ถ้ามีข้อมูลอยู่แล้ว ก็โหลดมาใช้ได้เลย
+                // ใช้ deepMerge เพื่อให้แน่ใจว่าถ้ามี key ใหม่ๆ ใน initialState จะถูกเพิ่มเข้าไปด้วย
                 return deepMerge(JSON.parse(JSON.stringify(initialState)), doc.data());
             } else {
-                const freshState = JSON.parse(JSON.stringify(initialState));
-                const initialName = currentUser.displayName || currentUser.email.split('@')[0];
-                const randomTag = Math.floor(1000 + Math.random() * 9000);
-                freshState.profile.displayName = initialName;
-                freshState.profile.lifebuddyId = `${initialName}#${randomTag}`;
-                await db.collection('users').doc(userId).set(freshState);
-                return freshState;
+                // [สำคัญ] ถ้าไม่มีข้อมูลใน Firestore (ซึ่งไม่ควรจะเกิดขึ้นกับผู้ใช้ที่สมัครแล้ว)
+                // ให้แสดง Error และ return state เริ่มต้นไปก่อน เพื่อป้องกันแอปพัง
+                console.error(`!!! CRITICAL: No data found in Firestore for user ${userId}. This should not happen.`);
+                showToast("เกิดข้อผิดพลาดร้ายแรง: ไม่พบข้อมูลผู้ใช้");
+                auth.signOut(); // บังคับออกจากระบบเพื่อความปลอดภัย
+                return JSON.parse(JSON.stringify(initialState));
             }
         } catch (error) { 
-            console.error("Error loading state:", error); 
+            console.error("Error loading state from Firestore:", error); 
             return JSON.parse(JSON.stringify(initialState)); 
         }
     }
@@ -2023,39 +2025,40 @@ async function renderChatList() {
 
     function updatePasswordStrength() {
         const password = document.getElementById('signup-password').value;
-        const strengthMeter = document.getElementById('password-strength-meter');
-        if (strengthMeter && strengthMeter.classList.contains('weak')) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'รหัสผ่านไม่ปลอดภัย',
-                text: 'กรุณาตั้งรหัสผ่านให้คาดเดายากขึ้น (แนะนำ: 8 ตัวอักษรขึ้นไป, มีตัวเลข, อักษรใหญ่-เล็ก)',
-            });
-            return; // หยุดการทำงานถ้าอ่อนแอเกินไป
-        }
+        const strengthText = document.getElementById('password-strength-text');
+        if (!strengthText) return; // ตรวจสอบแค่ strengthText
 
         if (password.length === 0) {
-            strengthMeter.classList.add('hidden');
+            strengthText.classList.add('hidden'); // ซ่อนข้อความเมื่อไม่มีการพิมพ์
+            strengthText.textContent = '';
             return;
         }
-        strengthMeter.classList.remove('hidden');
+        
+        strengthText.classList.remove('hidden'); // แสดงข้อความ
 
+        // Logic การคำนวณ score เหมือนเดิม
         let score = 0;
-        if (password.length >= 8) score++; // ความยาว
-        if (/\d/.test(password)) score++; // มีตัวเลข
-        if (/[a-z]/.test(password)) score++; // มีตัวอักษรเล็ก
-        if (/[A-Z]/.test(password)) score++; // มีตัวอักษรใหญ่
-        if (/[^A-Za-z0-9]/.test(password)) score++; // มีอักขระพิเศษ
+        if (password.length >= 8) score++;
+        if (/\d/.test(password)) score++;
+        if (/[a-z]/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
 
-        strengthMeter.className = 'password-strength-meter'; // Reset class
+        // Reset class ของข้อความ
+        strengthText.className = 'password-feedback-text';
+
+        // กำหนด class และข้อความตาม score
         if (score <= 2) {
-            strengthMeter.classList.add('weak');
+            strengthText.classList.add('weak');
+            strengthText.textContent = 'ความปลอดภัย: อ่อนแอ';
         } else if (score <= 4) {
-            strengthMeter.classList.add('medium');
+            strengthText.classList.add('medium');
+            strengthText.textContent = 'ความปลอดภัย: ปานกลาง';
         } else {
-            trengthMeter.classList.add('strong');
+            strengthText.classList.add('strong');
+            strengthText.textContent = 'ความปลอดภัย: แข็งแกร่ง';
         }
     }
-
     function checkPasswordMatch() {
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-password-confirm').value;
@@ -2520,71 +2523,66 @@ async function renderChatList() {
                     } 
                     break;
                 case 'signup-form':
+                    // ... (โค้ดตรวจสอบรหัสผ่านเหมือนเดิม) ...
                     const signupEmail = document.getElementById('signup-email').value;
                     const signupPassword = document.getElementById('signup-password').value;
                     const signupPasswordConfirm = document.getElementById('signup-password-confirm').value;
-                    // --- 1. ตรวจสอบรหัสผ่านตรงกันหรือไม่ ---
+
                     if (signupPassword !== signupPasswordConfirm) {
+                        Swal.fire({ icon: 'error', title: 'รหัสผ่านไม่ตรงกัน', text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน' });
+                        return;
+                    }
+                    const strengthMeter = document.getElementById('password-strength-meter');
+                    if (signupPassword.length < 6) {
                         Swal.fire({
                             icon: 'error',
-                            itle: 'รหัสผ่านไม่ตรงกัน',
-                            text: 'กรุณากรอกรหัสผ่านและยืนยันรหัสผ่านให้ตรงกัน',
+                            title: 'รหัสผ่านสั้นเกินไป',
+                            text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร',
                         });
                         return;
                     }
-    
-                    // ===== การตรวจสอบความปลอดภัยของรหัสผ่าน =====
-                    const strengthMeter = document.getElementById('password-strength-meter');
-                    if (strengthMeter && strengthMeter.classList.contains('weak')) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'รหัสผ่านไม่ปลอดภัย',
-                            text: 'กรุณาตั้งรหัสผ่านให้คาดเดายากขึ้น (แนะนำ: 8 ตัวอักษรขึ้นไป, มีตัวเลข, อักษรใหญ่-เล็ก)',
-                        });
-                        return; // หยุดการทำงานถ้าอ่อนแอเกินไป
-                    }
 
-                    // --- แสดงสถานะกำลังโหลด ---
                     Swal.fire({
                         title: 'กำลังสร้างบัญชี...',
-                        text: 'กรุณารอสักครู่',
                         allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
+                        didOpen: () => { Swal.showLoading(); }
                     });
 
-                    // --- ส่งข้อมูลไป Firebase ---
                     auth.createUserWithEmailAndPassword(signupEmail, signupPassword)
-                        .then(async (userCredential) => { 
+                        .then(async (userCredential) => {
                             const user = userCredential.user;
                             
-                            // ===== สร้างข้อมูลโปรไฟล์เริ่มต้นใน Firestore ทันที =====
+                            // ส่งอีเมลยืนยันตัวตน
+                            await user.sendEmailVerification();
+                            // ------------------------------------
+
+                            // สร้างข้อมูลโปรไฟล์ใน 
                             const initialName = user.email.split('@')[0];
                             const randomTag = Math.floor(1000 + Math.random() * 9000);
-                            
-                            // ใช้ `initialState` เป็นแม่แบบ
                             const newUserProfileData = JSON.parse(JSON.stringify(initialState));
                             newUserProfileData.profile.displayName = initialName;
                             newUserProfileData.profile.lifebuddyId = `${initialName}#${randomTag}`;
-
-                            // เขียนข้อมูลลง Firestore
+                            
                             await db.collection('users').doc(user.uid).set(newUserProfileData);
                             
+                            // ออกจากระบบก่อน เพื่อบังคับให้ผู้ใช้ยืนยันตัวตน
+                            await auth.signOut();
+
+                            // --- [ส่วนสำคัญ] แสดง Pop-up ให้ไปยืนยันอีเมล ---
                             Swal.fire({
-                                icon: 'success',
-                                title: 'สมัครสมาชิกสำเร็จ!',
-                                text: `ยินดีต้อนรับสู่ Life Buddy, ${user.email}!`,
-                                timer: 2000,
-                                showConfirmButton: false
+                                icon: 'info',
+                                title: 'สมัครสมาชิกเกือบสำเร็จ!',
+                                html: `เราได้ส่งลิงก์ยืนยันไปยัง <strong>${user.email}</strong><br/>กรุณาตรวจสอบกล่องจดหมายและคลิกลิงก์เพื่อเปิดใช้งานบัญชีของคุณ`,
+                                confirmButtonText: 'เข้าใจแล้ว',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                // กลับไปที่หน้าเข้าสู่ระบบ
+                                document.getElementById('signup-view').classList.add('hidden');
+                                document.getElementById('login-view').classList.remove('hidden');
                             });
                         })
                         .catch(error => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: getFriendlyAuthError(error),
-                            });
+                            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: getFriendlyAuthError(error) });
                         });
                     break;
 
@@ -2592,30 +2590,35 @@ async function renderChatList() {
                 const loginEmail = document.getElementById('login-email').value;
                 const loginPassword = document.getElementById('login-password').value;
 
-                // --- 1. แสดงสถานะกำลังโหลด ---
                 Swal.fire({
                     title: 'กำลังเข้าสู่ระบบ...',
                     allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    didOpen: () => { Swal.showLoading(); }
                 });
 
-                // --- 2. ส่งข้อมูลไป Firebase ---
                 auth.signInWithEmailAndPassword(loginEmail, loginPassword)
-                    .then(() => {
-                        // ไม่ต้องทำอะไรที่นี่ เพราะ onAuthStateChanged จะจัดการปิด modal และอัปเดต UI
-                        // Swal จะปิดตัวเองเมื่อมีการเปลี่ยนหน้า
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        
+                        // --- [ส่วนสำคัญ] ตรวจสอบว่ายืนยันอีเมลหรือยัง ---
+                        if (!user.emailVerified) {
+                            auth.signOut(); // ออกจากระบบทันที
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'บัญชียังไม่ถูกเปิดใช้งาน',
+                                html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
+                            });
+                        }
+                        // ถ้า emailVerified เป็น true, onAuthStateChanged จะทำงานต่อเอง
                     })
                     .catch(error => {
-                        // --- 3. แสดงข้อผิดพลาดด้วย Pop-up ---
                         Swal.fire({
                             icon: 'error',
                             title: 'เข้าสู่ระบบไม่สำเร็จ',
                             text: getFriendlyAuthError(error),
                         });
                     });
-                    break;
+                break;
                 case 'flashcard-form':
                     const flashcardForm = e.target;
                     const subject = flashcardForm.dataset.subject;
@@ -2648,24 +2651,28 @@ async function renderChatList() {
     // ===== 8. AUTH MODAL FUNCTIONS =====
     // ===================================
     function getFriendlyAuthError(error) {
-        console.error("Auth Error:", error);
-        switch (error.code) {
-            case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
-            case 'auth/user-not-found': return 'ไม่พบบัญชีผู้ใช้นี้';
-            case 'auth/wrong-password': return 'รหัสผ่านไม่ถูกต้อง';
-            case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
-            case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-            case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
-            case 'auth/cancelled-popup-request': return '';
-            case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
-            case 'auth/internal-error': 
-                if (error.message && error.message.includes("INVALID_LOGIN_CREDENTIALS")) { 
-                    return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; 
-                } 
-                return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
-            default: return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
-        }
+    console.error("Auth Error:", error);
+    switch (error.code) {
+        case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
+        case 'auth/user-not-found': return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; // รวมเป็นข้อความเดียว
+        case 'auth/wrong-password': return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; // รวมเป็นข้อความเดียว
+        case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
+        case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+        case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
+        case 'auth/cancelled-popup-request': return '';
+        case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
+        
+        case 'auth/internal-error':
+            // ตรวจสอบข้อความที่ซ่อนอยู่ข้างใน
+            if (error.message && error.message.includes("INVALID_LOGIN_CREDENTIALS")) {
+                return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+            }
+            // ถ้าเป็น internal-error อื่นๆ
+            return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
+
+        default: return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
     }
+}
 
     function openAuthModal() { 
         document.getElementById('auth-modal').classList.remove('hidden');
