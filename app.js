@@ -2033,9 +2033,16 @@ async function renderChatList() {
         document.getElementById('quiz-manager-topic-title').textContent = `จัดการควิซสำหรับ: ${currentQuizTopicData.name}`;
         document.getElementById('quiz-manager-topic-notes').textContent = currentQuizTopicData.notes || "ไม่มีโน้ตย่อสำหรับหัวข้อนี้";
 
+        // ===== [ส่วนที่แก้ไขและสำคัญมาก] =====
+        // ตรวจสอบก่อนว่ามี quizzes หรือไม่ ถ้าไม่มีให้สร้างเป็น Array ว่าง
+        if (!currentQuizTopicData.quizzes) {
+            currentQuizTopicData.quizzes = [];
+        }
+        const quizzes = currentQuizTopicData.quizzes; // ใช้ตัวแปรที่ปลอดภัยแล้ว
+        // ===== [สิ้นสุดส่วนที่แก้ไข] =====
+
         // แสดงรายการควิซที่มีอยู่
         const listContainer = document.getElementById('existing-quizzes-list');
-        const quizzes = currentQuizTopicData.quizzes || [];
         if (quizzes.length > 0) {
             listContainer.innerHTML = quizzes.map((quiz, index) => `
                 <div class="quiz-list-item">
