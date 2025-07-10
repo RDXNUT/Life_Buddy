@@ -264,10 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderPlannerCalendar(currentPlannerDate); 
                 break;
             case 'revisit':
-                const revisitListView = document.getElementById('revisit-list-view');
-                const flashcardView = document.getElementById('flashcard-view');
-                if (revisitListView) revisitListView.classList.remove('hidden');
-                if (flashcardView) flashcardView.classList.add('hidden');
+                showRevisitSubView('revisit-list-view');
                 renderRevisitList(); 
                 break;
             case 'focus': 
@@ -278,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderMoodCalendar(currentMoodDate); 
                 break;
             case 'community': 
-                // เมื่อเปิดหน้า community ให้ render Chat List
                 document.getElementById('chat-conversation-view').classList.add('hidden');
                 document.getElementById('chat-welcome-view').classList.remove('hidden');
                 renderChatList(); 
@@ -779,6 +775,139 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     // ===== 6. FEATURE-SPECIFIC FUNCTIONS =====
     // =========================================
+     // --- REVISIT & QUIZ SYSTEM FUNCTIONS ---
+    function showRevisitSubView(viewId) {
+        const page = document.getElementById('revisit-page');
+        if (!page) return;
+        page.querySelectorAll('.page-view').forEach(view => view.classList.add('hidden'));
+        
+        // เราต้องซ่อน/แสดง View หลักของหน้านี้ด้วย
+        const listView = document.getElementById('revisit-list-view');
+        const managerView = document.getElementById('quiz-manager-view');
+        const takingView = document.getElementById('quiz-taking-view');
+
+        if(listView) listView.style.display = 'none';
+        if(managerView) managerView.classList.add('hidden');
+        if(takingView) takingView.classList.add('hidden');
+
+        if(viewId === 'revisit-list-view') {
+            if(listView) listView.style.display = 'block';
+        } else {
+            const viewToShow = document.getElementById(viewId);
+            if (viewToShow) {
+                viewToShow.classList.remove('hidden');
+            }
+        }
+    }
+
+    window.startReviewSession = (subject, topicId) => {
+        const topic = state.revisitTopics[subject]?.find(t => t.id === topicId);
+        if (!topic) {
+            console.error("Topic not found!", { subject, topicId });
+            showToast("เกิดข้อผิดพลาด: ไม่พบข้อมูลหัวข้อ");
+            return;
+        }
+        currentQuizTopicData = JSON.parse(JSON.stringify(topic)); 
+        currentQuizTopicData.subjectRef = subject; 
+        currentQuizTopicData.topicId = topicId; 
+        showRevisitSubView('quiz-manager-view');
+        renderQuizManager();
+        feather.replace();
+    };
+
+    function renderRevisitList() {
+        const container = document.getElementById('revisit-topics-by-subject');
+        if (!container) return;
+        container.innerHTML = '';
+        let hasTopics = false;
+        if (state.revisitTopics && typeof state.revisitTopics === 'object') {
+            Object.entries(state.revisitTopics).forEach(([subject, topics]) => {
+                if (Array.isArray(topics) && topics.length > 0) {
+                    hasTopics = true;
+                    const subjectGroup = document.createElement('div');
+                    subjectGroup.className = 'subject-group';
+                    const subjectTitleText = document.querySelector(`#revisit-subject option[value="${subject}"]`)?.textContent || subject;
+                    subjectGroup.innerHTML = `<h3 class="subject-title">${subjectTitleText}</h3>`;
+                    
+                    const topicList = document.createElement('ul');
+                    topicList.className = 'topic-list';
+                    topicList.innerHTML = topics.map(topic => `
+                        <li class="topic-item">
+                            <div class="topic-info">
+                                <span>${topic.name}</span>
+                                <div class="next-review">ทบทวนครั้งถัดไป: ${dayjs(topic.nextReviewDate).format('D MMM YYYY')}</div>
+                            </div>
+                            <button class="small-btn" onclick="startReviewSession('${subject}', ${topic.id})">จัดการควิซ</button>
+                        </li>
+                    `).join('');
+                    subjectGroup.appendChild(topicList);
+                    container.appendChild(subjectGroup);
+                }
+            });
+        }
+        if (!hasTopics) {
+            container.innerHTML = '<p class="subtle-text" style="text-align:center;">ยังไม่มีหัวข้อสำหรับทบทวน ลองเพิ่มดูสิ!</p>';
+        }
+        updateHomePageUI();
+    };
+
+    function renderQuizManager() {
+        if (!currentQuizTopicData) return;
+        document.getElementById('quiz-manager-topic-title').textContent = `จัดการควิซสำหรับ: ${currentQuizTopicData.name}`;
+        document.getElementById('quiz-manager-topic-notes').textContent = currentQuizTopicData.notes || "ไม่มีโน้ตย่อสำหรับหัวข้อนี้";
+
+        if (!currentQuizTopicData.quizzes) {
+            currentQuizTopicData.quizzes = [];
+        }
+        const quizzes = currentQuizTopicData.quizzes;
+
+        const listContainer = document.getElementById('existing-quizzes-list');
+        if (quizzes.length > 0) {
+            listContainer.innerHTML = quizzes.map((quiz, index) => `
+                <div class="quiz-list-item">
+                    <p>${index + 1}. ${quiz.question}</p>
+                    <span class="quiz-type-tag">${quiz.type === 'typed' ? 'อัตนัย' : 'ปรนัย'}</span>
+                    <button class="icon-button delete-quiz-btn" data-index="${index}" title="ลบควิซข้อนี้"><i data-feather="trash"></i></button>
+                </div>
+            `).join('');
+            feather.replace();
+        } else {
+            listContainer.innerHTML = '<p class="subtle-text" style="text-align:center; padding: 20px 0;">ยังไม่มีควิซในหัวข้อนี้... มาสร้างกันเลย!</p>';
+        }
+        document.getElementById('start-quiz-btn').classList.toggle('hidden', quizzes.length === 0);
+        resetQuizCreatorForm();
+    }
+
+    function resetQuizCreatorForm() {
+        document.getElementById('quiz-creator-form').reset();
+        document.querySelector('.quiz-type-btn[data-type="multiple-choice"]').click();
+        document.getElementById('mc-options-container').innerHTML = `<label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูกต้อง)</label>`;
+        addQuizChoiceOption();
+        addQuizChoiceOption();
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.id = 'add-choice-btn';
+        addBtn.className = 'small-btn btn-secondary';
+        addBtn.style.width = 'auto';
+        addBtn.innerHTML = '<i data-feather="plus"></i> เพิ่มตัวเลือก';
+        document.getElementById('mc-options-container').appendChild(addBtn);
+        feather.replace();
+    }
+
+    function addQuizChoiceOption() {
+        const container = document.getElementById('mc-options-container');
+        const choiceCount = container.querySelectorAll('.mc-choice-item').length;
+        const newChoice = document.createElement('div');
+        newChoice.className = 'mc-choice-item';
+        newChoice.innerHTML = `
+            <input type="radio" name="correct-answer-radio" id="choice-radio-${choiceCount}" required>
+            <input type="text" placeholder="เนื้อหาตัวเลือก ${choiceCount + 1}" required>
+            <button type="button" class="icon-button remove-choice-btn" title="ลบตัวเลือกนี้"><i data-feather="x-circle"></i></button>
+        `;
+        const addBtn = document.getElementById('add-choice-btn');
+        if(addBtn) container.insertBefore(newChoice, addBtn);
+        feather.replace();
+    }
     function renderShop() {
         const bannersContainer = document.getElementById('shop-banners-container');
         if (!bannersContainer) return;
