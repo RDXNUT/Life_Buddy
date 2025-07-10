@@ -2586,7 +2586,7 @@ async function renderChatList() {
                         });
                     break;
 
-            case 'login-form':
+             case 'login-form':
                 const loginEmailInput = document.getElementById('login-email');
                 const loginPasswordInput = document.getElementById('login-password');
                 const loginEmail = loginEmailInput.value;
@@ -2607,11 +2607,9 @@ async function renderChatList() {
                         didOpen: () => { Swal.showLoading(); }
                     });
 
-                    // ตรวจสอบวิธีการลงชื่อเข้าใช้ของอีเมลนี้ก่อน
                     auth.fetchSignInMethodsForEmail(loginEmail)
                         .then((signInMethods) => {
                             
-                            // กรณีที่ 1: ไม่เคยมีบัญชีนี้ในระบบ
                             if (signInMethods.length === 0) {
                                 Swal.fire({
                                     icon: 'error',
@@ -2619,21 +2617,20 @@ async function renderChatList() {
                                     text: `ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่`,
                                 });
                             } 
-                            // กรณีที่ 2: บัญชีนี้ผูกกับ Google
+                            // ===== [ส่วนที่ปรับปรุงข้อความตามที่คุณต้องการ] =====
                             else if (signInMethods.includes('google.com')) {
                                 Swal.fire({
-                                    icon: 'info',
-                                    title: 'บัญชีนี้ลงทะเบียนผ่าน Google',
-                                    html: `ดูเหมือนว่าอีเมลนี้จะถูกใช้ลงทะเบียนผ่าน Google ไปแล้ว<br/>กรุณาคลิกปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> เพื่อใช้งาน`,
+                                    icon: 'error', // ใช้ icon error เพื่อสื่อว่า "ไม่สำเร็จ"
+                                    title: 'เข้าสู่ระบบไม่สำเร็จ',
+                                    html: `เนื่องจากอีเมลนี้ได้ถูกใช้ลงทะเบียนผ่าน Google ไปแล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
                                     confirmButtonText: 'เข้าใจแล้ว',
                                 });
                             } 
-                            // กรณีที่ 3: บัญชีนี้ใช้รหัสผ่าน (ทำงานตามปกติ)
+                            // ===== [สิ้นสุดส่วนที่ปรับปรุง] =====
                             else if (signInMethods.includes('password')) {
                                 auth.signInWithEmailAndPassword(loginEmail, loginPassword)
                                     .then((userCredential) => {
                                         const user = userCredential.user;
-                                        // ตรวจสอบว่ายืนยันอีเมลหรือยัง
                                         if (!user.emailVerified) {
                                             auth.signOut();
                                             Swal.fire({
@@ -2642,11 +2639,8 @@ async function renderChatList() {
                                                 html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
                                             });
                                         }
-                                        // ถ้า verified แล้ว onAuthStateChanged จะทำงานต่อเอง
-                                        // และ Swal จะปิดไปเองเมื่อ Modal ปิด
                                     })
                                     .catch(error => {
-                                        // ใช้ getFriendlyAuthError ที่เราปรับปรุงไปแล้ว
                                         Swal.fire({
                                             icon: 'error',
                                             title: 'เข้าสู่ระบบไม่สำเร็จ',
