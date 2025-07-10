@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== 3. APP INITIALIZATION =====
     // =================================
     auth.onAuthStateChanged(async (user) => {
+        debugger;
         const loadingOverlay = document.getElementById('loading-overlay');
         loadingOverlay.style.display = 'flex';
         loadingOverlay.style.opacity = '1';
@@ -146,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function runApp() {
+        debugger; 
         // ตั้งค่าพื้นฐานเสมอ ไม่ว่าะจะล็อกอินหรือไม่
         if (!areListenersSetup) {
             setupAllEventListeners();
@@ -172,8 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function closeSidebar() { 
-        document.getElementById('sidebar').classList.remove('show'); 
-        document.getElementById('overlay').classList.remove('show'); 
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        if (sidebar) sidebar.classList.remove('show'); 
+        if (overlay) overlay.classList.remove('show'); 
     }
     
     function applySettings() {
@@ -265,15 +269,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== 5. UI & PAGE RENDERING =====
     // ==================================
     window.showPage = (pageId) => {
+        debugger;
         if (!pageId) pageId = 'home';
 
         const protectedPages = ['profile', 'rewards', 'settings', 'community', 'shop', 'mood', 'planner', 'revisit', 'focus'];
         
-        // [สำคัญ] ตรวจสอบสิทธิ์การเข้าถึงอีกครั้ง
         if (protectedPages.includes(pageId) && !currentUser) {
             openAuthModal();
-            // ถ้าเข้าหน้าป้องกันไม่ได้ ให้กลับไปหน้า home เพื่อไม่ให้หน้าขาว
-            if (pageId !== 'home') showPage('home'); 
+            if (pageId !== 'home') {
+                // ถ้าพยายามเข้าหน้าป้องกัน ให้กลับไป home ก่อนเปิด modal
+                const homePage = document.getElementById('home-page');
+                if (homePage) homePage.classList.add('active');
+            }
             return; 
         }
 
@@ -284,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetPage.classList.add('active');
         } else {
             document.getElementById('home-page').classList.add('active');
-            pageId = 'home'; // อัปเดต pageId ให้ตรงกับหน้าจริง
+            pageId = 'home';
         }
 
         allNavLinks.forEach(l => l.classList.toggle('active', l.dataset.page === pageId));
@@ -307,7 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'profile': renderProfilePage(); break;
         }
         feather.replace();
-        closeSidebar();
+
+        // [สำคัญ] ทำให้การปิด Sidebar ทำงานช้าลงเล็กน้อย
+        setTimeout(closeSidebar, 100); 
     }
 
     function updateUIForLoginStatus() {
@@ -2497,6 +2506,42 @@ async function renderChatList() {
         }
     }
 
+    function handleRevisitFormSubmit(e) {
+        e.preventDefault();
+        const subject = document.getElementById('revisit-subject').value;
+        const topicName = document.getElementById('revisit-topic-name').value.trim();
+        const topicNotes = document.getElementById('revisit-topic-notes').value.trim();
+        const intervals = Array.from(document.querySelectorAll('input[name="review-interval"]:checked')).map(el => parseInt(el.value));
+        
+        if (!subject || !topicName) {
+            return showToast("กรุณาเลือกวิชาและใส่ชื่อหัวข้อ");
+        }
+        if (intervals.length === 0) {
+            return showToast("กรุณาเลือกรอบการทบทวนอย่างน้อย 1 รอบ");
+        }
+
+        const newTopic = {
+            id: Date.now(),
+            name: topicName,
+            notes: topicNotes,
+            level: 0,
+            reviewIntervals: intervals.sort((a, b) => a - b),
+            nextReviewDate: dayjs().add(intervals[0], 'day').format('YYYY-MM-DD'),
+            quizzes: [] // สร้าง array ว่างสำหรับควิซ
+        };
+
+        if (!state.revisitTopics[subject]) {
+            state.revisitTopics[subject] = [];
+        }
+        state.revisitTopics[subject].push(newTopic);
+        
+        saveState();
+        renderRevisitList(); // อัปเดตรายการหัวข้อ
+        document.getElementById('revisit-form').reset();
+        showToast(`เพิ่มหัวข้อ "${topicName}" เรียบร้อยแล้ว!`);
+        addExp(15);
+    }
+
     async function handleFriendSearch(e) {
         e.preventDefault();
         const searchInput = document.getElementById('search-friends-input');
@@ -2618,6 +2663,19 @@ async function renderChatList() {
         document.getElementById('timer-settings-form')?.addEventListener('submit', handleTimerSettingsFormSubmit);
         document.getElementById('add-typed-answer-input')?.addEventListener('keydown', handleTypedAnswerInput);
         document.getElementById('google-signin-btn')?.addEventListener('click', handleGoogleSignIn);
+        document.getElementById('login-form')?.addEventListener('submit', handleLoginFormSubmit);
+        document.getElementById('signup-form')?.addEventListener('submit', handleSignupFormSubmit);
+        document.getElementById('todo-form')?.addEventListener('submit', handleTodoFormSubmit);
+        document.getElementById('revisit-form')?.addEventListener('submit', handleRevisitFormSubmit);
+        document.getElementById('quiz-creator-form')?.addEventListener('submit', handleQuizCreatorFormSubmit);
+        document.getElementById('planner-form')?.addEventListener('submit', handlePlannerFormSubmit);
+        document.getElementById('mood-form')?.addEventListener('submit', handleMoodFormSubmit);
+        document.getElementById('profile-form')?.addEventListener('submit', handleProfileFormSubmit);
+        document.getElementById('add-activity-form')?.addEventListener('submit', handleAddActivityFormSubmit);
+        document.getElementById('add-advice-form')?.addEventListener('submit', handleAddAdviceFormSubmit);
+        document.getElementById('search-friends-form')?.addEventListener('submit', handleFriendSearch);
+        document.getElementById('chat-form')?.addEventListener('submit', handleChatFormSubmit);
+
         addPasswordInputListeners('signup-password');
         addPasswordInputListeners('signup-password-confirm');
 
@@ -2626,47 +2684,98 @@ async function renderChatList() {
             const target = e.target;
             const closest = (selector) => target.closest(selector);
             
+            // --- จัดการปุ่มที่ถูกสร้างขึ้นมาทีหลัง หรือมีหลายปุ่ม ---
+            
             // Dynamic/Repeated elements
-            if (closest('.nav-link')) { e.preventDefault(); showPage(closest('.nav-link').dataset.page); return; }
-            if (closest('.password-toggle-btn')) { handlePasswordToggle(closest('.password-toggle-btn')); return; }
-            if (closest('.quiz-type-btn')) { handleQuizTypeToggle(closest('.quiz-type-btn')); return; }
-            if (closest('.remove-choice-btn')) { handleRemoveChoice(closest('.remove-choice-btn')); return; }
-            if (closest('.delete-quiz-btn')) { handleDeleteQuiz(closest('.delete-quiz-btn')); return; }
-            if (closest('.chat-list-item')) { handleChatListItemClick(e, closest('.chat-list-item')); return; }
-            if (target.matches('#todo-list input[type="checkbox"]')) { handleTodoCheckboxClick(target); return; }
-            if (closest('.delete-activity-btn')) { handleDeleteActivity(closest('.delete-activity-btn')); return; }
-            if (closest('.delete-advice-btn')) { handleDeleteAdvice(closest('.delete-advice-btn')); return; }
-            if (closest('.profile-option')) { handleProfileOptionSelect(closest('.profile-option')); return; }
-            if (closest('.calendar-nav-btn')) { handleCalendarNav(closest('.calendar-nav-btn')); return; }
-            if (closest('.close-btn')) { const modal = closest('.modal-overlay'); if (modal) modal.classList.add('hidden'); return; }
+            if (closest('.nav-link')) { 
+                e.preventDefault(); 
+                showPage(closest('.nav-link').dataset.page); 
+                return; 
+            }
+            if (closest('.password-toggle-btn')) { 
+                handlePasswordToggle(closest('.password-toggle-btn')); 
+                return; 
+            }
+            if (closest('.quiz-type-btn')) { 
+                handleQuizTypeToggle(closest('.quiz-type-btn')); 
+                return; 
+            }
+            if (closest('.remove-choice-btn')) { 
+                handleRemoveChoice(closest('.remove-choice-btn')); 
+                return; 
+            }
+            if (closest('.delete-quiz-btn')) { 
+                handleDeleteQuiz(closest('.delete-quiz-btn')); return; }
+            if (closest('.chat-list-item')) { 
+                handleChatListItemClick(e, closest('.chat-list-item')); 
+                return; 
+            }
+            if (target.matches('#todo-list input[type="checkbox"]')) { 
+                handleTodoCheckboxClick(target); 
+                return; 
+            }
+            if (closest('.delete-activity-btn')) { 
+                handleDeleteActivity(closest('.delete-activity-btn')); 
+                return; 
+            }
+            if (closest('.delete-advice-btn')) { 
+                handleDeleteAdvice(closest('.delete-advice-btn')); 
+                return; 
+            }
+            if (closest('.profile-option')) { 
+                handleProfileOptionSelect(closest('.profile-option')); 
+                return; 
+            }
+            if (closest('.calendar-nav-btn')) { 
+                handleCalendarNav(closest('.calendar-nav-btn')); 
+                return; 
+            }
+            if (closest('.close-btn')) { 
+                const modal = 
+                closest('.modal-overlay'); 
+                if (modal) modal.classList.add('hidden'); 
+                return; 
+            }
 
             // ID-based elements
             const targetId = target.id || closest('[id]')?.id;
             switch(targetId) {
+                // Auth & Sidebar
                 case 'login-btn': openAuthModal(); break;
                 case 'logout-btn': auth.signOut(); break;
+                case 'google-signin-btn': handleGoogleSignIn(); break; // เพิ่มเคสนี้เข้ามา
                 case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
-                case 'overlay': closeSidebar(); break;
+                case 'close-menu': closeSidebar(); break; // เอา 'overlay' ออก เพราะจัดการด้วย closest() ไปแล้ว
                 case 'show-signup-link': e.preventDefault(); showAuthView('signup-view'); break;
                 case 'show-login-link': e.preventDefault(); showAuthView('login-view'); break;
+
+                // Main Actions
                 case 'check-in-btn': handleCheckIn(); break;
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
                 case 'settings-timer-btn': openTimerSettingsModal(); break;
+
+                // Profile & Social
                 case 'main-edit-profile-btn': document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden'); break;
                 case 'cancel-edit-profile-btn': document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); break;
                 case 'edit-profile-picture-btn': populateProfileSelector(); document.getElementById('profile-selector-modal').classList.remove('hidden'); break;
                 case 'change-banner-btn': openBannerSelector(); break;
                 case 'copy-id-btn': handleCopyId(); break;
                 case 'search-friends-btn': case 'search-friends-btn-from-chat': document.getElementById('search-friends-modal').classList.remove('hidden'); break;
+
+                // Home Page
                 case 'random-activity-btn': handleRandomActivity(); break;
                 case 'random-advice-btn': handleRandomAdvice(); break;
                 case 'manage-activities-btn': openActivityManager(); break;
                 case 'manage-advice-btn': openAdviceManager(); break;
                 case 'edit-wishlist-btn': handleEditWishList(); break;
+
+                // Revisit & Quiz Page
                 case 'back-to-revisit-list-btn': showRevisitSubView('revisit-list-view'); currentQuizTopicData = null; break;
                 case 'add-choice-btn': addQuizChoiceOption(); break;
-                case 'start-quiz-btn': startQuiz(); break;
+                case 'start-quiz-btn': startQuiz(); break; // คุณต้องมีฟังก์ชัน startQuiz() ด้วยนะครับ
+                
+                // Settings
                 case 'theme-light-btn': if (state.settings.theme !== 'light') { state.settings.theme = 'light'; applySettings(); saveState(); updateSettingsUI(); } break;
                 case 'theme-dark-btn': if (state.settings.theme !== 'dark') { state.settings.theme = 'dark'; applySettings(); saveState(); updateSettingsUI(); } break;
             }
