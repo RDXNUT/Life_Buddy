@@ -2586,7 +2586,7 @@ async function renderChatList() {
                         });
                     break;
 
-             case 'login-form':
+              case 'login-form':
                 const loginEmailInput = document.getElementById('login-email');
                 const loginPasswordInput = document.getElementById('login-password');
                 const loginEmail = loginEmailInput.value;
@@ -2617,16 +2617,14 @@ async function renderChatList() {
                                     text: `ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่`,
                                 });
                             } 
-                            // ===== [ส่วนที่ปรับปรุงข้อความตามที่คุณต้องการ] =====
                             else if (signInMethods.includes('google.com')) {
                                 Swal.fire({
-                                    icon: 'error', // ใช้ icon error เพื่อสื่อว่า "ไม่สำเร็จ"
+                                    icon: 'error',
                                     title: 'เข้าสู่ระบบไม่สำเร็จ',
                                     html: `เนื่องจากอีเมลนี้ได้ถูกใช้ลงทะเบียนผ่าน Google ไปแล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
                                     confirmButtonText: 'เข้าใจแล้ว',
                                 });
                             } 
-                            // ===== [สิ้นสุดส่วนที่ปรับปรุง] =====
                             else if (signInMethods.includes('password')) {
                                 auth.signInWithEmailAndPassword(loginEmail, loginPassword)
                                     .then((userCredential) => {
