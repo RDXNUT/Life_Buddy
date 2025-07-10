@@ -7,2405 +7,393 @@ body[data-theme="light"] { --bg-color: var(--bg-light); --card-bg-color: var(--c
 body[data-theme="dark"] { --bg-color: var(--bg-dark); --card-bg-color: var(--card-bg-dark); --text-color: var(--text-dark); --subtle-text-color: var(--subtle-text-dark); --border-color: var(--border-dark); --primary-color: var(--primary-dark); --primary-hover: var(--primary-hover-dark); --accent-color: var(--accent-dark); --accent-hover: var(--accent-hover-dark); --success-color: var(--success-dark); --danger-color: var(--danger-dark); --shadow: var(--shadow-dark); --glass-bg: var(--glass-bg-dark); }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { 
-    font-family: var(--font-family); 
-    background-color: var(--bg-color); 
-    color: var(--text-color); transition: 
-    background-color 0.3s, color 0.3s; 
-    line-height: 1.7; font-weight: 300; }
-
-main { 
-    padding: 85px 20px 20px; 
-    max-width: 1200px; margin: 0 auto; }
-
-h1, h2, h3, h4 { 
-    font-weight: 500; color: var(--text-color); }
-
-h1 { 
-    font-size: 2.2rem; 
-    margin-bottom: 1.5rem; 
-    display: flex; 
-    align-items: center; gap: 12px; }
-
-h2 { 
-    font-size: 1.6rem; 
-    margin-bottom: 1rem; 
-    color: var(--text-color); 
-    display: flex; align-items: center; 
-    gap: 10px; border-bottom: 1px solid var(--border-color); 
-    padding-bottom: 12px; }
-
+body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; line-height: 1.7; font-weight: 300; }
+main { padding: 85px 20px 20px; max-width: 1200px; margin: 0 auto; }
+h1, h2, h3, h4 { font-weight: 500; color: var(--text-color); }
+h1 { font-size: 2.2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+h2 { font-size: 1.6rem; margin-bottom: 1rem; color: var(--text-color); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
 h3 { font-size: 1.2rem; margin-bottom: 0.8rem; }
 p { color: var(--subtle-text-color); }
-.card { 
-    background-color: var(--card-bg-color); 
-    border-radius: 16px; padding: 25px; 
-    margin-bottom: 20px; box-shadow: var(--shadow); 
-    border: 1px solid var(--border-color); 
-    transition: all 0.3s; }
-
+.card { background-color: var(--card-bg-color); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: all 0.3s; }
 .hidden { display: none !important; }
-.feather { 
-    width: 1.1em; height: 1.1em; 
-    stroke-width: 2; vertical-align: -0.15em; }
-
-header { 
-    position: fixed; 
-    top: 0; left: 0; width: 100%; 
-    display: flex; justify-content: space-between; 
-    align-items: center; 
-    padding: 0 20px; height: 65px; 
-    z-index: 1000; background-color: var(--glass-bg); 
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
-    border-bottom: 1px solid var(--border-color); }
-
-.user-stats { 
-    display: flex; align-items: center; 
-    gap: 15px; font-weight: 500; }
-
-.guest-container {
-    display: flex;
-    align-items: center; /* จัดให้อยู่กลางแนวตั้ง */
-    gap: 15px;
-    height: 100%; /* ทำให้ container สูงเท่า header */
-}
-
-.user-stats span { 
-    display: inline-flex; align-items: center; 
-    gap: 8px; padding: 6px 14px; background-color: var(--bg-color); 
-    border-radius: 20px; 
-    line-height: 1.2; font-weight: 500; }
-
+.feather { width: 1.1em; height: 1.1em; stroke-width: 2; vertical-align: -0.15em; }
+header { position: fixed; top: 0; left: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; height: 65px; z-index: 1000; background-color: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); }
+.user-stats { display: flex; align-items: center; gap: 15px; font-weight: 500; }
+.guest-container { display: flex; align-items: center; gap: 15px; height: 100%; }
+.user-stats span { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background-color: var(--bg-color); border-radius: 20px; line-height: 1.2; font-weight: 500; }
 #coin-display .feather-dollar-sign { color: #FFC700; }
-#check-in-btn { 
-    background-color: var(--accent-color); 
-    color: white; border: none; 
-    padding: 8px 18px; border-radius: 20px; 
-    cursor: pointer; font-weight: 500; 
-    transition: all 0.2s; display: inline-flex; 
-    align-items: center; justify-content: center; 
-    min-width: 50px; height: 36px; }
-
-#check-in-btn:hover { 
-    background-color: var(--accent-hover); 
-    transform: scale(1.05); }
-
-#check-in-btn.checked { 
-    background-color: var(--success-color); 
-    cursor: default; transform: none; }
-
-#check-in-btn.checked:hover { 
-    background-color: var(--success-color); transform: none; }
-
+#check-in-btn { background-color: var(--accent-color); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; min-width: 50px; height: 36px; }
+#check-in-btn:hover { background-color: var(--accent-hover); transform: scale(1.05); }
+#check-in-btn.checked { background-color: var(--success-color); cursor: default; transform: none; }
+#check-in-btn.checked:hover { background-color: var(--success-color); transform: none; }
 #check-in-btn .check-in-icon { stroke-width: 3; }
-#sidebar { 
-    position: fixed; 
-    top: 0; left: -300px; width: 280px; height: 100%; 
-    background-color: var(--card-bg-color); 
-    box-shadow: 5px 0 25px rgba(0,0,0,0.2); 
-    z-index: 1002; 
-    transition: left 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); 
-    padding-top: 20px; border-right: 1px solid var(--border-color); }
-
+#sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background-color: var(--card-bg-color); box-shadow: 5px 0 25px rgba(0,0,0,0.2); z-index: 1002; transition: left 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); padding-top: 20px; border-right: 1px solid var(--border-color); }
 #sidebar.show { left: 0; }
-
-.sidebar-header { 
-    display: flex; justify-content: space-between; 
-    align-items: center; padding: 0 20px 20px; 
-    border-bottom: 1px solid var(--border-color); }
-
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 20px; border-bottom: 1px solid var(--border-color); }
 #sidebar ul { list-style: none; padding: 10px; }
-#sidebar ul li a { 
-    display: flex; align-items: center; 
-    gap: 15px; padding: 12px 15px; text-decoration: none; 
-    color: var(--text-color); 
-    font-size: 1rem; font-weight: 400; 
-    border-radius: 8px; transition: all 0.2s; 
-    margin-bottom: 5px; }
-
-#sidebar ul li a:hover { 
-    background-color: var(--primary-hover); 
-    color: #fff; transform: translateX(5px); }
-
-#sidebar ul li a.active { 
-    background-color: var(--primary-color); 
-    color: #fff; font-weight: 500; }
-
-#overlay { 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.6); 
-    z-index: 1001; display: none; 
-    opacity: 0; transition: opacity 0.3s; }
-
+#sidebar ul li a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; text-decoration: none; color: var(--text-color); font-size: 1rem; font-weight: 400; border-radius: 8px; transition: all 0.2s; margin-bottom: 5px; }
+#sidebar ul li a:hover { background-color: var(--primary-hover); color: #fff; transform: translateX(5px); }
+#sidebar ul li a.active { background-color: var(--primary-color); color: #fff; font-weight: 500; }
+#overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; display: none; opacity: 0; transition: opacity 0.3s; }
 #overlay.show { display: block; opacity: 1; }
 .page { display: none; }
-.page.active { 
-    display: block; animation: fadeIn 0.5s ease-in-out; }
-
-@keyframes fadeIn { from { 
-    opacity: 0; transform: translateY(20px); } 
-    to { opacity: 1; transform: translateY(0); } }
-
-button, input, select, textarea { 
-    font-family: var(--font-family); font-size: 1rem; 
-    padding: 12px; border-radius: 8px; 
-    border: 1px solid var(--border-color); 
-    background-color: var(--bg-color); 
-    color: var(--text-color); width: 100%; 
-    margin-bottom: 10px; transition: all 0.2s; }
-
-input:focus, select:focus, textarea:focus { 
-    outline: none; border-color: var(--primary-color); 
-    box-shadow: 0 0 0 3px var(--primary-color-light); }
-
-body[data-theme="dark"] input:focus, 
-body[data-theme="dark"] select:focus, 
-body[data-theme="dark"] textarea:focus { 
-    box-shadow: 0 0 0 3px var(--primary-color-dark); }
-
-textarea { 
-    min-height: 80px; 
-    resize: vertical; }
-
-button { 
-    background-color: var(--primary-color); 
-    color: white; cursor: pointer; 
-    border: none; font-weight: 500; 
-    display: inline-flex; align-items: center; 
-    justify-content: center; gap: 8px; }
-
+.page.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+button, input, select, textarea { font-family: var(--font-family); font-size: 1rem; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); width: 100%; margin-bottom: 10px; transition: all 0.2s; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-color-light); }
+body[data-theme="dark"] input:focus, body[data-theme="dark"] select:focus, body[data-theme="dark"] textarea:focus { box-shadow: 0 0 0 3px var(--primary-color-dark); }
+textarea { min-height: 80px; resize: vertical; }
+button { background-color: var(--primary-color); color: white; cursor: pointer; border: none; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 button:hover { background-color: var(--primary-hover); }
 button:active { transform: scale(0.98); }
-.icon-button { 
-    background: none; border: none; 
-    color: var(--text-color); cursor: pointer; 
-    width: auto; padding: 5px; margin-bottom: 0; 
-    position: relative; }
-
+.icon-button { background: none; border: none; color: var(--text-color); cursor: pointer; width: auto; padding: 5px; margin-bottom: 0; position: relative; }
 .icon-button:hover { color: var(--primary-color); }
-.small-btn { 
-    padding: 5px 10px; 
-    font-size: 0.9em; width: auto; }
-
-.btn-secondary { 
-    background-color: var(--bg-color); 
-    color: var(--text-color); 
-    border: 1px solid var(--border-color); }
-
-.btn-secondary:hover { 
-    background-color: var(--border-color); }
-
-.welcome-card { 
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); 
-    color: white; }
-
+.small-btn { padding: 8px 16px; font-size: 0.9em; width: auto; font-weight: 500; line-height: 1; }
+.btn-secondary { background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); }
+.btn-secondary:hover { background-color: var(--border-color); }
+.pill-btn { border-radius: 50px; box-shadow: 0 4px 15px -5px var(--primary-color); transition: all 0.3s ease; }
+.pill-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px -5px var(--primary-color); }
+.welcome-card { background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; }
 .welcome-card h1, .welcome-card p { color: white; }
-.overview-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-    gap: 20px; }
-
-.overview-item ul { 
-    list-style: none; margin-top: 10px; }
-
-.overview-item li { 
-    border-left: 3px solid var(--accent-color); 
-    padding-left: 10px; margin-bottom: 8px; 
-    color: var(--subtle-text-color); }
-
-.home-grid { 
-    display: grid; grid-template-columns: 2fr 1fr; 
-    gap: 20px; }
-
+.overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.overview-item ul { list-style: none; margin-top: 10px; }
+.overview-item li { border-left: 3px solid var(--accent-color); padding-left: 10px; margin-bottom: 8px; color: var(--subtle-text-color); }
+.home-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 @media (max-width: 900px) { .home-grid { grid-template-columns: 1fr; } }
-
 #todo-form { display: flex; gap: 10px; }
 #todo-form button { flex-shrink: 0; width: 50px; }
-#todo-list { 
-    list-style: none; margin-top: 15px; }
-
-#todo-list li { 
-    display: flex; align-items: center; 
-    padding: 12px; 
-    border-bottom: 1px solid var(--border-color); }
-
-#todo-list li.completed span { 
-    text-decoration: line-through; 
-    color: var(--subtle-text-color); }
-
-#todo-list input[type="checkbox"] { 
-    margin-right: 15px; 
-    width: 20px; height: 20px; 
-    flex-shrink: 0; }
-
-.suggestion-text { 
-    margin-top: 15px; 
-    font-style: italic; 
-    text-align: center; font-size: 1.1rem; 
-    color: var(--accent-color); min-height: 40px; }
-
-.calendar-controls { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; margin-bottom: 15px; }
-
+#todo-list { list-style: none; margin-top: 15px; }
+#todo-list li { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+#todo-list li.completed span { text-decoration: line-through; color: var(--subtle-text-color); }
+#todo-list input[type="checkbox"] { margin-right: 15px; width: 20px; height: 20px; flex-shrink: 0; }
+.suggestion-text { margin-top: 15px; font-style: italic; text-align: center; font-size: 1.1rem; color: var(--accent-color); min-height: 40px; }
+.calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .calendar-controls h3 { flex-grow: 1; text-align: center; }
-.calendar { 
-    display: grid; 
-    grid-template-columns: repeat(7, 1fr); 
-    gap: 8px; }
-
-.calendar-day-name, .calendar-day { 
-    text-align: center; padding: 5px; 
-    border-radius: 8px; }
-
-.calendar-day-name { 
-    font-weight: 500; color: var(--subtle-text-color); }
-
-.calendar-day { 
-    min-height: 50px; cursor: pointer; 
-    transition: all 0.2s; position: relative; 
-    display: flex; justify-content: center; 
-    align-items: center; border: 1px solid transparent; }
-
-.calendar-day:hover { 
-    background-color: var(--bg-color); transform: scale(1.1); }
-
-.calendar-day.today { 
-    border-color: var(--accent-color); font-weight: bold; }
-
-.calendar-day.selected { 
-    background-color: var(--primary-color); 
-    color: #fff; border-color: var(--primary-color); 
-    transform: scale(1.1); }
-
-.event-dot { 
-    position: absolute; 
-    bottom: 8px; 
-    width: 6px; height: 6px; 
-    background-color: var(--accent-color); 
-    border-radius: 50%; }
-
-.calendar-nav-btn { 
-    background: none !important; 
-    border: none !important; 
-    color: var(--text-color) !important; 
-    padding: 8px !important; 
-    width: auto !important; height: auto !important; 
-    border-radius: 50% !important; 
-    display: inline-flex !important; 
-    align-items: center; justify-content: center; 
-    transition: background-color 0.2s, color 0.2s; }
-
-.calendar-nav-btn:hover { 
-    background-color: var(--bg-color) !important; 
-    color: var(--primary-color) !important; }
-
-.planner-container, 
-.mood-container { 
-    display: grid; 
-    grid-template-columns: 2fr 1fr; 
-    gap: 20px; }
-
-@media (max-width: 1024px) { 
-    .planner-container, 
-    .mood-container { 
-        grid-template-columns: 1fr; } }
-
-.profile-pic { 
-    width: 40px; height: 40px; 
-    border-radius: 50%; object-fit: cover; 
-    border: 2px solid var(--border-color); }
-
-.modal-overlay { 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background: rgba(0, 0, 0, 0.7); 
-    display: flex; justify-content: center; 
-    align-items: center; z-index: 2000; 
-    opacity: 0; visibility: hidden; 
-    transition: opacity 0.3s ease, 
-    visibility 0s 0.3s; }
-
-.modal-overlay:not(.hidden) { 
-    opacity: 1; visibility: visible; 
-    transition: opacity 0.3s ease; }
-
-.modal-content { 
-    background: var(--card-bg-color); 
-    padding: 0; border-radius: 16px; 
-    width: 90%; max-width: 450px; 
-    box-shadow: var(--shadow); 
-    text-align: center; position: relative; 
-    transform: scale(0.95); transition: transform 0.3s ease; }
-
-.modal-content .close-btn { 
-    position: absolute; top: 15px; right: 15px; }
-
-.modal-content > *:not(.modal-header) { padding: 0 30px 30px; }
+.calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.calendar-day-name, .calendar-day { text-align: center; padding: 5px; border-radius: 8px; }
+.calendar-day-name { font-weight: 500; color: var(--subtle-text-color); }
+.calendar-day { min-height: 50px; cursor: pointer; transition: all 0.2s; position: relative; display: flex; justify-content: center; align-items: center; border: 1px solid transparent; }
+.calendar-day:hover { background-color: var(--bg-color); transform: scale(1.1); }
+.calendar-day.today { border-color: var(--accent-color); font-weight: bold; }
+.calendar-day.selected { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); transform: scale(1.1); }
+.event-dot { position: absolute; bottom: 8px; width: 6px; height: 6px; background-color: var(--accent-color); border-radius: 50%; }
+.calendar-nav-btn { background: none !important; border: none !important; color: var(--text-color) !important; padding: 8px !important; width: auto !important; height: auto !important; border-radius: 50% !important; display: inline-flex !important; align-items: center; justify-content: center; transition: background-color 0.2s, color 0.2s; }
+.calendar-nav-btn:hover { background-color: var(--bg-color) !important; color: var(--primary-color) !important; }
+.planner-container, .mood-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+@media (max-width: 1024px) { .planner-container, .mood-container { grid-template-columns: 1fr; } }
+.profile-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s; }
+.modal-overlay:not(.hidden) { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+.modal-content { background: var(--card-bg-color); padding: 0; border-radius: 16px; width: 90%; max-width: 450px; box-shadow: var(--shadow); text-align: center; position: relative; transform: scale(0.95); transition: transform 0.3s ease; }
+.modal-content .close-btn { position: absolute; top: 15px; right: 15px; }
+.modal-content > *:not(.modal-header):not(.custom-subject-footer):not(.social-login-container) { padding: 0 30px 30px; }
 .modal-content > h2, .modal-content > p { text-align: center; }
 .modal-overlay:not(.hidden) .modal-content { transform: scale(1); }
-.close-btn { 
-    font-size: 1.5rem; 
-    background: none !important; 
-    border: none !important; 
-    color: var(--subtle-text-color); 
-    cursor: pointer; padding: 5px !important; 
-    width: auto !important; height: auto !important; 
-    line-height: 1; transition: color 0.2s; }
-
-.close-btn:hover { 
-    color: var(--danger-color); 
-    background: none !important; }
-
-.separator { 
-    display: flex; align-items: center; 
-    text-align: center; color: var(--subtle-text-color);
-     margin: 20px 0; }
-
-.separator::before, .separator::after { 
-    content: ''; flex: 1; 
-    border-bottom: 1px solid var(--border-color); }
-
+.close-btn { font-size: 1.5rem; background: none !important; border: none !important; color: var(--subtle-text-color); cursor: pointer; padding: 5px !important; width: auto !important; height: auto !important; line-height: 1; transition: color 0.2s; }
+.close-btn:hover { color: var(--danger-color); background: none !important; }
+.separator { display: flex; align-items: center; text-align: center; color: var(--subtle-text-color); margin: 20px 0; }
+.separator::before, .separator::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
 .separator:not(:empty)::before { margin-right: .25em; }
 .separator:not(:empty)::after { margin-left: .25em; }
-.google-btn { 
-    background-color: #fff !important; 
-    color: #3C4043 !important; 
-    border: 1px solid #DADCE0 !important; 
-    font-weight: 500 !important; 
-    /* width: 100%;  <-- เอาบรรทัดนี้ออก หรือคอมเมนต์ไว้ */
-    width: auto; /* <-- ทำให้ปุ่มปรับขนาดตามเนื้อหา */
-    padding: 10px 24px; /* <-- เพิ่ม padding ให้ปุ่มดูดีขึ้น */
-    box-shadow: none !important; 
-    margin: 0; /* <-- เอา margin ที่อาจติดมาออก */
-}
-
-.google-btn:hover { 
-    background-color: #F8F9FA !important; 
-    border-color: #D2D5D8 !important; }
-
-.google-btn img { 
-    width: 18px; height: 18px; 
-    margin-right: 12px; }
-
-.error-message { 
-    color: var(--danger-color); 
-    margin-top: 15px; min-height: 20px; 
-    font-size: 0.9em; }
-
-#guest-mode-indicator { 
-    font-size: 0.9em;
-    font-weight: 500; 
-    color: var(--subtle-text-color); 
-    background-color: var(--bg-color); 
-    padding: 8px 16px; /* <-- เพิ่ม padding ให้สูงใกล้เคียงกับปุ่ม */
-    border-radius: 20px;
-    line-height: 1; /* <-- ทำให้ข้อความอยู่กลางพอดี */
-    display: inline-flex;
-    align-items: center;
-}
-
-#toast-notification { 
-    position: fixed; bottom: 20px; 
-    left: 50%; transform: translateX(-50%); 
-    background-color: var(--text-color); 
-    color: var(--card-bg-color); padding: 12px 25px; 
-    border-radius: 30px; box-shadow: var(--shadow); 
-    z-index: 3000; font-size: 0.95em; 
-    font-weight: 500; 
-    opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
-
+.google-btn { background-color: #fff !important; color: #3C4043 !important; border: 1px solid #DADCE0 !important; font-weight: 500 !important; width: auto; padding: 10px 24px; box-shadow: none !important; margin: 0; }
+.google-btn:hover { background-color: #F8F9FA !important; border-color: #D2D5D8 !important; }
+.google-btn img { width: 18px; height: 18px; margin-right: 12px; }
+.error-message { color: var(--danger-color); margin-top: 15px; min-height: 20px; font-size: 0.9em; }
+#guest-mode-indicator { font-size: 0.9em; font-weight: 500; color: var(--subtle-text-color); background-color: var(--bg-color); padding: 8px 16px; border-radius: 20px; line-height: 1; display: inline-flex; align-items: center; }
+#toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--text-color); color: var(--card-bg-color); padding: 12px 25px; border-radius: 30px; box-shadow: var(--shadow); z-index: 3000; font-size: 0.95em; font-weight: 500; opacity: 0; transition: opacity 0.4s, bottom 0.4s; }
 #toast-notification:not(.hidden) { bottom: 40px; opacity: 1; }
-.card-header-actions { 
-    display: flex; justify-content: space-between; 
-    align-items: center; margin-bottom: 1rem; }
-
-.card-header-actions h2 { 
-    margin-bottom: 0; border-bottom: none; 
-    padding-bottom: 0; }
-
-#activity-list-container, #advice-list-container { 
-    list-style: none; padding: 0; 
-    margin: 20px 0; max-height: 300px; 
-    overflow-y: auto; border: 1px solid var(--border-color); 
-    border-radius: 8px; }
-
-.activity-item { 
-    display: flex; justify-content: space-between; 
-    align-items: center; padding: 10px 15px; 
-    border-bottom: 1px solid var(--border-color); }
-
+.card-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.card-header-actions h2 { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+#activity-list-container, #advice-list-container { list-style: none; padding: 0; margin: 20px 0; max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+.activity-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border-color); }
 .activity-item:last-child { border-bottom: none; }
 .activity-item span { flex-grow: 1; text-align: left; }
-.delete-activity-btn { 
-    background: none; 
-    border: none; 
-    color: var(--danger-color); 
-    cursor: pointer; padding: 5px; 
-    margin: 0 0 0 10px; width: auto; }
-
-.delete-activity-btn:hover { opacity: 0.7; }
+.delete-activity-btn, .delete-advice-btn { background: none; border: none; color: var(--danger-color); cursor: pointer; padding: 5px; margin: 0 0 0 10px; width: auto; }
+.delete-activity-btn:hover, .delete-advice-btn:hover { opacity: 0.7; }
 #add-activity-form, #add-advice-form { display: flex; gap: 10px; }
-.profile-container { 
-    display: grid; 
-    grid-template-columns: 1fr 2fr; 
-    gap: 20px; }
-
+.profile-container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
 @media (max-width: 900px) { .profile-container { grid-template-columns: 1fr; } }
 .profile-card { text-align: center; }
-.profile-picture-wrapper { 
-    position: relative; width: 150px; height: 150px; 
-    margin: 0 auto 20px; }
-
-.avatar-display { 
-    width: 100%; height: 100%; 
-    border-radius: 50%; object-fit: cover; 
-    background-color: #eee; }
-
-#profile-view-photo, #profile-edit-photo { 
-    border: 4px solid var(--card-bg-color); }
-.photo-upload-label { 
-    position: absolute; 
-    bottom: 8px; right: 8px; 
-    background-color: rgba(255, 255, 255, 0.5); 
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); 
-    color: var(--text-color); 
-    width: 40px; height: 40px; 
-    border-radius: 12px; 
-    display: flex; justify-content: center; 
-    align-items: center; cursor: pointer; 
-    border: 1px solid rgba(0, 0, 0, 0.1); 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-    transition: all 0.2s ease-in-out; }
-
-.photo-upload-label:hover { 
-    background-color: rgba(255, 255, 255, 0.7); 
-    transform: scale(1.05); }
-
+.profile-picture-wrapper { position: relative; width: 150px; height: 150px; margin: 0 auto 20px; }
+.avatar-display { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: #eee; }
+#profile-view-photo, #profile-edit-photo { border: 4px solid var(--card-bg-color); }
+.photo-upload-label { position: absolute; bottom: 8px; right: 8px; background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); color: var(--text-color); width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid rgba(0, 0, 0, 0.1); box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.2s ease-in-out; }
+.photo-upload-label:hover { background-color: rgba(255, 255, 255, 0.7); transform: scale(1.05); }
 .form-group { margin-bottom: 15px; text-align: left; }
-.form-group label { 
-    display: block; 
-    font-weight: 500; margin-bottom: 5px; }
-
-#loading-overlay { 
-    position: fixed; top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background-color: var(--bg-color); 
-    display: flex; justify-content: center; 
-    align-items: center; z-index: 9999; 
-    transition: opacity 0.5s; }
-.loader {
-     width: 50px; height: 50px; 
-     border: 5px solid var(--border-color); 
-     border-top-color: var(--primary-color); 
-     border-radius: 50%; animation: spin 1s linear infinite; }
-
+.form-group label { display: block; font-weight: 500; margin-bottom: 5px; }
+#loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+.loader { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 .form-switcher a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
 .form-switcher a:hover { text-decoration: underline; }
-.privacy-setting { 
-    display: flex; justify-content: space-between; 
-    align-items: center; border-top: 1px solid var(--border-color); 
-    padding-top: 15px; margin-top: 15px; }
-
+.privacy-setting { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px; }
 .privacy-setting label { margin-bottom: 0; }
-.toggle-switch-container { 
-    position: relative; width: 50px; height: 28px; }
-
+.toggle-switch-container { position: relative; width: 50px; height: 28px; }
 .toggle-switch { display: none; }
-.toggle-label { 
-    position: absolute; 
-    top: 0; left: 0; 
-    width: 50px; height: 28px; 
-    background-color: var(--border-color); 
-    border-radius: 15px; cursor: pointer; 
-    transition: background-color 0.3s; }
-
-.toggle-label::after { 
-    content: ''; position: absolute; 
-    width: 22px; height: 22px; border-radius: 50%; 
-    background-color: white; top: 3px; left: 4px; 
-    transition: transform 0.3s; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-
-.toggle-switch:checked + .toggle-label { 
-    background-color: var(--success-color); }
-
-.toggle-switch:checked + .toggle-label::after { 
-    transform: translateX(21px); }
-
-/* ======================================= */
-/* ====== Profile Header Card Styles ===== */
-/* ======================================= */
-
-/* 1. การ์ดหลักที่เป็นกรอบทั้งหมด */
-.profile-header-card { 
-    background-color: var(--card-bg-color); 
-    border-radius: 16px; 
-    box-shadow: var(--shadow); 
-    margin-bottom: 20px; 
-    position: relative;     /* [สำคัญ] ทำให้เป็นกรอบอ้างอิงสำหรับ element ลูก */
-    overflow: visible;      /* [สำคัญ] อนุญาตให้รูปโปรไฟล์ล้นออกมาได้ */
-}
-
-/* 2. ส่วนแบนเนอร์ด้านบน */
-.profile-banner { 
-    height: 180px; 
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); 
-    position: relative; /* จำเป็นสำหรับปุ่มแก้ไขที่อยู่ข้างใน */
-    border-radius: 16px 16px 0 0; /* ทำให้มุมบนของการ์ดโค้งมน */
-}
-
-/* 3. ปุ่มแก้ไข/เปลี่ยนแบนเนอร์ (ปุ่มลอยบนแบนเนอร์) */
-.profile-banner .edit-profile-fab { /* ทำให้เฉพาะปุ่มใน banner เท่านั้นที่ใช้สไตล์นี้ */
-    position: absolute; 
-    top: 15px; 
-    right: 15px; 
-    background-color: rgba(255, 255, 255, 0.2); 
-    backdrop-filter: blur(5px); 
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.3); 
-    color: white; 
-    width: 44px; 
-    height: 44px; 
-    border-radius: 50%; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    display: flex;       /* [ปรับปรุง] ใช้ flexbox เพื่อจัดไอคอนให้อยู่กลาง */
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 3; /* ทำให้ปุ่มอยู่เหนือทุกอย่างใน banner */
-}
-.profile-banner .edit-profile-fab:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-}
-
-
-/* 4. รูปโปรไฟล์ (Avatar) ที่ลอยอยู่ตรงกลาง */
-/* [ถูกต้อง] โค้ดส่วนนี้ของคุณถูกต้องแล้วครับ */
-#profile-view-photo.avatar-display { 
-    width: 150px; 
-    height: 150px; 
-    border-radius: 50%;
-    object-fit: cover;
-    border: 6px solid var(--card-bg-color);
-    background-color: var(--border-color); /* สีพื้นหลังเผื่อรูปไม่โหลด */
-
-    /* --- Positioning Magic --- */
-    position: absolute;
-    top: 180px;  /* ให้ขอบบนของรูปอยู่ที่เดียวกับขอบล่างของแบนเนอร์ (180px คือความสูงของ banner) */
-    left: 50%;
-    transform: translate(-50%, -50%); /* จัดกลางแนวนอนและแนวตั้ง */
-    z-index: 2;  /* ทำให้รูปอยู่เหนือพื้นหลัง แต่ใต้ปุ่ม */
-}
-
-/* 5. ส่วนข้อมูลทั้งหมดที่อยู่ใต้แบนเนอร์ */
-/* [สำคัญ] รวม .profile-info ที่ซ้ำซ้อนกัน และปรับปรุง padding */
-.profile-info { 
-    text-align: center; 
-    padding: 90px 25px 25px; /*เว้นที่ด้านบน 90px สำหรับรูปโปรไฟล์ที่ลอยอยู่*/
-}
-
-.profile-info h2 { 
-    border-bottom: none; 
-    padding-bottom: 0; 
-    margin-bottom: 5px; 
-    justify-content: center; /* สำหรับจัดไอคอนกับข้อความ (ถ้ามี) */
-}
-
-/* ไม่จำเป็นต้องเขียนสไตล์ของ #profile-view-lifebuddy-id ที่นี่อีก
-   เพราะมันถูกกำหนดไว้ในที่อื่นของ CSS ของคุณแล้ว */
-
-#profile-view-lifebuddy-id { 
-    font-size: 1rem; 
-    margin-bottom: 15px; }
-
-.bio-text { 
-    font-size: 1rem; 
-    color: var(--text-color); 
-    max-width: 600px; 
-    margin: 0 auto 15px; }
-
+.toggle-label { position: absolute; top: 0; left: 0; width: 50px; height: 28px; background-color: var(--border-color); border-radius: 15px; cursor: pointer; transition: background-color 0.3s; }
+.toggle-label::after { content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%; background-color: white; top: 3px; left: 4px; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.toggle-switch:checked + .toggle-label { background-color: var(--success-color); }
+.toggle-switch:checked + .toggle-label::after { transform: translateX(21px); }
+.profile-header-card { background-color: var(--card-bg-color); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; position: relative; overflow: visible; }
+.profile-banner { height: 180px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); position: relative; border-radius: 16px 16px 0 0; }
+.profile-banner .edit-profile-fab { position: absolute; top: 15px; right: 15px; background-color: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.3); color: white; width: 44px; height: 44px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 3; }
+.profile-banner .edit-profile-fab:hover { background-color: rgba(255, 255, 255, 0.4); }
+#profile-view-photo.avatar-display { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 6px solid var(--card-bg-color); background-color: var(--border-color); position: absolute; top: 180px; left: 50%; transform: translate(-50%, -50%); z-index: 2; }
+.profile-info { text-align: center; padding: 90px 25px 25px; }
+.profile-info h2 { border-bottom: none; padding-bottom: 0; margin-bottom: 5px; justify-content: center; }
+#profile-view-lifebuddy-id { font-size: 1rem; margin-bottom: 15px; }
+.bio-text { font-size: 1rem; color: var(--text-color); max-width: 600px; margin: 0 auto 15px; }
 .join-date { font-size: 0.9em; }
 .stats-grid h2 { margin-bottom: 1.5rem; }
-.stats-container { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-    gap: 20px; }
-
-.stat-item { 
-    background-color: var(--bg-color); 
-    border-radius: 12px; padding: 20px; 
-    text-align: center; 
-    border: 1px solid var(--border-color); }
-
-.stat-icon { 
-    font-size: 2rem; 
-    line-height: 1; }
-
-.stat-value { 
-    display: block; 
-    font-size: 1.8rem; font-weight: 700; 
-    margin: 8px 0; 
-    color: var(--primary-color); }
-
-.stat-label { 
-    font-size: 0.9em; 
-    color: var(--subtle-text-color); }
-
-.achievements-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-    gap: 15px; }
-
-.view-all-link { 
-    font-size: 0.9em; font-weight: 500; 
-    text-decoration: none; 
-    color: var(--primary-color); 
-    display: flex; 
-    align-items: center; }
-
+.stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+.stat-item { background-color: var(--bg-color); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid var(--border-color); }
+.stat-icon { font-size: 2rem; line-height: 1; }
+.stat-value { display: block; font-size: 1.8rem; font-weight: 700; margin: 8px 0; color: var(--primary-color); }
+.stat-label { font-size: 0.9em; color: var(--subtle-text-color); }
+.achievements-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+.view-all-link { font-size: 0.9em; font-weight: 500; text-decoration: none; color: var(--primary-color); display: flex; align-items: center; }
 .modal-content.large { max-width: 800px; width: 95%; }
-.modal-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 15px 25px; 
-    border-bottom: 1px solid var(--border-color); 
-    text-align: left; }
-
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; border-bottom: 1px solid var(--border-color); text-align: left; }
 .modal-header h3 { margin: 0; }
 .modal-header .close-btn { position: static; }
-.profile-selector-body { 
-    padding: 25px; 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-    gap: 20px; max-height: 60vh; 
-    overflow-y: auto; }
-
-.profile-option { 
-    border-radius: 50%; 
-    width: 120px; height: 120px; 
-    cursor: pointer; 
-    border: 4px solid transparent; 
-    transition: all 0.2s ease-in-out; 
-    overflow: hidden; 
-    justify-self: center; }
-
-.profile-option:hover { 
-    transform: scale(1.05); 
-    border-color: var(--primary-color-light); }
-
-.profile-option.selected { 
-    border-color: var(--primary-color); 
-    box-shadow: 0 0 10px var(--primary-color); }
-
-.profile-option img { 
-    width: 100%; height: 100%; 
-    object-fit: cover; }
-
-.wishlist-card h2 { 
-    border-bottom: none; 
-    padding-bottom: 0; 
-    margin-bottom: 1.5rem; }
-
-.wishlist-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 10px; 
-    font-size: 1.2rem; font-weight: 500; }
-
-.wishlist-info { 
-    display: flex; 
-    justify-content: space-between; 
-    margin-top: 10px; 
-    font-size: 0.9em; 
-    color: var(--subtle-text-color); }
-
-#wishlist-progress-bar { 
-    background: linear-gradient(90deg, #FFD700, #FFA500) 
-    !important; }
-
-.swal2-container { 
-    z-index: 2500 !important; }
-
-/********************************/
-/***** Revisit Page Styles *****/
-/******************************/
-
-.review-interval-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    background-color: var(--bg-color);
-    padding: 15px;
-    border-radius: 8px; }
-
-.review-interval-selector label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em; }
-
-.review-interval-selector input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-bottom: 0; }
-
-#revisit-topics-by-subject .subject-group {
-    margin-bottom: 2rem; }
-
-#revisit-topics-by-subject .subject-title {
-    font-size: 1.4rem;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 8px;
-    margin-bottom: 1rem; }
-.topic-list {
-    list-style: none;
-    padding-left: 0; }
-
-.topic-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-color); }
-
-.topic-item:hover {
-    background-color: var(--bg-color);}
-
-.topic-info .next-review {
-    font-size: 0.8em;
-    color: var(--subtle-text-color);}
-
-/* === Flashcard Styles === */
-.flashcard-container {
-    perspective: 1000px;
-    margin-bottom: 20px;
-}
-
-.flashcard {
-    position: relative;
-    width: 100%;
-    min-height: 200px;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-    border-radius: 12px;
-}
-
-.flashcard.flipped {
-    transform: rotateY(180deg);
-}
-
-.flashcard-front,
-.flashcard-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-color);
-    border-radius: 12px;
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-.flashcard-back {
-    transform: rotateY(180deg);
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-.flashcard-controls {
-    text-align: center;
-    margin-top: 15px;
-}
-
-#quiz-feedback-btns {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-/* --- Style for Reason Icon Group --- */
-.reason-icon-group {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* ระยะห่างระหว่างอิโมจิกับไอคอน */
-    font-size: 1.5rem; /* ขนาดของอิโมจิ */
-    margin-bottom: 8px;
-    color: var(--subtle-text-color);
-}
-
-.reason-icon-group .feather {
-    width: 24px; /* ปรับขนาดไอคอนให้สมดุล */
-    height: 24px;
-}
-
-label.reason-option:has(input:checked) .reason-icon-group {
-    color: var(--primary-color);
-}
-
-/* ================================== */
-/* ===== Mood Page UI - NEW STYLE ===== */
-/* ================================== */
-
-.emoji-selector {
-    display: flex;
-    justify-content: center; /* จัดกลาง */
-    align-items: center;
-    gap: 15px; /* ระยะห่างระหว่างอิโมจิ */
-    margin-bottom: 25px;
-    padding: 10px 0;
-}
-
-.emoji-option {
-    font-size: 3rem;  /* <<<<<<< ขนาดอิโมจิที่ใหญ่ขึ้น */
-    cursor: pointer;
-    transition: transform 0.2s ease, filter 0.2s ease;
-    filter: grayscale(70%); /* ทำให้เป็นสีเทาก่อน */
-    opacity: 0.7;
-}
-
-.emoji-option:hover {
-    transform: scale(1.2); /* <<<<<<< เอฟเฟกต์เมื่อเมาส์ชี้ */
-    filter: grayscale(0%);
-    opacity: 1;
-}
-
-.emoji-option.selected {
-    transform: scale(1.3); /* <<<<<<< เอฟเฟกต์เมื่อถูกเลือก */
-    filter: grayscale(0%);
-    opacity: 1;
-    text-shadow: 0 0 15px var(--primary-color); /* เพิ่มเงาเรืองแสง */
-}
-
-
-/* ----- Reason Selector (ตัวเลือกเหตุผล) ----- */
-.reason-title {
-    text-align: left; /* ทำให้หัวข้อชิดซ้าย */
-    margin-top: 20px;
-}
-
-.reason-selector {
-    display: grid;
-    /* <<<<<<< จัดเรียงเป็น Grid ซ้าย-ขวา */
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* ปรับให้แสดง 2-3 อันต่อแถว */
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.reason-option {
-    display: flex; /* <<<<<<< จัดเรียงไอคอนกับข้อความแนวนอน */
-    align-items: center;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 25px; /* ทำให้ขอบมนขึ้น */
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    background-color: var(--bg-color);
-}
-
-.reason-option:hover {
-    border-color: var(--subtle-text-color);
-}
-
-/* ซ่อน checkbox เดิม */
-.reason-option input[type="checkbox"] {
-    display: none;
-}
-
-.reason-icon-group {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* ระยะห่างระหว่างอิโมจิกับไอคอน */
-    font-size: 1.2rem; /* ขนาดอิโมจิในปุ่ม */
-    margin-right: 10px; /* ระยะห่างจากข้อความ */
-    color: var(--subtle-text-color);
-    transition: color 0.2s;
-}
-
-.reason-icon-group .feather {
-    width: 18px;
-    height: 18px;
-}
-
-.reason-option span {
-    font-size: 0.95em;
-    transition: color 0.2s;
-}
-
-/* ----- สไตล์เมื่อถูกเลือก (Checked State) ----- */
-
-/* Trick การใช้ :has() pseudo-class เพื่อเปลี่ยนสไตล์ parent เมื่อ child (input) ถูกติ๊ก */
-label.reason-option:has(input:checked) {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white; /* เปลี่ยนสีข้อความทั้งหมดเป็นสีขาว */
-}
-
-label.reason-option:has(input:checked) .reason-icon-group {
-    color: white; /* เปลี่ยนสีไอคอนและอิโมจิเป็นสีขาว */
-}
-
-/* ================================== */
-/* ===== Rewards Page UI - NEW STYLE ===== */
-/* ================================== */
-
-#rewards-page h1 {
-    margin-bottom: 2rem;
-}
-
-.exp-total-card {
-    text-align: center;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-    color: white;
-    padding: 30px;
-    margin-bottom: 2.5rem;
-}
-
-.exp-total-card p {
-    font-size: 1.2rem;
-    font-weight: 300;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0;
-}
-
-#total-exp-display {
-    font-size: 4rem;
-    font-weight: 700;
-    line-height: 1.1;
-}
-
-#rewards-page .card {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-}
-
-.badge-category {
-    margin-bottom: 2.5rem;
-}
-
-.category-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--border-color);
-    color: var(--text-color);
-}
-
-/* Grid for badges */
-.badges-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.badge-card {
-    display: flex;
-    align-items: center;
-    background-color: var(--card-bg-color);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    transition: transform 0.2s, box-shadow 0.2s;
-    filter: grayscale(80%);
-    opacity: 0.7;
-    position: relative;
-}
-
-.badge-card.unlocked {
-    filter: grayscale(0%);
-    opacity: 1;
-    border-left: 5px solid var(--success-color);
-}
-
-.badge-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow);
-}
-
-.badge-icon {
-    font-size: 2.5rem;
-    margin-right: 15px;
-    line-height: 1;
-}
-
-.badge-info {
-    flex-grow: 1;
-}
-
-.badge-title {
-    font-weight: 500;
-    color: var(--text-color);
-    margin-bottom: 3px;
-}
-
-.badge-desc {
-    font-size: 0.9em;
-    color: var(--subtle-text-color);
-}
-
-.badge-unlocked-tick {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: var(--success-color);
-}
-
-.badge-unlocked-tick .feather {
-    width: 20px;
-    height: 20px;
-}
-
-/* ===== Settings & Profile Page - Level UI ===== */
-.level-progress-container {
-    padding: 10px;
-}
-
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.level-badge {
-    font-weight: 700;
-    font-size: 1.1rem;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-}
-
-.exp-text {
-    font-size: 0.95rem;
-    color: var(--subtle-text-color);
-    font-weight: 500;
-}
-
-.progress-bar-wrapper {
-    width: 100%;
-    height: 12px;
-    background-color: var(--border-color);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.progress-bar#exp-progress-bar {
-    height: 100%;
-    width: 0; /* จะถูกควบคุมโดย JS */
-    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-    border-radius: 10px;
-    transition: width 0.5s ease-in-out;
-}
-
-/* Style for Level display on Header */
-.level-badge-header {
-    background-color: var(--primary-color) !important;
-    color: white !important;
-    font-weight: 700 !important;
-    padding: 6px 16px !important;
-}
-
-.level-badge-header .feather-star {
-    color: #FFD700; /* สีทอง */
-    fill: #FFD700;
-}
-
-/* ================================== */
-/* ===== Focus Page UI - NEW STYLE ===== */
-/* ================================== */
-
-.focus-topic-selector {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.focus-topic-selector label {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 10px;
-}
-
-#focus-topic {
-    max-width: 400px;
-    margin: 0 auto;
-    text-align: center;
-    font-weight: 500;
-}
-
-.timer-card {
-    padding: 40px 20px;
-}
-
-#timer-display {
-    font-size: 6rem; /* <<<<<<< ขนาดตัวเลขใหญ่ขึ้น */
-    font-weight: 700; /* <<<<<<< ทำให้ตัวหนาขึ้น */
-    text-align: center;
-    line-height: 1;
-    margin-bottom: 10px;
-    color: var(--text-color);
-}
-
-@media (max-width: 600px) {
-    #timer-display {
-        font-size: 4.5rem; /* ปรับขนาดสำหรับจอเล็ก */
-    }
-}
-
-#timer-mode {
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--primary-color);
-    margin-bottom: 25px;
-}
-
-.timer-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-}
-
-.timer-controls button {
-    width: auto;
-    flex-grow: 1;
-    max-width: 200px;
-}
-
-.timer-controls .icon-button {
-    flex-grow: 0;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--bg-color);
-}
-
-#focus-stats-section {
-    margin-top: 20px;
-}
-
-.stats-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-}
-
-.stats-tab-btn {
-    flex-grow: 1;
-    background-color: var(--bg-color);
-    color: var(--subtle-text-color);
-    border: 1px solid var(--border-color);
-    font-weight: 500;
-}
-
-.stats-tab-btn.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-#focus-stats-display {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.stat-item-focus {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 5px;
-    border-bottom: 1px solid var(--border-color);
-}
-.stat-item-focus:last-child {
-    border-bottom: none;
-}
-
-.stat-topic-name {
-    font-weight: 500;
-}
-
-.stat-topic-time {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--primary-color);
-}
-
-/* ================================== */
-/* ===== Check-in Button UI Fix ===== */
-/* ================================== */
-
-#check-in-btn {
-    /* เพิ่มสไตล์เพื่อให้ปุ่มดูดีขึ้นเมื่อไม่มีพื้นหลังซ้อน */
-    padding: 8px 24px; /* เพิ่ม padding ซ้ายขวาให้กว้างขึ้นเล็กน้อย */
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-#check-in-btn .check-in-text {
-    /* === [ส่วนสำคัญ] ทำให้พื้นหลังโปร่งใส === */
-    background-color: transparent !important;
-    padding: 0 !important;
-    /* ไม่ต้องใช้ !important ก็ได้ แต่ใส่ไว้เพื่อความชัวร์ว่าสไตล์จะถูกบังคับใช้ */
-}
-
-/* Search Friends Modal UI */
-#search-results-container {
-    margin-top: 20px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-.search-result-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    border-bottom: 1px solid var(--border-color);
-    gap: 15px;
-}
-
-.user-list-item:last-child, .search-result-item:last-child {
-    border-bottom: none;
-}
-
-.user-list-avatar, .search-result-item .profile-pic {
-    width: 50px; /* <<<< ขนาดใหม่ */
-    height: 50px; /* <<<< ขนาดใหม่ */
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0; /* ป้องกันไม่ให้รูปถูกบีบ */
-    background-color: var(--border-color); /* สีพื้นหลังเผื่อรูปไม่โหลด */
-}
-
-/* เราไม่ต้องการ .profile-pic ซ้อนใน .user-list-avatar อีกต่อไป */
-.user-list-avatar img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* --- จัดการข้อมูลและปุ่ม --- */
-.user-info {
-    flex-grow: 1; /* ทำให้ข้อมูลดันไปทางซ้าย */
-    text-align: left;
-    margin-left: 0; /* ไม่ต้องใช้ margin แล้วเพราะใช้ gap */
-}
-
-.user-info h4 {
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.2;
-}
-.user-info p {
-    margin: 0;
-    font-size: 0.85em;
-    line-height: 1.2;
-}
-
-.user-actions {
-    display: flex;
-    gap: 8px; /* ระยะห่างระหว่างปุ่ม */
-    flex-shrink: 0; /* ป้องกันไม่ให้ปุ่มโดนบีบ */
-}
-
-.small-btn { 
-    padding: 8px 16px; /* <-- ปรับ padding ให้เท่ากับ indicator */
-    font-size: 0.9em;
-    width: auto;
-    font-weight: 500; /* เพิ่มความหนาเล็กน้อย */
-    line-height: 1; /* จัดข้อความให้อยู่กลาง */
-}
-.pill-btn {
-    border-radius: 50px; /* <<<< ทำให้ปุ่มเป็นวงรี/แคปซูล */
-    box-shadow: 0 4px 15px -5px var(--primary-color); /* <<<< เพิ่มเงาสีเดียวกับปุ่ม */
-    transition: all 0.3s ease; /* เพิ่ม transition ให้สวยงาม */
-}
-
-.pill-btn:hover {
-    transform: translateY(-2px); /* <<<< เพิ่มเอฟเฟกต์ลอยขึ้นเมื่อเมาส์ชี้ */
-    box-shadow: 0 6px 20px -5px var(--primary-color);
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
-}
-.search-result-item .user-info {
-    flex-grow: 1;
-    margin-left: 15px;
-    text-align: left;
-}
-.search-result-item .user-info h4 {
-    margin: 0;
-}
-.search-result-item .user-info p {
-    margin: 0;
-    font-size: 0.9em;
-}
-
-/* ===== Wish List UI ===== */
-.wishlist-card {
-    margin-top: 20px; /* เพิ่มระยะห่างจากด้านบน */
-}
-
-.wishlist-card h2 {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: 1.5rem;
-}
-
-.wishlist-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-/* ทำให้หลอด progress bar แสดงผล */
-.wishlist-card .progress-bar-wrapper {
-    width: 100%;
-    height: 12px;
-    background-color: var(--border-color);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 5px;
-}
-
-#wishlist-progress-bar {
-    height: 100%;
-    width: 0; /* ควบคุมโดย JS */
-    background: linear-gradient(90deg, #FFD700, #FFA500) !important;
-    border-radius: 10px;
-    transition: width 0.5s ease-in-out;
-}
-
-.wishlist-info {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    font-size: 0.9em;
-    color: var(--subtle-text-color);
-}
-
-/* ===== Profile Follow Stats ===== */
-.profile-follow-stats {
-    display: flex;
-    justify-content: center;
-    gap: 40px; /* ระยะห่างระหว่าง "ผู้ติดตาม" กับ "กำลังติดตาม" */
-    margin: 20px 0; /* ระยะห่างบนล่าง */
-}
-
-.follow-stat-item {
-    text-align: center;
-}
-
-.follow-stat-value {
-    font-size: 1.5rem; /* ขนาดตัวเลข */
-    font-weight: 700;
-    display: block;
-    color: var(--text-color);
-}
-
-.follow-stat-label {
-    font-size: 0.9em;
-    color: var(--subtle-text-color);
-}
-
-/* ทำให้ Icon ในสถิติเดิมดูดีขึ้นนิดหน่อย */
-.stat-item .stat-icon .feather {
-    width: 28px;
-    height: 28px;
-    stroke-width: 2;
-}
-
-/* Style for Mutual Following in Community List */
-.user-list-item {
-    position: relative;
-    cursor: pointer;
-}
-
-.user-list-item.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.mutual-icon {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    color: var(--success-color);
-}
-
-/* ===== Profile ID Copy Button ===== */
-.id-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px; /* ระยะห่างระหว่าง ID กับปุ่ม */
-    margin-bottom: 15px;
-}
-
-#profile-view-lifebuddy-id {
-    margin-bottom: 0; /* เอา margin-bottom เดิมออก */
-}
-
-#copy-id-btn {
-    /* ปรับให้ปุ่มดูดีขึ้นเล็กน้อย */
-    padding: 4px;
-    border-radius: 8px;
-    line-height: 1;
-}
-#copy-id-btn:hover {
-    background-color: var(--bg-color);
-}
-
-/* ======================================= */
-/* ===== Mood Calendar Animations ===== */
-/* ======================================= */
-
-@keyframes rainbow-bg {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* ทำให้ animation ทำงานได้ เราต้องเพิ่ม background-size */
-.calendar-day {
-    /* ... โค้ดเดิม ... */
-    background-size: 400% 400%; /* << เพิ่มบรรทัดนี้ */
-}
-
-/* ===== Level Up Swal ===== */
-.swal-title-levelup {
-    font-size: 2.5rem !important;
-    font-weight: 700 !important;
-    color: var(--primary-color) !important;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-/* ======================================= */
-/* =========== Shop Page Styles ========== */
-/* ======================================= */
-
-/* ---- ส่วนหัวของหน้าร้านค้า ---- */
-#shop-page h1 {
-    justify-content: center; /* จัดไอคอนกับข้อความให้อยู่กลาง */
-}
-
-#shop-page .subtle-text {
-    text-align: center; 
-    margin-top: -1.5rem; 
-    margin-bottom: 2.5rem; /* เพิ่มระยะห่างให้มากขึ้น */
-}
-
-/* ---- โครงสร้างตารางสินค้า ---- */
-.shop-grid {
-    display: grid;
-    /* ทำให้แสดงผล 2-4 รายการต่อแถว ขึ้นอยู่กับขนาดหน้าจอ */
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-    gap: 25px;
-    margin-top: 20px;
-}
-
-/* ---- การ์ดสินค้าแต่ละชิ้น ---- */
-.shop-item-card {
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 16px; /* ทำให้มนขึ้นเล็กน้อย */
-    text-align: center;
-    padding: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden; /* ซ่อนส่วนที่เกินขอบเขตของการ์ด */
-    display: flex;
-    flex-direction: column; /* จัดเรียงเนื้อหาแนวตั้ง */
-}
-
-.shop-item-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow);
-}
-
-/* ---- รูปภาพตัวอย่างสินค้า (แบนเนอร์) ---- */
-.shop-item-preview {
-    width: 100%;
-    height: 120px;
-    border-radius: 8px;
-    background-color: var(--border-color);
-    margin-bottom: 15px;
-    object-fit: cover; /* ทำให้รูปเต็มพื้นที่โดยไม่เสียสัดส่วน */
-    border: 1px solid var(--border-color);
-}
-
-/* ---- ชื่อสินค้า ---- */
-.shop-item-name {
-    font-weight: 500;
-    color: var(--text-color);
-    margin-bottom: auto; /* [Trick] ดันให้ชื่ออยู่บน และปุ่มอยู่ล่างสุด */
-    padding-bottom: 8px;
-}
-
-/* ---- ราคา ---- */
-.shop-item-price {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    font-weight: 700;
-    font-size: 1.1rem; /* เพิ่มขนาดราคาเล็กน้อย */
-    color: var(--accent-color);
-    margin: 8px 0;
-}
-.shop-item-price .feather-dollar-sign {
-    width: 1em;
-    height: 1em;
-}
-
-/* ---- ปุ่มซื้อ/สถานะ ---- */
-.shop-item-card .btn-buy {
-    width: 100%;
-    margin-top: 5px; /* เพิ่มระยะห่างจากราคา */
-}
-
-.shop-item-card .btn-buy.disabled {
-    opacity: 0.7; /* ทำให้ปุ่มที่กดไม่ได้ดูจางลง */
-    cursor: default;
-}
-.shop-item-card .btn-buy.disabled:hover {
-    transform: none; /* ไม่ต้องมี hover effect */
-}
-/* สไตล์เฉพาะสำหรับปุ่มที่เป็นเจ้าของแล้ว */
-.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"] {
-    background-color: var(--success-color);
-}
-.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"]:hover {
-    background-color: var(--success-color);
-}
-
-
-/* ---- ป้าย "เป็นเจ้าของแล้ว" ---- */
-.owned-tag {
-    position: absolute;
-    top: 10px;
-    right: -40px; /* ซ่อนไว้นอกจอตอนแรก */
-    background-color: var(--success-color);
-    color: white;
-    padding: 5px 40px;
-    font-size: 0.8em;
-    font-weight: 500;
-    transform: rotate(45deg); /* ทำให้เป็นแถบคาดเฉียง */
-    transition: right 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* ทำให้ป้ายแสดงผลเมื่อเป็นเจ้าของ */
-.shop-item-card:has(.owned-tag) .owned-tag {
-    right: -40px; 
-}
-/* แก้ไขป้าย "เป็นเจ้าของแล้ว" ให้สวยขึ้น */
-.owned-tag {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background-color: var(--success-color);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75em;
-    font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* ======================================= */
-/* === Community Page (Instagram Style) === */
-/* ======================================= */
-
-/* โครงสร้างหลักแบบใหม่ */
-.community-container-new {
-    display: grid;
-    grid-template-columns: 350px 1fr; /* คอลัมน์ซ้ายสำหรับรายการแชท, ขวาสำหรับหน้าต่างแชท */
-    gap: 0; /* ไม่มีช่องว่างระหว่าง card */
-    height: calc(100vh - 120px); /* ความสูงเต็มจอ ลบ header และ padding */
-    max-height: 800px; /* กำหนดความสูงสูงสุด */
-}
-
+.profile-selector-body { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; }
+.profile-option { border-radius: 50%; width: 120px; height: 120px; cursor: pointer; border: 4px solid transparent; transition: all 0.2s ease-in-out; overflow: hidden; justify-self: center; }
+.profile-option:hover { transform: scale(1.05); border-color: var(--primary-color-light); }
+.profile-option.selected { border-color: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
+.profile-option img { width: 100%; height: 100%; object-fit: cover; }
+.wishlist-card { margin-top: 20px; }
+.wishlist-card h2 { border-bottom: none; padding-bottom: 0; margin-bottom: 1.5rem; }
+.wishlist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1.2rem; font-weight: 500; }
+.wishlist-card .progress-bar-wrapper { width: 100%; height: 12px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; margin-top: 5px; }
+#wishlist-progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #FFD700, #FFA500) !important; border-radius: 10px; transition: width 0.5s ease-in-out; }
+.wishlist-info { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.9em; color: var(--subtle-text-color); }
+.swal2-container { z-index: 2500 !important; }
+.review-interval-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; background-color: var(--bg-color); padding: 15px; border-radius: 8px; }
+.review-interval-selector label { display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+.review-interval-selector input[type="checkbox"] { width: 18px; height: 18px; margin-bottom: 0; }
+#revisit-topics-by-subject .subject-group { margin-bottom: 2rem; }
+#revisit-topics-by-subject .subject-title { font-size: 1.4rem; border-bottom: 2px solid var(--primary-color); padding-bottom: 8px; margin-bottom: 1rem; }
+.topic-list { list-style: none; padding-left: 0; }
+.topic-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+.topic-item:hover { background-color: var(--bg-color);}
+.topic-info .next-review { font-size: 0.8em; color: var(--subtle-text-color);}
+.emoji-selector { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; padding: 10px 0; }
+.emoji-option { font-size: 3rem; cursor: pointer; transition: transform 0.2s ease, filter 0.2s ease; filter: grayscale(70%); opacity: 0.7; }
+.emoji-option:hover { transform: scale(1.2); filter: grayscale(0%); opacity: 1; }
+.emoji-option.selected { transform: scale(1.3); filter: grayscale(0%); opacity: 1; text-shadow: 0 0 15px var(--primary-color); }
+.reason-title { text-align: left; margin-top: 20px; }
+.reason-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 25px; }
+.reason-option { display: flex; align-items: center; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 25px; cursor: pointer; transition: all 0.2s ease-in-out; background-color: var(--bg-color); }
+.reason-option:hover { border-color: var(--subtle-text-color); }
+.reason-option input[type="checkbox"] { display: none; }
+.reason-icon-group { display: flex; align-items: center; gap: 8px; font-size: 1.2rem; margin-right: 10px; color: var(--subtle-text-color); transition: color 0.2s; }
+.reason-icon-group .feather { width: 18px; height: 18px; }
+.reason-option span { font-size: 0.95em; transition: color 0.2s; }
+label.reason-option:has(input:checked) { background-color: var(--primary-color); border-color: var(--primary-color); color: white; }
+label.reason-option:has(input:checked) .reason-icon-group { color: white; }
+#rewards-page h1 { margin-bottom: 2rem; }
+.exp-total-card { text-align: center; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); color: white; padding: 30px; margin-bottom: 2.5rem; }
+.exp-total-card p { font-size: 1.2rem; font-weight: 300; color: rgba(255, 255, 255, 0.8); margin: 0; }
+#total-exp-display { font-size: 4rem; font-weight: 700; line-height: 1.1; }
+#rewards-page .card { background-color: transparent; border: none; box-shadow: none; padding: 0; }
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.badge-card { display: flex; align-items: center; background-color: var(--card-bg-color); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s; filter: grayscale(80%); opacity: 0.7; position: relative; }
+.badge-card.unlocked { filter: grayscale(0%); opacity: 1; border-left: 5px solid var(--success-color); }
+.badge-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+.badge-icon { font-size: 2.5rem; margin-right: 15px; line-height: 1; }
+.badge-info { flex-grow: 1; }
+.badge-title { font-weight: 500; color: var(--text-color); margin-bottom: 3px; }
+.badge-desc { font-size: 0.9em; color: var(--subtle-text-color); }
+.badge-unlocked-tick { position: absolute; top: 10px; right: 10px; color: var(--success-color); }
+.badge-unlocked-tick .feather { width: 20px; height: 20px; }
+.level-progress-container { padding: 10px; }
+.level-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.level-badge { font-weight: 700; font-size: 1.1rem; background-color: var(--primary-color); color: white; padding: 5px 12px; border-radius: 20px; }
+.exp-text { font-size: 0.95rem; color: var(--subtle-text-color); font-weight: 500; }
+.progress-bar-wrapper { width: 100%; height: 12px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; }
+.progress-bar#exp-progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); border-radius: 10px; transition: width 0.5s ease-in-out; }
+.level-badge-header { background-color: var(--primary-color) !important; color: white !important; font-weight: 700 !important; padding: 6px 16px !important; }
+.level-badge-header .feather-star { color: #FFD700; fill: #FFD700; }
+.focus-topic-selector { margin-bottom: 20px; text-align: center; }
+.focus-topic-selector label { display: block; font-weight: 500; margin-bottom: 10px; }
+#focus-topic { max-width: 400px; margin: 0 auto; text-align: center; font-weight: 500; }
+.timer-card { padding: 40px 20px; }
+#timer-display { font-size: 6rem; font-weight: 700; text-align: center; line-height: 1; margin-bottom: 10px; color: var(--text-color); }
+@media (max-width: 600px) { #timer-display { font-size: 4.5rem; } }
+#timer-mode { text-align: center; font-size: 1.2rem; font-weight: 500; color: var(--primary-color); margin-bottom: 25px; }
+.timer-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
+.timer-controls button { width: auto; flex-grow: 1; max-width: 200px; }
+.timer-controls .icon-button { flex-grow: 0; width: 50px; height: 50px; border-radius: 50%; background: var(--bg-color); }
+#focus-stats-section { margin-top: 20px; }
+.stats-controls { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.stats-tab-btn { flex-grow: 1; background-color: var(--bg-color); color: var(--subtle-text-color); border: 1px solid var(--border-color); font-weight: 500; }
+.stats-tab-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+#focus-stats-display { list-style: none; padding: 0; margin: 0; }
+.stat-item-focus { display: flex; align-items: center; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid var(--border-color); }
+.stat-item-focus:last-child { border-bottom: none; }
+.stat-topic-name { font-weight: 500; }
+.stat-topic-time { font-weight: 700; font-size: 1.1rem; color: var(--primary-color); }
+#check-in-btn .check-in-text { background-color: transparent !important; padding: 0 !important; }
+#search-results-container { margin-top: 20px; max-height: 300px; overflow-y: auto; }
+.search-result-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border-color); gap: 15px; }
+.user-list-item:last-child, .search-result-item:last-child { border-bottom: none; }
+.user-list-avatar, .search-result-item .profile-pic { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background-color: var(--border-color); }
+.user-list-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.user-info { flex-grow: 1; text-align: left; margin-left: 0; }
+.user-info h4 { margin: 0; font-size: 1rem; line-height: 1.2; }
+.user-info p { margin: 0; font-size: 0.85em; line-height: 1.2; }
+.user-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.user-actions .small-btn { padding: 6px 12px; font-size: 0.85em; display: inline-flex; align-items: center; gap: 5px; }
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item .user-info { flex-grow: 1; margin-left: 15px; text-align: left; }
+.search-result-item .user-info h4 { margin: 0; }
+.search-result-item .user-info p { margin: 0; font-size: 0.9em; }
+.profile-follow-stats { display: flex; justify-content: center; gap: 40px; margin: 20px 0; }
+.follow-stat-item { text-align: center; cursor: pointer; }
+.follow-stat-value { font-size: 1.5rem; font-weight: 700; display: block; color: var(--text-color); }
+.follow-stat-label { font-size: 0.9em; color: var(--subtle-text-color); }
+.stat-item .stat-icon .feather { width: 28px; height: 28px; stroke-width: 2; }
+.user-list-item { position: relative; cursor: pointer; }
+.user-list-item.disabled { opacity: 0.6; cursor: not-allowed; }
+.mutual-icon { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--success-color); }
+.id-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; }
+#profile-view-lifebuddy-id { margin-bottom: 0; }
+#copy-id-btn { padding: 4px; border-radius: 8px; line-height: 1; }
+#copy-id-btn:hover { background-color: var(--bg-color); }
+.swal-title-levelup { font-size: 2.5rem !important; font-weight: 700 !important; color: var(--primary-color) !important; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+#shop-page h1 { justify-content: center; }
+#shop-page .subtle-text { text-align: center; margin-top: -1.5rem; margin-bottom: 2.5rem; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-top: 20px; }
+.shop-item-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; text-align: center; padding: 15px; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.shop-item-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+.shop-item-preview { width: 100%; height: 120px; border-radius: 8px; background-color: var(--border-color); margin-bottom: 15px; object-fit: cover; border: 1px solid var(--border-color); }
+.shop-item-name { font-weight: 500; color: var(--text-color); margin-bottom: auto; padding-bottom: 8px; }
+.shop-item-price { display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 700; font-size: 1.1rem; color: var(--accent-color); margin: 8px 0; }
+.shop-item-price .feather-dollar-sign { width: 1em; height: 1em; }
+.shop-item-card .btn-buy { width: 100%; margin-top: 5px; }
+.shop-item-card .btn-buy.disabled { opacity: 0.7; cursor: default; }
+.shop-item-card .btn-buy.disabled:hover { transform: none; }
+.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"] { background-color: var(--success-color); }
+.shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"]:hover { background-color: var(--success-color); }
+.owned-tag { position: absolute; top: 12px; right: 12px; background-color: var(--success-color); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.community-container-new { display: grid; grid-template-columns: 350px 1fr; gap: 0; height: calc(100vh - 120px); max-height: 800px; }
 @media (max-width: 900px) {
-    .community-container-new {
-        grid-template-columns: 1fr; /* จอเล็กให้แสดงผลเต็มจอเดียว */
-    }
-    /* ซ่อนหน้าต่างแชทเมื่ออยู่จอเล็กและยังไม่ได้เลือก */
-    #chat-list-panel.has-active-chat ~ #chat-panel {
-        display: flex;
-    }
-    #chat-list-panel {
-        display: flex;
-        flex-direction: column;
-    }
-    #chat-list-panel.has-active-chat {
-        display: none; /* ซ่อนรายการแชทเมื่อกำลังแชทอยู่ */
-    }
+    .community-container-new { grid-template-columns: 1fr; }
+    #chat-list-panel.has-active-chat ~ #chat-panel { display: flex; }
+    #chat-list-panel { display: flex; flex-direction: column; }
+    #chat-list-panel.has-active-chat { display: none; }
 }
-
-
-/* แผงรายการแชทด้านซ้าย */
-#chat-list-panel {
-    border-radius: 16px 0 0 16px;
-    border-right: 1px solid var(--border-color);
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.chat-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-.chat-list-header h3 {
-    margin: 0;
-}
-
-/* รายการแชท (UL) */
-.chat-list {
-    list-style: none;
-    padding: 10px 0;
-    margin: 0;
-    overflow-y: auto;
-    flex-grow: 1;
-}
-
-/* แต่ละรายการในแชท (LI) */
-.chat-list-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-left: 4px solid transparent;
-}
-.chat-list-item:hover {
-    background-color: var(--bg-color);
-}
-.chat-list-item.active {
-    background-color: var(--bg-color);
-    border-left-color: var(--primary-color);
-}
-
-.chat-list-avatar {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 15px;
-    flex-shrink: 0;
-}
-
-.chat-list-info {
-    overflow: hidden;
-    flex-grow: 1;
-}
-
-.chat-list-name {
-    font-weight: 500;
-    display: block;
-    color: var(--text-color);
-}
-
-.chat-list-last-message {
-    font-size: 0.9em;
-    color: var(--subtle-text-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* แสดง ... เมื่อข้อความยาวเกิน */
-    margin: 0;
-}
-
-/* แผงหน้าต่างสนทนาด้านขวา */
-#chat-panel {
-    border-radius: 0 16px 16px 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.chat-view {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+#chat-list-panel { border-radius: 16px 0 0 16px; border-right: 1px solid var(--border-color); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+.chat-list-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+.chat-list-header h3 { margin: 0; }
+.chat-list { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+.chat-list-item { display: flex; align-items: center; padding: 12px 20px; cursor: pointer; transition: background-color 0.2s; border-left: 4px solid transparent; }
+.chat-list-item:hover { background-color: var(--bg-color); }
+.chat-list-item.active { background-color: var(--bg-color); border-left-color: var(--primary-color); }
+.chat-list-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-right: 15px; flex-shrink: 0; }
+.chat-list-info { overflow: hidden; flex-grow: 1; }
+.chat-list-name { font-weight: 500; display: block; color: var(--text-color); }
+.chat-list-last-message { font-size: 0.9em; color: var(--subtle-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+#chat-panel { border-radius: 0 16px 16px 0; padding: 0; display: flex; flex-direction: column; }
+.chat-view { width: 100%; height: 100%; display: flex; flex-direction: column; }
 .chat-view.hidden { display: none; }
-
-#chat-welcome-view {
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: var(--subtle-text-color);
-}
-#chat-welcome-view .feather {
-    width: 60px;
-    height: 60px;
-    stroke-width: 1.5;
-    margin-bottom: 20px;
-}
-
-.chat-header {
-    display: flex;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-.chat-header .profile-pic {
-    width: 45px;
-    height: 45px;
-    margin-right: 15px;
-}
-.chat-header-info h3, .chat-header-info p {
-    margin: 0;
-    line-height: 1.3;
-}
-.chat-header-info h3 {
-    font-size: 1.1rem;
-}
-.chat-messages-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
-.chat-input-area {
-    padding: 15px 20px;
-    border-top: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
-
-/* ======================================= */
-/* ====== Banner Selector Modal CSS ====== */
-/* ======================================= */
-
-.banner-selector-body {
-    padding: 25px;
-    display: grid;
-    /* แสดง 2-3 รายการต่อแถว ขึ้นอยู่กับขนาดจอ */
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.banner-option-card {
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    position: relative;
-    background-color: var(--bg-color);
-}
-
-.banner-option-card:hover {
-    transform: translateY(-5px);
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow);
-}
-
-.banner-option-card.selected {
-    border-color: var(--success-color);
-    box-shadow: 0 0 15px var(--success-color);
-}
-
-.banner-option-preview {
-    width: 100%;
-    height: 140px;
-    background-size: cover;
-    background-position: center;
-    background-color: var(--border-color); /* สีพื้นหลังสำหรับ banner ที่ไม่มีรูป */
-}
-
-/* ทำให้ banner ที่เป็นสี gradient แสดงผลได้ */
-.banner-option-preview[data-gradient="true"] {
-    background-image: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-}
-
-.banner-option-info {
-    padding: 15px;
-    text-align: center;
-    font-weight: 500;
-}
-
-.banner-option-card .selected-tick {
-    display: none; /* ซ่อนติ๊กถูกไว้ก่อน */
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    background-color: var(--success-color);
-    color: white;
-    border-radius: 50%;
-    justify-content: center;
-    align-items: center;
-}
-.banner-option-card.selected .selected-tick {
-    display: flex; /* แสดงติ๊กถูกเมื่อถูกเลือก */
-}
-
-/* ======================================== */
-/* === Follow Request in Chat List CSS === */
-/* ======================================== */
-.chat-list-section-header {
-    padding: 15px 20px 5px;
-    color: var(--subtle-text-color);
-    font-size: 0.9em;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-.follow-request-container {
-    padding: 5px 10px;
-}
-.follow-request-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 5px;
-    background-color: var(--bg-color);
-}
-.request-info {
-    flex-grow: 1;
-    margin: 0 10px;
-    line-height: 1.3;
-}
-.request-info strong {
-    display: block;
-    color: var(--text-color);
-}
-.request-info span {
-    font-size: 0.85em;
-    color: var(--subtle-text-color);
-}
-.request-actions {
-    display: flex;
-    gap: 8px;
-}
-.request-actions .small-btn {
-    padding: 5px 10px;
-    font-size: 0.8em;
-}
-
-/* Placeholder styles */
-.loading-placeholder, .empty-placeholder {
-    text-align: center;
-    color: var(--subtle-text-color);
-    padding: 40px 20px;
-}
-/* ======================================== */
-/* ======== User List Modal CSS =========== */
-/* ======================================== */
-#user-list-modal-body {
-    max-height: 50vh;
-    overflow-y: auto;
-    padding: 10px 0 20px !important; /* Override default padding */
-}
-.user-list-modal-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 25px;
-    gap: 15px;
-}
-.user-list-modal-item:hover {
-    background-color: var(--bg-color);
-}
-.user-list-modal-item .user-info {
-    text-align: left;
-}
-
-/* ======================================== */
-/* == Password Strength & Match Indicator === */
-/* ======================================== */
-
-/* จัดการกับ form group ที่เราสร้างขึ้นใหม่ */
-.modal-content .form-group {
-    margin-bottom: 15px;
-    text-align: left;
-    position: relative; /* สำคัญสำหรับการจัดตำแหน่ง icon */
-}
-.modal-content .form-group input {
-    margin-bottom: 0; /* เอา margin เดิมออก */
-}
-
-/* Container สำหรับ Input ที่มี Icon ด้านใน */
-.input-with-icon-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-/* ไอคอนติ๊กถูกเมื่อรหัสผ่านตรงกัน */
-#password-match-indicator {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    color: var(--success-color);
-    transition: opacity 0.3s;
-}
-
-#password-match-indicator .feather {
-    stroke-width: 3;
-}
-
-/* แถบวัดความปลอดภัยของรหัสผ่าน */
-#password-strength-meter {
-    display: flex;
-    gap: 5px;
-    margin-top: 8px;
-    height: 6px;
-}
-
-.strength-bar {
-    flex-grow: 1;
-    background-color: var(--border-color);
-    border-radius: 3px;
-    transition: background-color 0.3s;
-}
-
-/* สีของแถบตามระดับความปลอดภัย */
-#password-strength-meter.weak .strength-bar:nth-child(1) {
-    background-color: var(--danger-color);
-}
-
-#password-strength-meter.medium .strength-bar:nth-child(-n+2) {
-    background-color: var(--accent-color);
-}
-
-#password-strength-meter.strong .strength-bar:nth-child(-n+3) {
-    background-color: var(--success-color);
-}
-
-/* ======================================== */
-/* ======== Password Toggle Button ======== */
-/* ======================================== */
-
-.password-toggle-btn {
-    /* --- คุณสมบัติหลัก --- */
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--subtle-text-color);
-    
-    /* === [ส่วนสำคัญ] ยกเลิกสไตล์ปุ่มทั่วไป === */
-    background: transparent !important; /* พื้นหลังโปร่งใส */
-    border: none !important;           /* ไม่มีขอบ */
-    padding: 5px !important;            /* เพิ่ม padding เล็กน้อยเพื่อให้กดง่าย */
-    width: auto !important;             /* ความกว้างอัตโนมัติ */
-    height: auto !important;            /* ความสูงอัตโนมัติ */
-    line-height: 1;                     /* จัดแนวไอคอน */
-    
-    /* ป้องกันไม่ให้มี event แปลกๆ ตอนกด */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-.password-toggle-btn:hover {
-    background-color: transparent !important; /* ทำให้พื้นหลังไม่เปลี่ยนสีตอน hover */
-    color: var(--text-color);
-}
-
-/* ทำให้ปุ่มไม่มี focus effect สีน้ำเงิน */
-.password-toggle-btn:focus {
-    outline: none;
-    box-shadow: none;
-}
-
-/* ปรับตำแหน่งไอคอนติ๊กถูก ไม่ให้ทับกับไอคอนรูปตา */
-#password-match-indicator {
-    right: 45px; /* ขยับไปทางซ้ายเล็กน้อย */
-}
-
-/* ======================================== */
-/* == Password Feedback Text Styles      == */
-/* ======================================== */
-
-.password-feedback-text {
-    font-size: 0.85em;      /* ขนาดตัวอักษรเล็กๆ */
-    margin-top: 8px;        /* ระยะห่างจากด้านบน */
-    color: var(--subtle-text-color); /* สีจางๆ */
-    transition: color 0.3s; /* ทำให้เปลี่ยนสีได้นุ่มนวล */
-    min-height: 1.2em;      /* จองพื้นที่ไว้เล็กน้อยกัน Layout กระโดด */
-}
-
-/* ทำให้ข้อความเปลี่ยนสีตามความปลอดภัย */
-.password-feedback-text.weak {
-    color: var(--danger-color);
-}
-.password-feedback-text.medium {
-    color: var(--accent-color);
-}
-.password-feedback-text.strong {
-    color: var(--success-color);
-}
-/* ======================================== */
-/* ======== Auth Modal Social Login ======= */
-/* ======================================== */
-
-.social-login-container {
-    /* ใช้ padding เดิมของ modal-content เพื่อให้ระยะห่างเท่ากัน */
-    padding: 0 30px; 
-    margin-bottom: 20px; /* เพิ่มระยะห่างด้านล่างก่อนถึง error message */
-    
-    /* ใช้ Flexbox เพื่อจัดทุกอย่างให้อยู่กลาง */
-    display: flex;
-    flex-direction: column; /* จัดเรียงแนวตั้ง */
-    align-items: center;    /* จัดให้อยู่กึ่งกลางแนวนอน */
-    gap: 20px; /* ระยะห่างระหว่าง "หรือ" กับปุ่ม Google */
-}
-
-.social-login-container .separator {
-    width: 100%;
-    margin: 0; /* เอา margin เดิมออกเพราะเราใช้ gap แทน */
-}
-
-.modal-content > .separator {
-    display: none; /* ซ่อน separator ตัวเก่าที่อาจจะยังแสดงผลอยู่ */
-}
-/* ======================================= */
-/* ====== New Revisit Quiz System ====== */
-/* ======================================= */
-
-.page-view {
-    display: none;
-}
-.page-view:not(.hidden) {
-    display: block;
-    animation: fadeIn 0.5s ease-in-out;
-}
-
-.with-icon {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#back-to-revisit-list-from-creation {
-    margin-bottom: 20px;
-}
-
-.section-divider {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 2rem 0;
-}
-
-/* --- Quiz Creation View --- */
-.quiz-type-selector {
-    display: flex;
-    gap: 20px;
-    background-color: var(--bg-color);
-    padding: 10px 15px;
-    border-radius: 8px;
-}
-
-#choices-wrapper .choice-item,
-#typed-answers-wrapper .typed-answer-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-#choices-wrapper .choice-item input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    margin: 0;
-}
-#choices-wrapper .choice-item input[type="text"],
-#typed-answers-wrapper .typed-answer-item input[type="text"] {
-    margin: 0;
-}
-#choices-wrapper .choice-item .remove-btn,
-#typed-answers-wrapper .typed-answer-item .remove-btn {
-    width: auto;
-    padding: 5px;
-    background: none;
-    border: none;
-    color: var(--danger-color);
-    margin: 0;
-}
-
-#created-quizzes-list-container {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background-color: var(--bg-color);
-    border-radius: 12px;
-}
-#created-quizzes-list {
-    list-style-type: none;
-    margin-bottom: 1.5rem;
-}
-#created-quizzes-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-#created-quizzes-list li .quiz-text {
-    flex-grow: 1;
-}
-#created-quizzes-list li .actions {
-    display: flex;
-    gap: 8px;
-}
-
-/* --- Quiz Taking View --- */
-.quiz-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 2rem;
-}
-.quiz-header .progress-bar-wrapper {
-    flex-grow: 1;
-    height: 16px;
-}
-#quiz-progress-bar {  
-    height: 100%; 
-    background-image: linear-gradient(90deg, var(--success-light), #4ade80);
-    transition: width 0.4s ease-in-out; 
-    border-radius: 10px;
-}
-
-/* เพิ่มสไตล์สำหรับ Dark Mode ด้วย */
-body[data-theme="dark"] #quiz-progress-bar {
-    background-image: linear-gradient(90deg, var(--success-dark), #4ade80);
-}
-
-.quiz-content {
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto;
-}
-#quiz-question-display {
-    font-size: 1.8rem;
-    margin-bottom: 2.5rem;
-}
-
-#quiz-answers-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-}
-@media (min-width: 600px) {
-    #quiz-answers-container {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.quiz-choice-btn {
-    padding: 1.2rem;
-    font-size: 1.1rem;
-    border: 2px solid var(--border-color);
-    background-color: var(--card-bg-color);
-    color: var(--text-color);
-    transition: all 0.2s ease;
-    text-align: center;
-}
-.quiz-choice-btn:hover:not(:disabled) {
-    border-color: var(--primary-color);
-    background-color: var(--bg-color);
-    transform: translateY(-3px);
-}
-.quiz-choice-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.quiz-choice-btn.selected {
-    border-color: var(--primary-color);
-}
-
-.quiz-choice-btn.correct {
-    background-color: var(--success-color);
-    border-color: var(--success-color);
-    color: white;
-    animation: tada 0.8s;
-}
-.quiz-choice-btn.incorrect {
-    background-color: var(--danger-color);
-    border-color: var(--danger-color);
-    color: white;
-    animation: shake-horizontal 0.5s;
-}
-
-#submit-typed-answer-btn {
-    margin-top: 1rem;
-    max-width: 300px;
-}
-
-/* --- Feedback Footer --- */
-#quiz-feedback-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(--card-bg-color);
-    border-top: 1px solid var(--border-color);
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-    transform: translateY(100%);
-    transition: transform 0.4s ease-in-out;
-}
-#quiz-feedback-footer:not(.hidden) {
-    transform: translateY(0);
-}
-
-#quiz-feedback-footer.correct {
-    border-top: 4px solid var(--success-color);
-}
-#quiz-feedback-footer.incorrect {
-    border-top: 4px solid var(--danger-color);
-}
-
-.feedback-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-.feedback-left #feedback-title {
-    margin: 0 0 5px;
-    font-size: 1.5rem;
-}
+#chat-welcome-view { justify-content: center; align-items: center; text-align: center; color: var(--subtle-text-color); }
+#chat-welcome-view .feather { width: 60px; height: 60px; stroke-width: 1.5; margin-bottom: 20px; }
+.chat-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+.chat-header .profile-pic { width: 45px; height: 45px; margin-right: 15px; }
+.chat-header-info h3, .chat-header-info p { margin: 0; line-height: 1.3; }
+.chat-header-info h3 { font-size: 1.1rem; }
+.chat-messages-container { flex-grow: 1; overflow-y: auto; padding: 20px; }
+.chat-input-area { padding: 15px 20px; border-top: 1px solid var(--border-color); flex-shrink: 0; }
+.banner-selector-body { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; }
+.banner-option-card { border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s ease-in-out; position: relative; background-color: var(--bg-color); }
+.banner-option-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: var(--shadow); }
+.banner-option-card.selected { border-color: var(--success-color); box-shadow: 0 0 15px var(--success-color); }
+.banner-option-preview { width: 100%; height: 140px; background-size: cover; background-position: center; background-color: var(--border-color); }
+.banner-option-preview[data-gradient="true"] { background-image: linear-gradient(135deg, var(--primary-color), var(--accent-color)); }
+.banner-option-info { padding: 15px; text-align: center; font-weight: 500; }
+.banner-option-card .selected-tick { display: none; position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; background-color: var(--success-color); color: white; border-radius: 50%; justify-content: center; align-items: center; }
+.banner-option-card.selected .selected-tick { display: flex; }
+.chat-list-section-header { padding: 15px 20px 5px; color: var(--subtle-text-color); font-size: 0.9em; font-weight: 500; text-transform: uppercase; }
+.follow-request-container { padding: 5px 10px; }
+.follow-request-item { display: flex; align-items: center; padding: 10px; border-radius: 8px; margin-bottom: 5px; background-color: var(--bg-color); }
+.request-info { flex-grow: 1; margin: 0 10px; line-height: 1.3; }
+.request-info strong { display: block; color: var(--text-color); }
+.request-info span { font-size: 0.85em; color: var(--subtle-text-color); }
+.request-actions { display: flex; gap: 8px; }
+.request-actions .small-btn { padding: 5px 10px; font-size: 0.8em; }
+.loading-placeholder, .empty-placeholder { text-align: center; color: var(--subtle-text-color); padding: 40px 20px; }
+#user-list-modal-body { max-height: 50vh; overflow-y: auto; padding: 10px 0 20px !important; }
+.user-list-modal-item { display: flex; align-items: center; padding: 10px 25px; gap: 15px; }
+.user-list-modal-item:hover { background-color: var(--bg-color); }
+.user-list-modal-item .user-info { text-align: left; }
+.modal-content .form-group { margin-bottom: 15px; text-align: left; position: relative; }
+.modal-content .form-group input { margin-bottom: 0; }
+.input-with-icon-wrapper { position: relative; width: 100%; }
+#password-match-indicator { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); color: var(--success-color); transition: opacity 0.3s; }
+#password-match-indicator .feather { stroke-width: 3; }
+.password-toggle-btn { position: absolute; top: 50%; right: 15px; transform: translateY(-50%); cursor: pointer; color: var(--subtle-text-color); background: transparent !important; border: none !important; padding: 5px !important; width: auto !important; height: auto !important; line-height: 1; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+.password-toggle-btn:hover { background-color: transparent !important; color: var(--text-color); }
+.password-toggle-btn:focus { outline: none; box-shadow: none; }
+#password-match-indicator { right: 45px; }
+.password-feedback-text { font-size: 0.85em; margin-top: 8px; color: var(--subtle-text-color); transition: color 0.3s; min-height: 1.2em; }
+.password-feedback-text.weak { color: var(--danger-color); }
+.password-feedback-text.medium { color: var(--accent-color); }
+.password-feedback-text.strong { color: var(--success-color); }
+.social-login-container { padding: 0 30px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.social-login-container .separator { width: 100%; margin: 0; }
+.modal-content > .separator { display: none; }
+.page-view { display: none; }
+.page-view:not(.hidden) { display: block; animation: fadeIn 0.5s ease-in-out; }
+.with-icon { display: inline-flex; align-items: center; gap: 8px; }
+#back-to-revisit-list-from-creation { margin-bottom: 20px; }
+.section-divider { border: none; border-top: 1px solid var(--border-color); margin: 2rem 0; }
+.quiz-type-selector { display: flex; gap: 20px; background-color: var(--bg-color); padding: 10px 15px; border-radius: 8px; }
+#choices-wrapper .choice-item, #typed-answers-wrapper .typed-answer-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+#choices-wrapper .choice-item input[type="radio"] { width: 20px; height: 20px; flex-shrink: 0; margin: 0; }
+#choices-wrapper .choice-item input[type="text"], #typed-answers-wrapper .typed-answer-item input[type="text"] { margin: 0; }
+#choices-wrapper .choice-item .remove-btn, #typed-answers-wrapper .typed-answer-item .remove-btn { width: auto; padding: 5px; background: none; border: none; color: var(--danger-color); margin: 0; }
+#created-quizzes-list-container { margin-top: 2rem; padding: 1.5rem; background-color: var(--bg-color); border-radius: 12px; }
+#created-quizzes-list { list-style-type: none; margin-bottom: 1.5rem; }
+#created-quizzes-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
+#created-quizzes-list li .quiz-text { flex-grow: 1; }
+#created-quizzes-list li .actions { display: flex; gap: 8px; }
+.quiz-header { display: flex; align-items: center; gap: 15px; margin-bottom: 2rem; }
+.quiz-header .progress-bar-wrapper { flex-grow: 1; height: 16px; }
+#quiz-progress-bar { height: 100%; border-radius: 10px; background-image: linear-gradient(90deg, var(--success-light), #4ade80); transition: width 0.4s ease-in-out; }
+body[data-theme="dark"] #quiz-progress-bar { background-image: linear-gradient(90deg, var(--success-dark), #4ade80); }
+.quiz-content { text-align: center; max-width: 700px; margin: 0 auto; }
+#quiz-question-display { font-size: 1.8rem; margin-bottom: 2.5rem; }
+#quiz-answers-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
+@media (min-width: 600px) { #quiz-answers-container { grid-template-columns: 1fr 1fr; } }
+.quiz-choice-btn { padding: 1.2rem; font-size: 1.1rem; border: 2px solid var(--border-color); background-color: var(--card-bg-color); color: var(--text-color); transition: all 0.2s ease; text-align: center; }
+.quiz-choice-btn:hover:not(:disabled) { border-color: var(--primary-color); background-color: var(--bg-color); transform: translateY(-3px); }
+.quiz-choice-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+.quiz-choice-btn.selected { border-color: var(--primary-color); }
+.quiz-choice-btn.correct { background-color: var(--success-color); border-color: var(--success-color); color: white; animation: tada 0.8s; }
+.quiz-choice-btn.incorrect { background-color: var(--danger-color); border-color: var(--danger-color); color: white; animation: shake-horizontal 0.5s; }
+#submit-typed-answer-btn { margin-top: 1rem; max-width: 300px; }
+#quiz-feedback-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--card-bg-color); border-top: 1px solid var(--border-color); box-shadow: 0 -5px 20px rgba(0,0,0,0.1); transform: translateY(100%); transition: transform 0.4s ease-in-out; }
+#quiz-feedback-footer:not(.hidden) { transform: translateY(0); }
+#quiz-feedback-footer.correct { border-top: 4px solid var(--success-color); }
+#quiz-feedback-footer.incorrect { border-top: 4px solid var(--danger-color); }
+.feedback-content { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.feedback-left #feedback-title { margin: 0 0 5px; font-size: 1.5rem; }
 #quiz-feedback-footer.correct .feedback-left #feedback-title { color: var(--success-color); }
 #quiz-feedback-footer.incorrect .feedback-left #feedback-title { color: var(--danger-color); }
-
-.feedback-left #feedback-explanation-preview {
-    margin: 0;
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-
-.feedback-right {
-    display: flex;
-    gap: 15px;
-}
-
-/* --- Animations --- */
-@keyframes tada {
-    from { transform: scale3d(1, 1, 1); }
-    10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); }
-    30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); }
-    40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); }
-    to { transform: scale3d(1, 1, 1); }
-}
-
-@keyframes shake-horizontal {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-  20%, 40%, 60%, 80% { transform: translateX(8px); }
-}
-/* ======================================= */
-/* ====== Subject Selector Modal CSS ===== */
-/* ======================================= */
-
-/* ทำให้ input ที่แสดงผลดูเหมือน Dropdown */
-#revisit-subject-display {
-    cursor: pointer;
-    background-color: var(--card-bg-color); /* ใช้สีเดียวกับพื้นหลังการ์ด */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right .75rem center;
-    background-size: 16px 12px;
-}
-
-body[data-theme="dark"] #revisit-subject-display {
-     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e5e5e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-}
-
-/* สไตล์ Body ของ Modal */
-.subject-selector-body {
-    padding: 10px 25px;
-    max-height: 50vh;
-    overflow-y: auto;
-    text-align: left;
-}
-
-.subject-option {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 10px;
-    border-bottom: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.subject-option:last-child {
-    border-bottom: none;
-}
-.subject-option:hover {
-    background-color: var(--bg-color);
-}
-.subject-option .remove-custom-subject-btn {
-    background: none;
-    border: none;
-    color: var(--danger-color);
-    padding: 5px;
-    width: auto;
-    margin: 0;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-}
-.subject-option:hover .remove-custom-subject-btn {
-    opacity: 1;
-}
-
-
-/* สไตล์ Footer ของ Modal */
-.custom-subject-footer {
-    padding: 20px 25px;
-    border-top: 1px solid var(--border-color);
-    background-color: var(--bg-color);
-}
-#add-custom-subject-form {
-    display: flex;
-    gap: 10px;
-}
-#add-custom-subject-form input {
-    margin: 0;
-}
-#add-custom-subject-form button {
-    margin: 0;
-    flex-shrink: 0; /* ป้องกันปุ่มถูกบีบ */
-}
+.feedback-left #feedback-explanation-preview { margin: 0; font-size: 0.9em; opacity: 0.8; }
+.feedback-right { display: flex; gap: 15px; }
+@keyframes tada { from { transform: scale3d(1, 1, 1); } 10%, 20% { transform: scale3d(.9, .9, .9) rotate3d(0, 0, 1, -3deg); } 30%, 50%, 70%, 90% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg); } 40%, 60%, 80% { transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg); } to { transform: scale3d(1, 1, 1); } }
+@keyframes shake-horizontal { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); } 20%, 40%, 60%, 80% { transform: translateX(8px); } }
+#revisit-subject-display { cursor: pointer; background-color: var(--card-bg-color); background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 12px; }
+body[data-theme="dark"] #revisit-subject-display { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e5e5e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); }
+.subject-selector-body { padding: 10px 25px; max-height: 50vh; overflow-y: auto; text-align: left; }
+.subject-option { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+.subject-option:last-child { border-bottom: none; }
+.subject-option:hover { background-color: var(--bg-color); }
+.subject-option .remove-custom-subject-btn { background: none; border: none; color: var(--danger-color); padding: 5px; width: auto; margin: 0; opacity: 0.5; transition: opacity 0.2s; }
+.subject-option:hover .remove-custom-subject-btn { opacity: 1; }
+.custom-subject-footer { padding: 20px 25px; border-top: 1px solid var(--border-color); background-color: var(--bg-color); }
+#add-custom-subject-form { display: flex; gap: 10px; }
+#add-custom-subject-form input { margin: 0; }
+#add-custom-subject-form button { margin: 0; flex-shrink: 0; }
