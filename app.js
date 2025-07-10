@@ -2593,72 +2593,43 @@ async function renderChatList() {
                 const loginPassword = loginPasswordInput.value;
 
                 if (!loginEmail || !loginPassword) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'ข้อมูลไม่ครบถ้วน',
-                        text: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ',
-                    });
+                    Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบถ้วน', text: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ' });
                     return;
                 }
 
-                    Swal.fire({
-                        title: 'กำลังตรวจสอบข้อมูล...',
-                        allowOutsideClick: false,
-                        didOpen: () => { Swal.showLoading(); }
-                    });
+                    Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-                    // [LOGIC ใหม่] ลอง Sign-in ดูก่อนเลย
+                    // ลองล็อกอินด้วยรหัสผ่านก่อน
                     auth.signInWithEmailAndPassword(loginEmail, loginPassword)
-                        .then((userCredential) => {
-                            // --- กรณีสำเร็จ ---
+                        .then(userCredential => {
+                            // สำเร็จ: ตรวจสอบการยืนยันอีเมล
                             const user = userCredential.user;
                             if (!user.emailVerified) {
                                 auth.signOut();
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'บัญชียังไม่ถูกเปิดใช้งาน',
-                                    html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
-                                });
+                                Swal.fire({ icon: 'warning', title: 'บัญชียังไม่ถูกเปิดใช้งาน', html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ` });
                             }
-                            // ถ้า verified แล้ว onAuthStateChanged จะทำงานต่อเอง
                         })
                         .catch(error => {
-                            // --- กรณีเกิด Error ---
-                            // [ส่วนสำคัญ] เราจะมาเช็ค Error กันตรงนี้
-                            
-                            // 1. ตรวจสอบ Error ยอดนิยม: รหัสผ่านผิด หรือ ไม่พบบัญชี
-                            if (error.code === 'auth/wrong-password' || 
-                                error.code === 'auth/user-not-found' || 
-                            (error.code === 'auth/internal-error' && error.message.includes('INVALID_LOGIN_CREDENTIALS'))) {
-                                
-                                // 2. เมื่อรู้ว่ารหัสผ่านผิด/ไม่พบบัญชี, เราจะลองเช็คดูว่าอีเมลนี้ผูกกับ Google หรือไม่
+                            // ล้มเหลว: ตรวจสอบสาเหตุ
+                            // ถ้า Error คือ "ไม่พบบัญชี" เราจะไปเช็คต่อว่าผูกกับ Google หรือไม่
+                            if (error.code === 'auth/user-not-found') {
                                 auth.fetchSignInMethodsForEmail(loginEmail)
                                     .then(methods => {
-                                        // 3. ถ้าเจอว่าผูกกับ Google จริงๆ ให้แสดงข้อความที่คุณต้องการ
                                         if (methods.includes('google.com')) {
+                                            // **** นี่คือข้อความที่คุณต้องการ ****
                                             Swal.fire({
                                                 icon: 'error',
                                                 title: 'ไม่สามารถเข้าสู่ระบบได้',
-                                                html: `เนื่องจากผู้ใช้ได้ลงทะเบียนด้วยอีเมลนี้ผ่าน Google แล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong>`,
+                                                html: `ผู้ใช้ได้ลงทะเบียนด้วยอีเมลนี้ผ่าน Google แล้ว<br/>กรุณาเข้าสู่ระบบด้วยปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> แทน`,
                                             });
                                         } else {
-                                            // 4. ถ้าไม่เจอว่าผูกกับ Google ก็แสดงว่าเป็นรหัสผ่านผิดจริงๆ
-                                            Swal.fire({
-                                                icon: 'error',
-                                                title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                                text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-                                            });
+                                            // ถ้าไม่ผูกกับ Google ก็คือไม่พบบัญชีจริงๆ
+                                            Swal.fire({ icon: 'error', title: 'ไม่พบบัญชีผู้ใช้', text: 'ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่' });
                                         }
                                     });
-
-                            } 
-                            // 5. จัดการกับ Error อื่นๆ ที่ไม่ใช่เรื่องรหัสผ่าน
-                            else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'เกิดข้อผิดพลาด',
-                                    text: getFriendlyAuthError(error),
-                                });
+                            } else {
+                                // ถ้าเป็น Error อื่นๆ (เช่น รหัสผิด) ให้แสดงตามปกติ
+                                Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: getFriendlyAuthError(error) });
                             }
                         });
                     break;
@@ -2694,28 +2665,26 @@ async function renderChatList() {
     // ===== 8. AUTH MODAL FUNCTIONS =====
     // ===================================
     function getFriendlyAuthError(error) {
-    console.error("Auth Error:", error);
-    switch (error.code) {
-        case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
-        case 'auth/user-not-found': return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; // รวมเป็นข้อความเดียว
-        case 'auth/wrong-password': return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; // รวมเป็นข้อความเดียว
-        case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
-        case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-        case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
-        case 'auth/cancelled-popup-request': return '';
-        case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
-        
-        case 'auth/internal-error':
-            // ตรวจสอบข้อความที่ซ่อนอยู่ข้างใน
-            if (error.message && error.message.includes("INVALID_LOGIN_CREDENTIALS")) {
-                return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-            }
-            // ถ้าเป็น internal-error อื่นๆ
-            return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
+        console.error("Auth Error:", error);
+        switch (error.code) {
+            case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
+            case 'auth/user-not-found': return 'ไม่พบบัญชีผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้'; // คืนค่าตามจริง
+            case 'auth/wrong-password': return 'รหัสผ่านไม่ถูกต้อง'; // คืนค่าตามจริง
+            case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้งานแล้ว';
+            case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+            case 'auth/popup-closed-by-user': return 'คุณปิดหน้าต่างการลงชื่อเข้าใช้';
+            case 'auth/cancelled-popup-request': return '';
+            case 'auth/account-exists-with-different-credential': return 'มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีเดิม';
+            
+            case 'auth/internal-error':
+                if (error.message && error.message.includes("INVALID_LOGIN_CREDENTIALS")) {
+                    return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                }
+                return 'เกิดข้อผิดพลาดภายในระบบ กรุณาลองใหม่';
 
-        default: return 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+            default: return 'เกิดข้อผิดพลาดที่ไม่รู้จัก กรุณาลองใหม่อีกครั้ง';
+        }
     }
-}
 
     function openAuthModal() { 
         document.getElementById('auth-modal').classList.remove('hidden');
