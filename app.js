@@ -1131,21 +1131,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.startReviewSession = (subject, topicId) => {
-        // หาข้อมูลหัวข้อที่เลือก
-        currentQuizTopicData = state.revisitTopics[subject].find(t => t.id === topicId);
-        if (!currentQuizTopicData) return;
+        // 1. หาข้อมูลหัวข้อที่เลือก
+        const topic = state.revisitTopics[subject]?.find(t => t.id === topicId);
+        if (!topic) {
+            console.error("หาหัวข้อไม่เจอ!", { subject, topicId });
+            showToast("เกิดข้อผิดพลาด: ไม่พบข้อมูลหัวข้อ");
+            return;
+        }
 
-        // เก็บ subject และ topicId ไว้ใช้อ้างอิง
-        currentQuizTopicData.subject = subject;
+        // 2. [สำคัญ] สร้าง Deep Copy ของข้อมูลหัวข้อเพื่อป้องกันการแก้ไขข้อมูลต้นฉบับโดยไม่ตั้งใจ
+        currentQuizTopicData = JSON.parse(JSON.stringify(topic)); 
+        currentQuizTopicData.subject = subject; // เพิ่มข้อมูลอ้างอิงกลับ
         currentQuizTopicData.topicId = topicId;
 
-        // สลับไปแสดงหน้าจัดการควิซ
-        document.getElementById('revisit-list-view').classList.add('hidden');
-        document.getElementById('quiz-manager-view').classList.remove('hidden');
+        // 3. สลับไปแสดงหน้าจัดการควิซ
+        showRevisitSubView('quiz-manager-view');
         
-        // แสดงผลข้อมูลควิซของหัวข้อนี้
+        // 4. แสดงผลข้อมูลควิซของหัวข้อนี้
         renderQuizManager();
+
+        // 5. [สำคัญ] เรียกใช้ feather.replace() อีกครั้งหลังจาก UI พร้อมแล้ว
+        feather.replace();
     };
+
+    /**
+     * [ฟังก์ชันใหม่] สำหรับจัดการการแสดงผล View ย่อยในหน้า Revisit
+     * @param {string} viewId - ID ของ view ที่จะแสดง (revisit-list-view, quiz-manager-view, quiz-taking-view)
+     */
+    function showRevisitSubView(viewId) {
+        const page = document.getElementById('revisit-page');
+        if (!page) return;
+        
+        // ซ่อน view ย่อยทั้งหมดก่อน
+        page.querySelectorAll('.page-view').forEach(view => view.classList.add('hidden'));
+        
+        // แสดงเฉพาะ view ที่ต้องการ
+        const viewToShow = document.getElementById(viewId);
+        if (viewToShow) {
+            viewToShow.classList.remove('hidden');
+        }
+    }
 
 
     async function handleEditWishList() {
@@ -2599,8 +2624,7 @@ async function renderChatList() {
                     document.getElementById('timer-settings').classList.toggle('hidden'); 
                     break;
                 case 'back-to-revisit-list-btn':
-                    document.getElementById('quiz-manager-view').classList.add('hidden');
-                    document.getElementById('revisit-list-view').classList.remove('hidden');
+                    showRevisitSubView('revisit-list-view');
                     currentQuizTopicData = null; // เคลียร์ข้อมูลหัวข้อปัจจุบัน
                     break;
                 case 'add-choice-btn':

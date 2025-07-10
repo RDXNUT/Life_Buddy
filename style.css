@@ -2210,6 +2210,14 @@ label.reason-option:has(input:checked) .reason-icon-group {
     font-weight: 700;
     font-size: 1.1rem;
 }
+.quiz-stats .feather { /* [ใหม่] กำหนดขนาดไอคอน */
+    width: 22px;
+    height: 22px;
+    vertical-align: -4px;
+}
+#quiz-lives-stat { color: #ff4757; }
+#quiz-lives-stat .feather { fill: #ff4757; } /* [ใหม่] เติมสีให้หัวใจ */
+#quiz-coin-stat { color: #ffc107; }
 .quiz-stats img {
     width: 24px;
     height: 24px;
