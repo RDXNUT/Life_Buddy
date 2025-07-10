@@ -2587,38 +2587,83 @@ async function renderChatList() {
                     break;
 
             case 'login-form':
-                const loginEmail = document.getElementById('login-email').value;
-                const loginPassword = document.getElementById('login-password').value;
+                const loginEmailInput = document.getElementById('login-email');
+                const loginPasswordInput = document.getElementById('login-password');
+                const loginEmail = loginEmailInput.value;
+                const loginPassword = loginPasswordInput.value;
 
-                Swal.fire({
-                    title: 'กำลังเข้าสู่ระบบ...',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                auth.signInWithEmailAndPassword(loginEmail, loginPassword)
-                    .then((userCredential) => {
-                        const user = userCredential.user;
-                        
-                        // --- [ส่วนสำคัญ] ตรวจสอบว่ายืนยันอีเมลหรือยัง ---
-                        if (!user.emailVerified) {
-                            auth.signOut(); // ออกจากระบบทันที
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'บัญชียังไม่ถูกเปิดใช้งาน',
-                                html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
-                            });
-                        }
-                        // ถ้า emailVerified เป็น true, onAuthStateChanged จะทำงานต่อเอง
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'เข้าสู่ระบบไม่สำเร็จ',
-                            text: getFriendlyAuthError(error),
-                        });
+                if (!loginEmail || !loginPassword) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ข้อมูลไม่ครบถ้วน',
+                        text: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ',
                     });
-                break;
+                    return;
+                }
+
+                    Swal.fire({
+                        title: 'กำลังตรวจสอบข้อมูล...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    // ตรวจสอบวิธีการลงชื่อเข้าใช้ของอีเมลนี้ก่อน
+                    auth.fetchSignInMethodsForEmail(loginEmail)
+                        .then((signInMethods) => {
+                            
+                            // กรณีที่ 1: ไม่เคยมีบัญชีนี้ในระบบ
+                            if (signInMethods.length === 0) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'ไม่พบบัญชีผู้ใช้',
+                                    text: `ไม่พบผู้ใช้ที่ลงทะเบียนด้วยอีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่`,
+                                });
+                            } 
+                            // กรณีที่ 2: บัญชีนี้ผูกกับ Google
+                            else if (signInMethods.includes('google.com')) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'บัญชีนี้ลงทะเบียนผ่าน Google',
+                                    html: `ดูเหมือนว่าอีเมลนี้จะถูกใช้ลงทะเบียนผ่าน Google ไปแล้ว<br/>กรุณาคลิกปุ่ม <strong>"เข้าสู่ระบบด้วย Google"</strong> เพื่อใช้งาน`,
+                                    confirmButtonText: 'เข้าใจแล้ว',
+                                });
+                            } 
+                            // กรณีที่ 3: บัญชีนี้ใช้รหัสผ่าน (ทำงานตามปกติ)
+                            else if (signInMethods.includes('password')) {
+                                auth.signInWithEmailAndPassword(loginEmail, loginPassword)
+                                    .then((userCredential) => {
+                                        const user = userCredential.user;
+                                        // ตรวจสอบว่ายืนยันอีเมลหรือยัง
+                                        if (!user.emailVerified) {
+                                            auth.signOut();
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'บัญชียังไม่ถูกเปิดใช้งาน',
+                                                html: `กรุณาตรวจสอบอีเมล <strong>${user.email}</strong> และคลิกลิงก์เพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ`,
+                                            });
+                                        }
+                                        // ถ้า verified แล้ว onAuthStateChanged จะทำงานต่อเอง
+                                        // และ Swal จะปิดไปเองเมื่อ Modal ปิด
+                                    })
+                                    .catch(error => {
+                                        // ใช้ getFriendlyAuthError ที่เราปรับปรุงไปแล้ว
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'เข้าสู่ระบบไม่สำเร็จ',
+                                            text: getFriendlyAuthError(error),
+                                        });
+                                    });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error fetching sign in methods:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถตรวจสอบข้อมูลบัญชีได้ กรุณาลองใหม่อีกครั้งในภายหลัง',
+                            });
+                        });
+                    break;
                 case 'flashcard-form':
                     const flashcardForm = e.target;
                     const subject = flashcardForm.dataset.subject;
