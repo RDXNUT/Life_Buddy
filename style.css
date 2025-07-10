@@ -2022,3 +2022,75 @@ label.reason-option:has(input:checked) .reason-icon-group {
 #password-match-indicator {
     right: 45px; /* ขยับไปทางซ้ายเล็กน้อย */
 }
+
+/* ======================================== */
+/* == Password Feedback Text Styles      == */
+/* ======================================== */
+
+.password-feedback-text {
+    font-size: 0.85em;      /* ขนาดตัวอักษรเล็กๆ */
+    margin-top: 8px;        /* ระยะห่างจากด้านบน */
+    color: var(--subtle-text-color); /* สีจางๆ */
+    transition: color 0.3s; /* ทำให้เปลี่ยนสีได้นุ่มนวล */
+    min-height: 1.2em;      /* จองพื้นที่ไว้เล็กน้อยกัน Layout กระโดด */
+}
+
+/* ทำให้ข้อความเปลี่ยนสีตามความปลอดภัย */
+.password-feedback-text.weak {
+    color: var(--danger-color);
+}
+.password-feedback-text.medium {
+    color: var(--accent-color);
+}
+.password-feedback-text.strong {
+    color: var(--success-color);
+}
+/* ======================================== */
+/* == Google Sign-in Button Enhancement === */
+/* ======================================== */
+
+.google-btn {
+    /* 1. จัดตำแหน่งและขนาด */
+    display: inline-flex !important;
+    justify-content: center;
+    align-items: center;
+    width: auto !important;
+    max-width: 100%;
+    margin: 0 auto 15px;
+    
+    padding: 12px 28px !important; /* เพิ่ม padding ซ้าย-ขวาให้ปุ่มกว้างขึ้น */
+    font-size: 1.05rem !important; /* เพิ่มขนาดตัวอักษรเล็กน้อย */
+
+    /* 2. ใช้สีและเส้นขอบ */
+    background-color: #ffffff !important;
+    color: #3C4043 !important;
+    border: 1px solid #DADCE0 !important;
+    border-radius: 25px !important; /* [ปรับปรุง] ทำให้ขอบมนขึ้น ดูทันสมัย */
+    
+    /* 3. ปรับ Font */
+    font-weight: 500 !important;
+    
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* เงาเริ่มต้นที่นุ่มนวลขึ้น */
+
+    transition: all 0.2s ease-in-out;
+}
+
+/* 4. เพิ่ม Hover Effect */
+.google-btn:hover {
+    background-color: #F8F9FA !important;
+    
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12); /* ทำให้เงาชัดขึ้นตอนเมาส์ชี้ */
+    transform: translateY(-2px); /* ทำให้ปุ่มลอยขึ้นเล็กน้อย */
+}
+
+.google-btn:active {
+    transform: translateY(0); /* กลับมาที่เดิมตอนกด */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* ลดเงาตอนกด */
+}
+
+/* 5. จัดการรูปไอคอน Google */
+.google-btn img {
+    width: 20px; /* ขยายไอคอนเล็กน้อย */
+    height: 20px;
+    margin-right: 12px;
+}
