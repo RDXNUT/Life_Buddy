@@ -54,10 +54,18 @@
             <div id="user-header" class="user-stats hidden">
                 <button id="search-friends-btn" class="icon-button" title="ค้นหาเพื่อน"><i data-feather="search"></i></button>
                 <button id="community-btn" class="icon-button" title="เพื่อนและแชท"><i data-feather="message-square"></i><span id="unread-notification-dot" class="notification-dot hidden"></span></button>
-                <a href="#" id="profile-link" title="แก้ไขโปรไฟล์"><img id="user-photo" src="" alt="User Photo" class="profile-pic"></a>
-                <span id="coin-display" title="เหรียญของคุณ"><i data-feather="dollar-sign"></i> 0</span>
+                
+                <!-- ซ่อนรูปโปรไฟล์ -->
+                <a href="#" id="profile-link" title="แก้ไขโปรไฟล์" class="hidden"><img id="user-photo" src="" alt="User Photo" class="profile-pic"></a>
+                
+                <!-- ซ่อนเหรียญ -->
+                <span id="coin-display" title="เหรียญของคุณ" class="hidden"><i data-feather="dollar-sign"></i> 0</span>
+                
                 <span id="streak-display" title="สตรีคการเช็คอิน">🔥 <span id="streak-count">0</span></span>
-                <span id="level-header-display" title="ระดับของคุณ" class="level-badge-header"><i data-feather="star"></i> Level 1</span>
+                
+                <!-- ซ่อน Level -->
+                <span id="level-header-display" title="ระดับของคุณ" class="level-badge-header hidden"><i data-feather="star"></i> Level 1</span>
+                
                 <button id="check-in-btn"><span class="check-in-text">เช็คอิน</span><i data-feather="check" class="check-in-icon hidden"></i></button>
                 <button id="logout-btn" class="icon-button" title="ออกจากระบบ"><i data-feather="log-out"></i></button>
             </div>
@@ -602,16 +610,18 @@
     </div>
 </div>
     
-    <!-- Modals -->
+    <!-- Auth Modal -->
     <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-content"><button class="close-btn">×</button>
+        <div class="modal-content">
+            <button class="close-btn">×</button>
+            
+            <!-- ===== [ส่วนที่ 1: กรอบสำหรับฟอร์มเข้าสู่ระบบ] ===== -->
             <div id="login-view">
                 <h2>เข้าสู่ระบบ</h2>
                 <form id="login-form">
                     <div class="form-group">
                         <input type="email" id="login-email" placeholder="อีเมล" required>
                     </div>
-                    <!-- ===== [ครอบช่องรหัสผ่านและเพิ่มปุ่ม] ===== -->
                     <div class="form-group">
                         <div class="input-with-icon-wrapper">
                             <input type="password" id="login-password" placeholder="รหัสผ่าน" required>
@@ -622,53 +632,49 @@
                     </div>
                     <button type="submit">เข้าสู่ระบบ</button>
                 </form>
-                <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a>
-                </p>
+                <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a></p>
             </div>
         
+            <!-- ===== [ส่วนที่ 2: กรอบสำหรับฟอร์มสมัครสมาชิก] ===== -->
             <div id="signup-view" class="hidden">
-        <h2>สมัครสมาชิกใหม่</h2>
-        <form id="signup-form">
-            <div class="form-group">
-                <input type="email" id="signup-email" placeholder="อีเมล" required>
-            </div>
-            
-            <div class="form-group">
-                <!-- ===== [เพิ่ม wrapper และปุ่มที่นี่] ===== -->
-                <div class="input-with-icon-wrapper">
-                    <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
-                    <button type="button" class="password-toggle-btn" data-target="signup-password" aria-label="แสดง/ซ่อนรหัสผ่าน">
-                        <i data-feather="eye"></i>
-                    </button>
-                </div>
-                <div id="password-strength-meter" class="hidden">
-                    <div class="strength-bar"></div>
-                    <div class="strength-bar"></div>
-                    <div class="strength-bar"></div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <div class="input-with-icon-wrapper">
-                    <input type="password" id="signup-password-confirm" placeholder="ยืนยันรหัสผ่าน" required>
-                    <!-- ===== [ไอคอนติ๊กถูกเดิม] ===== -->
-                    <div id="password-match-indicator" class="hidden">
-                        <i data-feather="check"></i>
+                <h2>สมัครสมาชิกใหม่</h2>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <input type="email" id="signup-email" placeholder="อีเมล" required>
                     </div>
-                    <!-- ===== [เพิ่มปุ่มที่นี่] ===== -->
-                    <button type="button" class="password-toggle-btn" data-target="signup-password-confirm" aria-label="แสดง/ซ่อนรหัสผ่าน">
-                        <i data-feather="eye"></i>
-                    </button>
-                </div>
+                    <div class="form-group">
+                        <div class="input-with-icon-wrapper">
+                            <input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required>
+                            <button type="button" class="password-toggle-btn" data-target="signup-password" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                                <i data-feather="eye"></i>
+                            </button>
+                        </div>
+                        <p id="password-strength-text" class="password-feedback-text hidden"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-with-icon-wrapper">
+                            <input type="password" id="signup-password-confirm" placeholder="ยืนยันรหัสผ่าน" required>
+                            <div id="password-match-indicator" class="hidden">
+                                <i data-feather="check"></i>
+                            </div>
+                            <button type="button" class="password-toggle-btn" data-target="signup-password-confirm" aria-label="แสดง/ซ่อนรหัสผ่าน">
+                                <i data-feather="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit">สมัครสมาชิก</button>
+                </form>
+                <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a></p>
             </div>
             
-            <button type="submit">สมัครสมาชิก</button>
-        </form>
-        <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a>
-        </p>
-    </div>
-        
-        <p class="separator"><span>หรือ</span></p><button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button><p id="auth-error" class="error-message"></p></div>
+            <!-- ===== [ส่วนที่ 3: เส้นคั่นและปุ่ม Google] ===== -->
+            <!-- ส่วนนี้จะอยู่นอกกรอบของ login/signup แต่ยังอยู่ใน modal-content -->
+            <p class="separator"><span>หรือ</span></p>
+            <button id="google-signin-btn" class="google-btn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google
+            </button>
+            <p id="auth-error" class="error-message"></p>
+        </div>
     </div>
     <div id="activity-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการกิจกรรม</h2><p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p><div id="activity-list-container"></div><form id="add-activity-form"><input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required><button type="submit">เพิ่มกิจกรรม</button></form></div></div>
     <div id="search-friends-modal" class="modal-overlay hidden">
