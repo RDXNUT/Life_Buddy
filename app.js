@@ -81,6 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const allPages = document.querySelectorAll('.page');
     const allNavLinks = document.querySelectorAll('.nav-link');
 
+    let currentQuizTopicData = null; // เก็บข้อมูลหัวข้อที่กำลังจัดการ/ทำควิซ
+    let quizSession = { // เก็บสถานะระหว่างการทำควิซ
+        questions: [],
+        currentIndex: 0,
+        lives: 5,
+        coins: 0
+    };
+
     // =================================
     // ===== 3. APP INITIALIZATION =====
     // =================================
@@ -1123,27 +1131,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.startReviewSession = (subject, topicId) => {
-        currentQuizTopic = state.revisitTopics[subject].find(t => t.id === topicId);
-        if (!currentQuizTopic) return;
-        showPage('revisit');
+        // หาข้อมูลหัวข้อที่เลือก
+        currentQuizTopicData = state.revisitTopics[subject].find(t => t.id === topicId);
+        if (!currentQuizTopicData) return;
+
+        // เก็บ subject และ topicId ไว้ใช้อ้างอิง
+        currentQuizTopicData.subject = subject;
+        currentQuizTopicData.topicId = topicId;
+
+        // สลับไปแสดงหน้าจัดการควิซ
         document.getElementById('revisit-list-view').classList.add('hidden');
-        document.getElementById('flashcard-view').classList.remove('hidden');
-        document.getElementById('flashcard-topic-title').textContent = currentQuizTopic.name;
-        document.getElementById('flashcard-topic-notes').textContent = currentQuizTopic.notes || "ไม่มีโน้ตย่อ";
-        const flashcardForm = document.getElementById('flashcard-form');
-        flashcardForm.dataset.subject = subject;
-        flashcardForm.dataset.topicId = String(topicId);
-        shuffledFlashcards = [...(currentQuizTopic.flashcards || [])].sort(() => 0.5 - Math.random());
-        currentCardIndex = 0;
-        const flashcardQuizEl = document.getElementById('flashcard-quiz');
-        if(shuffledFlashcards.length > 0) {
-            flashcardQuizEl.classList.remove('hidden');
-            displayNextFlashcard(); 
-        } else { 
-            flashcardQuizEl.classList.add('hidden'); 
-            showToast("ยังไม่มี Flashcard ในหัวข้อนี้ ลองสร้างเพิ่มดูสิ!");
-        }
-    }
+        document.getElementById('quiz-manager-view').classList.remove('hidden');
+        
+        // แสดงผลข้อมูลควิซของหัวข้อนี้
+        renderQuizManager();
+    };
+
 
     async function handleEditWishList() {
         if (!currentUser) return;
@@ -2010,7 +2013,7 @@ async function renderChatList() {
             level: 0,
             reviewIntervals: intervals.sort((a, b) => a - b),
             nextReviewDate: dayjs().add(intervals[0], 'day').format('YYYY-MM-DD'),
-            flashcards: []
+            quizzes: []
         };
         if (!state.revisitTopics[subject]) {
             state.revisitTopics[subject] = [];
@@ -2021,6 +2024,129 @@ async function renderChatList() {
         document.getElementById('revisit-form').reset();
         showToast(`เพิ่มหัวข้อ "${topicName}" ในวิชา${subject}แล้ว!`);
         addExp(15);
+    }
+
+    function renderQuizManager() {
+        if (!currentQuizTopicData) return;
+
+        // แสดงชื่อและโน้ตย่อของหัวข้อ
+        document.getElementById('quiz-manager-topic-title').textContent = `จัดการควิซสำหรับ: ${currentQuizTopicData.name}`;
+        document.getElementById('quiz-manager-topic-notes').textContent = currentQuizTopicData.notes || "ไม่มีโน้ตย่อสำหรับหัวข้อนี้";
+
+        // แสดงรายการควิซที่มีอยู่
+        const listContainer = document.getElementById('existing-quizzes-list');
+        const quizzes = currentQuizTopicData.quizzes || [];
+        if (quizzes.length > 0) {
+            listContainer.innerHTML = quizzes.map((quiz, index) => `
+                <div class="quiz-list-item">
+                    <p>${index + 1}. ${quiz.question}</p>
+                    <span class="quiz-type-tag">${quiz.type === 'typed' ? 'อัตนัย' : 'ปรนัย'}</span>
+                    <button class="icon-button delete-quiz-btn" data-index="${index}" title="ลบควิซข้อนี้"><i data-feather="trash"></i></button>
+                </div>
+            `).join('');
+            feather.replace();
+        } else {
+            listContainer.innerHTML = '<p class="subtle-text" style="text-align:center; padding: 20px 0;">ยังไม่มีควิซในหัวข้อนี้... มาสร้างกันเลย!</p>';
+        }
+
+        // แสดง/ซ่อนปุ่ม "เริ่มทำควิซ"
+        document.getElementById('start-quiz-btn').classList.toggle('hidden', quizzes.length === 0);
+
+        // รีเซ็ตฟอร์มสร้างควิซ
+        resetQuizCreatorForm();
+    }
+
+    /**
+     * รีเซ็ตฟอร์มสำหรับสร้างควิซให้กลับเป็นค่าเริ่มต้น
+     */
+    function resetQuizCreatorForm() {
+        document.getElementById('quiz-creator-form').reset();
+        document.querySelector('.quiz-type-btn[data-type="multiple-choice"]').click(); // ตั้งเป็นปรนัยเสมอ
+        document.getElementById('mc-options-container').innerHTML = `
+            <label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูกต้อง)</label>
+            <button type="button" id="add-choice-btn" class="small-btn btn-secondary" style="width: auto;"><i data-feather="plus"></i> เพิ่มตัวเลือก</button>
+        `;
+        addQuizChoiceOption(); // เพิ่มตัวเลือกเริ่มต้น 2 อัน
+        addQuizChoiceOption();
+        feather.replace();
+    }
+
+    /**
+     * เพิ่มช่องสำหรับกรอกตัวเลือก (Multiple Choice)
+     */
+    function addQuizChoiceOption() {
+        const container = document.getElementById('mc-options-container');
+        const choiceCount = container.querySelectorAll('.mc-choice-item').length;
+        const newChoice = document.createElement('div');
+        newChoice.className = 'mc-choice-item';
+        newChoice.innerHTML = `
+            <input type="radio" name="correct-answer-radio" id="choice-radio-${choiceCount}" required>
+            <input type="text" placeholder="เนื้อหาตัวเลือก ${choiceCount + 1}" required>
+            <button type="button" class="icon-button remove-choice-btn" title="ลบตัวเลือกนี้"><i data-feather="x-circle"></i></button>
+        `;
+        // แทรกก่อนปุ่ม "เพิ่มตัวเลือก"
+        container.insertBefore(newChoice, document.getElementById('add-choice-btn'));
+        feather.replace();
+    }
+
+    /**
+     * จัดการการ submit ฟอร์มสร้างควิซใหม่
+     */
+    function handleQuizCreatorFormSubmit(e) {
+        e.preventDefault();
+        if (!currentQuizTopicData) return;
+
+        const question = document.getElementById('quiz-question-input').value.trim();
+        const explanation = document.getElementById('quiz-explanation-input').value.trim();
+        const quizType = document.querySelector('.quiz-type-btn.active').dataset.type;
+
+        if (!question) {
+            showToast("กรุณาใส่คำถาม");
+            return;
+        }
+
+        const newQuiz = {
+            id: Date.now(),
+            question,
+            explanation,
+            type: quizType,
+        };
+
+        if (quizType === 'multiple-choice') {
+            const choices = Array.from(document.querySelectorAll('.mc-choice-item input[type="text"]')).map(input => input.value.trim());
+            const correctRadio = document.querySelector('.mc-choice-item input[type="radio"]:checked');
+            
+            if (choices.some(c => !c) || choices.length < 2) {
+                showToast("กรุณากรอกตัวเลือกอย่างน้อย 2 ข้อให้ครบถ้วน");
+                return;
+            }
+            if (!correctRadio) {
+                showToast("กรุณาเลือกคำตอบที่ถูกต้อง");
+                return;
+            }
+            
+            const correctIndex = Array.from(document.querySelectorAll('.mc-choice-item input[type="radio"]')).indexOf(correctRadio);
+            
+            newQuiz.options = choices;
+            newQuiz.correctAnswer = choices[correctIndex];
+
+        } else { // Typed answer
+            const acceptedAnswers = Array.from(document.querySelectorAll('.typed-answer-tag span')).map(span => span.textContent);
+            if (acceptedAnswers.length === 0) {
+                showToast("กรุณาเพิ่มคำตอบที่ยอมรับได้อย่างน้อย 1 คำตอบ");
+                return;
+            }
+            newQuiz.acceptedAnswers = acceptedAnswers;
+        }
+
+        if (!currentQuizTopicData.quizzes) {
+            currentQuizTopicData.quizzes = [];
+        }
+        currentQuizTopicData.quizzes.push(newQuiz);
+        
+        saveState();
+        showToast("สร้างควิซข้อใหม่สำเร็จ!");
+        renderQuizManager(); // อัปเดตรายการควิซ
     }
 
     function updatePasswordStrength() {
@@ -2075,7 +2201,25 @@ async function renderChatList() {
     
     function setupAllEventListeners() {
         if (areListenersSetup) return;
+         const typedAnswerInput = document.getElementById('add-typed-answer-input');
+        
+         if (typedAnswerInput) {
+            typedAnswerInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && typedAnswerInput.value.trim()) {
+                    e.preventDefault();
+                    const answerText = typedAnswerInput.value.trim();
+                    const tag = document.createElement('div');
+                    tag.className = 'typed-answer-tag';
+                    tag.innerHTML = `<span>${answerText}</span><button type="button" class="icon-button"><i data-feather="x"></i></button>`;
+                    
+                    tag.querySelector('button').addEventListener('click', () => tag.remove());
 
+                    document.getElementById('accepted-answers-list').appendChild(tag);
+                    feather.replace();
+                    typedAnswerInput.value = '';
+                }
+            });
+        }
         function addPasswordInputListeners(inputId) {
             const inputElement = document.getElementById(inputId);
             if (!inputElement) return;
@@ -2109,6 +2253,46 @@ async function renderChatList() {
                     });
             });
         }
+
+        const timerSettingsBtn = document.getElementById('settings-timer-btn');
+    if (timerSettingsBtn) {
+        timerSettingsBtn.addEventListener('click', () => {
+            const focusDuration = state.settings?.focusDuration ?? 25;
+            const breakDuration = state.settings?.breakDuration ?? 5;
+            document.getElementById('modal-focus-duration').value = focusDuration;
+            document.getElementById('modal-break-duration').value = breakDuration;
+            
+            document.getElementById('timer-settings-modal').classList.remove('hidden');
+        });
+    }
+
+    // --- [ส่วนที่ 2: จัดการการบันทึกค่าจาก Modal และแก้ไข Bug] ---
+    const timerSettingsForm = document.getElementById('timer-settings-form');
+    if (timerSettingsForm) {
+        timerSettingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newFocusDuration = parseInt(document.getElementById('modal-focus-duration').value);
+            const newBreakDuration = parseInt(document.getElementById('modal-break-duration').value);
+
+            if (isNaN(newFocusDuration) || isNaN(newBreakDuration) || newFocusDuration < 1 || newBreakDuration < 1) {
+                showToast("กรุณาใส่ค่าเวลาที่ถูกต้อง (ต้องมากกว่า 0)");
+                return;
+            }
+
+            state.settings.focusDuration = newFocusDuration;
+            state.settings.breakDuration = newBreakDuration;
+            
+            saveState();
+            
+            resetTimer(); 
+
+            document.getElementById('timer-settings-modal').classList.add('hidden');
+            
+            showToast("บันทึกการตั้งค่าเวลาเรียบร้อยแล้ว!");
+        });
+    }
+
     // ===== 2. EVENT LISTENER หลักสำหรับจัดการการ CLICK ทั้งหมด =====
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
@@ -2301,6 +2485,36 @@ async function renderChatList() {
                 return;
             }
             
+            const quizTypeBtn = closest('.quiz-type-btn');
+            if (quizTypeBtn) {
+                document.querySelectorAll('.quiz-type-btn').forEach(btn => btn.classList.remove('active'));
+                quizTypeBtn.classList.add('active');
+                const type = quizTypeBtn.dataset.type;
+                document.getElementById('mc-options-container').classList.toggle('hidden', type !== 'multiple-choice');
+                document.getElementById('typed-answer-container').classList.toggle('hidden', type !== 'typed');
+                return;
+            }
+
+            const removeChoiceBtn = closest('.remove-choice-btn');
+            if (removeChoiceBtn) {
+                if (document.querySelectorAll('.mc-choice-item').length > 2) {
+                    removeChoiceBtn.closest('.mc-choice-item').remove();
+                } else {
+                    showToast("ต้องมีอย่างน้อย 2 ตัวเลือก");
+                }
+                return;
+            }
+
+            const deleteQuizBtn = closest('.delete-quiz-btn');
+            if(deleteQuizBtn && currentQuizTopicData) {
+                const index = parseInt(deleteQuizBtn.dataset.index);
+                currentQuizTopicData.quizzes.splice(index, 1);
+                saveState();
+                renderQuizManager();
+                showToast("ลบควิซเรียบร้อยแล้ว");
+                return;
+            }
+
             // --- Switch-Case สำหรับจัดการปุ่มต่างๆ ตาม ID ---
             const targetId = e.target.id || closest('[id]')?.id;    
             switch(targetId) {  //=====click=====//
@@ -2362,7 +2576,9 @@ async function renderChatList() {
                 case 'overlay': 
                     closeSidebar(); 
                     break;
-                case 'check-in-btn': handleCheckIn(); break;
+                case 'check-in-btn': 
+                    handleCheckIn(); 
+                    break;
                 case 'start-timer-btn': 
                     if (timerInterval) { 
                         stopTimer(); 
@@ -2374,6 +2590,19 @@ async function renderChatList() {
                 case 'reset-timer-btn': resetTimer(); break;
                 case 'settings-timer-btn': 
                     document.getElementById('timer-settings').classList.toggle('hidden'); 
+                    break;
+                case 'back-to-revisit-list-btn':
+                    document.getElementById('quiz-manager-view').classList.add('hidden');
+                    document.getElementById('revisit-list-view').classList.remove('hidden');
+                    currentQuizTopicData = null; // เคลียร์ข้อมูลหัวข้อปัจจุบัน
+                    break;
+                case 'add-choice-btn':
+                    addQuizChoiceOption();
+                    break;
+
+                case 'start-quiz-btn':
+                    // (เราจะมาเขียนฟังก์ชัน startQuiz() กันในครั้งถัดไป)
+                    showToast("ฟีเจอร์เริ่มทำควิซกำลังจะมาเร็วๆ นี้!");
                     break;
                 case 'go-to-edit-profile-btn': // ปุ่มดินสอในหน้าโปรไฟล์
                     openBannerSelector(); // เรียกฟังก์ชันเปิดหน้าต่างเลือกแบนเนอร์
@@ -2489,7 +2718,9 @@ async function renderChatList() {
                     const input = document.getElementById('todo-input'); 
                     if (input.value.trim()) { 
                         if (!state.todos) state.todos = [];
-                        state.todos.push({ id: Date.now(), text: input.value.trim(), completed: false, rewarded: false }); 
+                        state.todos.push({ id: Date.now(), 
+                            text: input.value.trim(), 
+                            completed: false, rewarded: false }); 
                         input.value = ''; 
                         updateHomePageUI(); 
                         saveState(); 
@@ -2633,26 +2864,12 @@ async function renderChatList() {
                             }
                         });
                     break;
-                case 'flashcard-form':
-                    const flashcardForm = e.target;
-                    const subject = flashcardForm.dataset.subject;
-                    const topicId = parseInt(flashcardForm.dataset.topicId);
-                    const question = document.getElementById('flashcard-question').value.trim();
-                    const answer = document.getElementById('flashcard-answer').value.trim();
-                    if (subject && !isNaN(topicId) && question && answer) {
-                        const topic = state.revisitTopics[subject].find(t => t.id === topicId);
-                        if (topic) {
-                            if (!topic.flashcards) topic.flashcards = [];
-                            topic.flashcards.push({ q: question, a: answer });
-                            saveState();
-                            showToast("เพิ่ม Flashcard ใหม่แล้ว!");
-                            flashcardForm.reset();
-                            shuffledFlashcards = [...(topic.flashcards || [])].sort(() => 0.5 - Math.random());
-                            const quizEl = document.getElementById('flashcard-quiz');
-                            if (quizEl) quizEl.classList.remove('hidden');
-                        }
-                    }
+                
+                // ใน 'submit' listener
+                case 'quiz-creator-form':
+                    handleQuizCreatorFormSubmit(e);
                     break;
+
                 case 'search-friends-form':
                     handleFriendSearch(e);
                     break;
