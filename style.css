@@ -834,3 +834,53 @@ body[data-theme="dark"] .timer-controls .icon-button {
 .focus-stats-content button {
     flex-shrink: 0; /* ไม่ให้ปุ่มถูกบีบ */
 }
+/* ======================================= */
+/* ====== Homepage Banner Revamp ========= */
+/* ======================================= */
+
+.home-banner-card {
+    position: relative;
+    width: 100%;
+    height: 180px; /* ความสูงของแบนเนอร์ */
+    border-radius: 16px;
+    overflow: hidden; /* ซ่อนส่วนที่เกินขอบ */
+    margin-bottom: 20px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* ตั้งค่าพื้นหลังเริ่มต้น */
+    background-size: cover;
+    background-position: center;
+    background-color: var(--card-bg-color); /* สีสำรอง */
+}
+
+/* เพิ่ม Overlay สีเข้มจางๆ เพื่อให้ข้อความอ่านง่ายขึ้น */
+.home-banner-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
+
+/* ทำให้เนื้อหาอยู่บน Overlay */
+.home-banner-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* สไตล์ของข้อความต้อนรับ */
+.home-banner-card h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+}
