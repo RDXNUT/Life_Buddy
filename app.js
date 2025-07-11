@@ -2461,6 +2461,55 @@ async function renderChatList() {
             } 
         }); 
     }
+
+    async function handleEditWishList() {
+        // ป้องกันการทำงานหากยังไม่ได้ login
+        if (!currentUser) {
+            showToast("กรุณาเข้าสู่ระบบเพื่อใช้งานฟังก์ชันนี้");
+            openAuthModal();
+            return;
+        }
+
+        // ดึงข้อมูล Wish List ปัจจุบันจาก state
+        const currentWishList = state.wishList || { name: 'ของชิ้นต่อไป!', target: 1000 };
+        
+        // ใช้ Swal.fire เพื่อสร้าง Popup สำหรับแก้ไขข้อมูล
+        const { value: formValues } = await Swal.fire({
+            title: 'แก้ไขเป้าหมาย Wish List',
+            html:
+                `<input id="swal-input-name" class="swal2-input" placeholder="ชื่อของที่อยากได้" value="${currentWishList.name}">` +
+                `<input id="swal-input-target" type="number" class="swal2-input" placeholder="ราคา (Coins)" value="${currentWishList.target}" min="1">`,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'บันทึก',
+            cancelButtonText: 'ยกเลิก',
+            preConfirm: () => {
+                const name = document.getElementById('swal-input-name').value.trim();
+                const target = parseInt(document.getElementById('swal-input-target').value);
+
+                // ตรวจสอบข้อมูลก่อนยืนยัน
+                if (!name || !target || target <= 0) {
+                    Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง');
+                    return false;
+                }
+                return { name: name, target: target };
+            }
+        });
+
+        // ถ้าผู้ใช้กดยืนยันและข้อมูลถูกต้อง
+        if (formValues) {
+            // อัปเดตข้อมูลใน state
+            state.wishList = {
+                name: formValues.name,
+                target: formValues.target
+            };
+            
+            saveState(); // บันทึกข้อมูลลง Firestore
+            renderWishList(); // วาด Wish List ใหม่ทันที
+            
+            Swal.fire('สำเร็จ!', 'อัปเดต Wish List ของคุณแล้ว', 'success');
+        }
+    }
     
     function handleMoodFormSubmit(e) { 
         e.preventDefault(); 
@@ -2565,7 +2614,52 @@ async function renderChatList() {
         
         showToast("เพิ่มเป้าหมายสำเร็จ!");
     }
+    function handleAddActivityForm(e) {
+        e.preventDefault();
+        const input = document.getElementById('new-activity-input');
+        const newActivityText = input.value.trim();
 
+        if (!newActivityText) {
+            showToast("กรุณาใส่ชื่อกิจกรรม");
+            return;
+        }
+        
+        // ตรวจสอบว่ามี state.userActivities หรือไม่
+        if (!state.userActivities) {
+            state.userActivities = [];
+        }
+        
+        // เพิ่มกิจกรรมใหม่เข้าไปใน state
+        state.userActivities.push(newActivityText);
+        
+        saveState();
+        renderActivityList(); // วาดรายการใหม่
+        input.value = ''; // เคลียร์ช่อง input
+        showToast("เพิ่มกิจกรรมใหม่สำเร็จ!");
+    }
+
+    // ===== ฟังก์ชันสำหรับจัดการฟอร์ม "เพิ่มคำแนะนำ" =====
+    function handleAddAdviceForm(e) {
+        e.preventDefault();
+        const input = document.getElementById('new-advice-input');
+        const newAdviceText = input.value.trim();
+
+        if (!newAdviceText) {
+            showToast("กรุณาใส่คำแนะนำ");
+            return;
+        }
+        
+        if (!state.userAdvice) {
+            state.userAdvice = [];
+        }
+        
+        state.userAdvice.push(newAdviceText);
+        
+        saveState();
+        renderUserAdviceList(); // วาดรายการใหม่
+        input.value = '';
+        showToast("เพิ่มคำแนะนำใหม่สำเร็จ!");
+    }
     function handleRevisitFormSubmit(e) {
         e.preventDefault();
         const subject = document.getElementById('revisit-subject-value').value; 
@@ -2956,24 +3050,6 @@ async function renderChatList() {
                 return;
             }
 
-            // --- จัดการการลบ Activity และ Advice ---
-            const deleteActivityBtn = closest('.delete-activity-btn');
-            if (deleteActivityBtn) {
-                const index = parseInt(deleteActivityBtn.dataset.index);
-                state.userActivities.splice(index, 1);
-                saveState();
-                renderActivityList();
-                return;
-            }
-
-            const deleteAdviceBtn = closest('.delete-advice-btn');
-            if (deleteAdviceBtn) {
-                const index = parseInt(deleteAdviceBtn.dataset.index);
-                state.userAdvice.splice(index, 1);
-                saveState();
-                renderUserAdviceList();
-                return;
-            }
 
             const targetId = e.target.id || closest('[id]')?.id;
             switch(targetId) { //==== click =====
@@ -3161,15 +3237,26 @@ async function renderChatList() {
 
     function renderActivityList() {
         const container = document.getElementById('activity-list-container');
-        if (!container) return;
+        if (!container) return; // ป้องกัน error ถ้าหา container ไม่เจอ
+        
+        // ใช้ state.userActivities ถ้าไม่มี ให้ใช้ defaultActivities
         const activities = state.userActivities || defaultActivities;
+        
+        if (activities.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; text-align: center; color: var(--subtle-text-color);">ยังไม่มีกิจกรรมที่สร้างเอง</p>';
+            return;
+        }
+
         container.innerHTML = activities.map((activity, index) => `
             <div class="activity-item">
-            <span>${activity}</span>
-                <button class="delete-activity-btn" data-index="${index}" title="ลบ"><i data-feather="trash-2"></i></button>
+                <span>${activity}</span>
+                <button class="delete-activity-btn icon-button" data-index="${index}" title="ลบ">
+                    <i data-feather="trash-2"></i>
+                </button>
             </div>
         `).join('');
-        feather.replace();
+
+        feather.replace(); // สั่งให้วาด icon ถังขยะ
     }
     
     function openActivityManager() {
