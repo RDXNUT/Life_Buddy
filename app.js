@@ -379,32 +379,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHeaderUI() {
-        if (!currentUser) return;
-        renderProfilePicture(state.profile.photoURL, document.getElementById('user-photo'));
-        document.getElementById('coin-display').innerHTML = `<i data-feather="dollar-sign"></i> ${state.coins || 0}`;
-        const streakCountEl = document.getElementById('streak-count');
-        if (streakCountEl) streakCountEl.textContent = state.streak || 0;
-        const { level } = calculateLevel(state.exp);
-        const levelHeaderEl = document.getElementById('level-header-display');
-        if (levelHeaderEl) levelHeaderEl.innerHTML = `<i data-feather="star"></i> Level ${level}`;
-        const checkInBtn = document.getElementById('check-in-btn');
-        if (checkInBtn) {
-            const checkInText = checkInBtn.querySelector('.check-in-text');
-            const checkInIcon = checkInBtn.querySelector('.check-in-icon');
-            if (state.lastCheckIn === dayjs().format('YYYY-MM-DD')) {
-                checkInBtn.disabled = true;
-                checkInBtn.classList.add('checked');
-                if(checkInText) checkInText.classList.add('hidden');
-                if(checkInIcon) checkInIcon.classList.remove('hidden');
-            } else {
-                checkInBtn.disabled = false;
-                checkInBtn.classList.remove('checked');
-                if(checkInText) checkInText.classList.remove('hidden');
-                if(checkInIcon) checkInIcon.classList.add('hidden');
-            }
+    if (!currentUser) return;
+    
+    const streakCountEl = document.getElementById('streak-count');
+    if (streakCountEl) streakCountEl.textContent = state.streak || 0;
+    
+    const checkInBtn = document.getElementById('check-in-btn');
+    if (checkInBtn) {
+        const checkInText = checkInBtn.querySelector('.check-in-text');
+        const checkInIcon = checkInBtn.querySelector('.check-in-icon');
+        if (state.lastCheckIn === dayjs().format('YYYY-MM-DD')) {
+            checkInBtn.disabled = true;
+            checkInBtn.classList.add('checked');
+            if(checkInText) checkInText.classList.add('hidden');
+            if(checkInIcon) checkInIcon.classList.remove('hidden');
+        } else {
+            checkInBtn.disabled = false;
+            checkInBtn.classList.remove('checked');
+            if(checkInText) checkInText.classList.remove('hidden');
+            if(checkInIcon) checkInIcon.classList.add('hidden');
         }
-        feather.replace();
     }
+    feather.replace();
+}
+
 
     function updateHomePageUI() {
         const page = document.getElementById('home-page');
@@ -2443,54 +2441,6 @@ async function renderChatList() {
         }
     }
 
-    async function handleLoginFormSubmit(e) {
-        e.preventDefault();
-        const emailInput = document.getElementById('login-email');
-        const passwordInput = document.getElementById('login-password');
-        const authErrorEl = document.getElementById('auth-error');
-
-        const email = emailInput.value;
-        const password = passwordInput.value;
-
-        // ตรวจสอบเบื้องต้นว่ากรอกข้อมูลครบหรือไม่
-        if (!email || !password) {
-            Swal.fire({
-                title: 'ข้อมูลไม่ครบถ้วน',
-                text: 'กรุณากรอกอีเมลและรหัสผ่าน',
-                icon: 'warning',
-                confirmButtonText: 'ตกลง'
-            });
-            return;
-        }
-
-        try {
-            // ใช้ Firebase auth เพื่อพยายามเข้าสู่ระบบ
-            await auth.signInWithEmailAndPassword(email, password);
-
-            // หากสำเร็จ onAuthStateChanged จะทำงานต่อเอง
-            // เราแค่ปิดหน้าต่าง Modal ก็พอ
-            closeAuthModal();
-            showToast('เข้าสู่ระบบสำเร็จ!');
-
-        } catch (error) {
-            // หากเกิดข้อผิดพลาด (เช่น รหัสผิด, ไม่มีผู้ใช้)
-            const friendlyMessage = getFriendlyAuthError(error);
-
-            // แสดงข้อความใน Modal (เผื่อไว้)
-            if (authErrorEl) {
-                authErrorEl.textContent = friendlyMessage;
-            }
-
-            // แสดง Popup แจ้งเตือนตามที่คุณต้องการ
-            Swal.fire({
-                title: 'เข้าสู่ระบบไม่สำเร็จ',
-                text: friendlyMessage,
-                icon: 'error',
-                confirmButtonText: 'ตกลง'
-            });
-        }
-    }
-
     function updatePasswordStrength() {
         const password = document.getElementById('signup-password').value;
         const strengthText = document.getElementById('password-strength-text');
@@ -2859,8 +2809,10 @@ async function renderChatList() {
                 case 'profile-form': handleProfileFormSubmit(e); break;
                 case 'add-activity-form': handleAddActivityForm(e); break;
                 case 'add-advice-form': handleAddAdviceForm(e); break;
+
                 case 'signup-form': handleSignupFormSubmit(e); break;
                 case 'login-form': handleLoginFormSubmit(e); break;
+
                 case 'search-friends-form': handleFriendSearch(e); break;
                 case 'quiz-creation-form': handleQuizCreationForm(e); break;
                 case 'add-custom-subject-form': handleAddCustomSubject(e); break;
