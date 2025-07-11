@@ -415,14 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!page || !page.classList.contains('active')) return;
 
         const homeBanner = document.getElementById('home-banner');
-        const welcomeMessage = document.getElementById('home-welcome-message');
-
-        if (currentUser) { // ถ้าผู้ใช้ Login อยู่
-            // ตั้งค่าข้อความต้อนรับ
-            const displayName = state.profile.displayName || 'Life Buddy';
-            welcomeMessage.textContent = `ยินดีต้อนรับ, ${displayName}!`;
-
-            // ตั้งค่า Banner
+        if (homeBanner) {
+            if (currentUser) { // ถ้าผู้ใช้ Login อยู่            
             const bannerId = state.profile?.currentBanner || 'banner_default';
             const allShopBanners = state.shopItems?.banners || [];
             const bannerData = allShopBanners.find(item => item.id === bannerId);
@@ -430,13 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bannerData && bannerData.image) {
                 homeBanner.style.backgroundImage = `url('${bannerData.image}')`;
             } else {
-                // ถ้าเป็น banner_default หรือหาไม่เจอ ให้ใช้ Gradient
                 homeBanner.style.backgroundImage = `linear-gradient(135deg, var(--primary-color), var(--accent-color))`;
             }
 
         } else { // ถ้าเป็น Guest Mode
-            welcomeMessage.textContent = 'ยินดีต้อนรับสู่ Life Buddy!';
             homeBanner.style.backgroundImage = `linear-gradient(135deg, var(--primary-color), var(--accent-color))`;
+            }
         }
 
         const todayStr = dayjs().format('YYYY-MM-DD');
