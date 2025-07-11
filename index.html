@@ -67,7 +67,48 @@
         <!-- Home Page -->
         <div id="home-page" class="page active">
             <section class="card welcome-card"><h1>ยินดีต้อนรับสู่ Life Buddy!</h1><p>เพื่อนคู่ชีวิตดิจิทัลของคุณ พร้อมช่วยให้ทุกวันของคุณดียิ่งขึ้น</p></section>
-            <section class="card"><h2><i data-feather="clipboard"></i> ภาพรวมวันนี้</h2><div class="overview-grid"><div class="overview-item"><h3><i data-feather="list"></i> สรุปตารางงานวันนี้</h3><ul id="today-tasks-summary"><li>ไม่มีงานสำหรับวันนี้</li></ul></div><div class="overview-item"><h3><i data-feather="book"></i> การทบทวนที่ต้องทำ</h3><ul id="today-revisit-summary"><li>ไม่มีหัวข้อต้องทบทวน</li></ul></div><div class="overview-item"><h3><i data-feather="watch"></i> สถิติการโฟกัส</h3><p>วันนี้โฟกัสสำเร็จ <strong id="today-focus-count">0</strong> รอบ</p><button class="small-btn" onclick="showPage('focus')">ไปที่หน้าจับเวลา</button></div></div></section>
+            <section class="card"><h2><i data-feather="clipboard"></i> ภาพรวมวันนี้</h2>
+               <div class="overview-grid">
+                    <!-- การ์ดย่อยสำหรับ ตารางงาน -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #EBF5FF; color: #0A84FF;">
+                                <i data-feather="list"></i>
+                            </div>
+                            <h3>สรุปตารางงานวันนี้</h3>
+                        </div>
+                        <ul id="today-tasks-summary" class="overview-card-content">
+                            <li>ไม่มีงานสำหรับวันนี้</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- การ์ดย่อยสำหรับ การทบทวน -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #FFF6E5; color: #FF9F0A;">
+                                <i data-feather="book-open"></i>
+                            </div>
+                            <h3>การทบทวนที่ต้องทำ</h3>
+                        </div>
+                        <ul id="today-revisit-summary" class="overview-card-content">
+                            <li>ไม่มีหัวข้อต้องทบทวน</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- การ์ดย่อยสำหรับ สถิติโฟกัส -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #E5F9ED; color: #30D158;">
+                                <i data-feather="watch"></i>
+                            </div>
+                            <h3>สถิติการโฟกัส</h3>
+                        </div>
+                        <div class="overview-card-content focus-stats-content">
+                            <p>วันนี้โฟกัสสำเร็จ <strong id="today-focus-count">0</strong> รอบ</p>
+                            <button class="small-btn pill-btn" onclick="showPage('focus')">ไปที่หน้าจับเวลา</button>
+                        </div>
+                    </div>
+                </div>
             <div class="home-grid">
                 <section class="card"><h2><i data-feather="target"></i> เป้าหมายรายวัน</h2><form id="todo-form"><input type="text" id="todo-input" placeholder="เพิ่มเป้าหมายใหม่..." required><button type="submit" aria-label="เพิ่มเป้าหมาย"><i data-feather="plus"></i></button></form><ul id="todo-list"></ul></section>
                 <section class="card">

@@ -413,12 +413,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateHomePageUI() {
         const page = document.getElementById('home-page');
         if (!page || !page.classList.contains('active')) return;
+
         const todayStr = dayjs().format('YYYY-MM-DD');
         const tasksList = document.getElementById('today-tasks-summary');
         if (tasksList) {
             const tasksForToday = (state.planner && state.planner[todayStr]) || [];
-            tasksList.innerHTML = tasksForToday.length > 0 ? tasksForToday.map(t => `<li>${t.time} - ${t.name}</li>`).join('') : '<li>ไม่มีงานสำหรับวันนี้</li>';
+            if (tasksForToday.length > 0) {
+                tasksForToday.sort((a,b) => a.time.localeCompare(b.time));
+                tasksList.innerHTML = tasksForToday.map(t => `<li><strong>${t.time}</strong> - ${t.name}</li>`).join('');
+            } else {
+                tasksList.innerHTML = '<li>ไม่มีงานสำหรับวันนี้</li>';
+            }
         }
+
         const revisitList = document.getElementById('today-revisit-summary');
         if (revisitList) {
             let dueTopics = [];
@@ -430,16 +437,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }
-            revisitList.innerHTML = dueTopics.length > 0 ? dueTopics.map(t => `<li>${t.name}</li>`).join('') : '<li>ไม่มีหัวข้อต้องทบทวน</li>';
+            revisitList.innerHTML = dueTopics.length > 0 ? dueTopics.map(t => `<li>ทบทวน: ${t.name}</li>`).join('') : '<li>ไม่มีหัวข้อต้องทบทวน</li>';
         }
+
         const todayFocusCountEl = document.getElementById('today-focus-count');
         if (todayFocusCountEl) todayFocusCountEl.textContent = state.focus?.todaySessions || 0;
+
         const todoList = document.getElementById('todo-list');
         if (todoList) {
             const todos = state.todos || [];
-            todoList.innerHTML = todos.map(todo => `<li class="${todo.completed ? 'completed' : ''}"><input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}><span>${todo.text}</span></li>`).join('');
+            if (todos.length > 0) {
+                todoList.innerHTML = todos.map(todo => `<li class="${todo.completed ? 'completed' : ''}"><input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}><span>${todo.text}</span></li>`).join('');
+            } else {
+                todoList.innerHTML = '<p class="subtle-text" style="text-align: center; padding: 15px;">ยังไม่มีเป้าหมายสำหรับวันนี้</p>';
+            }
         }
+        
         renderWishList();
+        feather.replace(); // สั่งให้วาดไอคอนใหม่
     }
 
     function updateRewardsUI() {
