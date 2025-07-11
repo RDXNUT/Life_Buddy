@@ -397,3 +397,252 @@ body[data-theme="dark"] #revisit-subject-display { background-image: url("data:i
 #add-custom-subject-form { display: flex; gap: 10px; }
 #add-custom-subject-form input { margin: 0; }
 #add-custom-subject-form button { margin: 0; flex-shrink: 0; }
+/* Style สำหรับปุ่มเลือกหัวข้อที่สร้างขึ้นมาใหม่ */
+.custom-selector-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 12px 15px;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: left;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.custom-selector-display:hover {
+    border-color: var(--primary-color);
+}
+/* =================================== */
+/* ===== Timer Buttons Enhancement ===== */
+/* =================================== */
+
+/* ปรับปุ่มทั้งหมดในส่วน controls ให้มีขอบมน (ทรงแคปซูล/วงรี) */
+.timer-controls button {
+    border-radius: 50px; /* ค่าสูงๆ จะทำให้ขอบโค้งเป็นทรงแคปซูล */
+    transition: all 0.3s ease; /* เพิ่มอนิเมชันที่นุ่มนวล */
+    border: none; /* เอาเส้นขอบเดิมออกเพื่อให้ดูคลีนขึ้น */
+}
+
+/* เพิ่มเงาและเอฟเฟกต์ 'ลอย' ให้กับปุ่มหลัก (เริ่ม/ทำต่อ) */
+.timer-controls #start-timer-btn {
+    box-shadow: 0 4px 15px -5px var(--primary-color);
+}
+.timer-controls #start-timer-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px -5px var(--primary-color);
+}
+
+/* ทำให้ปุ่ม 'รีเซ็ต' มีสไตล์ที่เข้ากัน */
+.timer-controls #reset-timer-btn {
+    background-color: var(--bg-color);
+    color: var(--subtle-text-color);
+    border: 1px solid var(--border-color);
+}
+.timer-controls #reset-timer-btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+/* ปรับปรุงปุ่มตั้งค่า (ฟันเฟือง) ให้เป็นวงกลมที่สวยงาม */
+.timer-controls .icon-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* ทำให้เป็นวงกลมสมบูรณ์ */
+    background: var(--bg-color);
+    color: var(--subtle-text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+body[data-theme="dark"] .timer-controls .icon-button {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.timer-controls .icon-button:hover {
+    transform: scale(1.1) rotate(45deg); /* เพิ่มเอฟเฟกต์หมุนเล็กน้อยเมื่อ hover */
+    color: var(--text-color);
+    background: var(--border-color);
+}
+/* ======================================= */
+/* ===== Focus Stats Section Revamp ====== */
+/* ======================================= */
+
+/* ปรับปรุงส่วนควบคุม Tabs */
+.stats-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding: 6px;
+    background-color: var(--bg-color); /* ใช้สีพื้นหลังของ Body */
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.stats-tab-btn {
+    flex-grow: 1;
+    background-color: transparent; /* ทำให้ปุ่มปกติโปร่งใส */
+    color: var(--subtle-text-color);
+    border: none; /* เอาเส้นขอบออก */
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 8px; /* ขอบมนเล็กน้อย */
+    transition: all 0.3s ease;
+}
+
+.stats-tab-btn:hover:not(.active) {
+    background-color: var(--border-color); /* สีอ่อนๆ ตอน hover */
+    color: var(--text-color);
+}
+
+.stats-tab-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px -2px var(--primary-color);
+}
+
+
+/* ปรับปรุงรายการสถิติแต่ละรายการ */
+#focus-stats-display {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* เพิ่มระยะห่างระหว่างรายการ */
+}
+
+.stat-item-focus {
+    display: flex;
+    flex-direction: column; /* เปลี่ยนเป็นแนวตั้งเพื่อรองรับ progress bar */
+    gap: 8px;
+    padding: 0;
+    border: none; /* ไม่ต้องมีเส้นคั่น */
+}
+
+.stat-item-focus .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-item-focus .stat-topic-name {
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.stat-item-focus .stat-topic-time {
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--subtle-text-color);
+}
+
+.stat-item-focus .stat-progress-bar-wrapper {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.stat-item-focus .stat-progress-bar {
+    height: 100%;
+    width: 0%; /* จะถูกกำหนดค่าโดย JS */
+    border-radius: 10px;
+    background: var(--primary-color);
+    transition: width 0.5s ease-in-out;
+}
+/* ===== CSS เพิ่มเติมสำหรับฟอร์มและ Progress Bar ===== */
+
+/* จัดเรียงฟอร์มเพิ่มวิชาให้สวยงาม */
+#add-custom-subject-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#add-custom-subject-form input[type="text"] {
+    flex-grow: 1; /* ทำให้ช่องข้อความยืดเต็มพื้นที่ */
+    margin: 0;
+}
+#add-custom-subject-form button {
+    margin: 0;
+    flex-shrink: 0; /* ไม่ให้ปุ่มถูกบีบ */
+}
+/* สไตล์ของช่องเลือกสี */
+#custom-subject-color {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+#custom-subject-color::-webkit-color-swatch {
+    border-radius: 6px;
+    border: none;
+}
+
+/* ทำให้ Progress bar มีสีแบบ Gradient สวยงามเป็นค่าเริ่มต้น */
+.stat-item-focus .stat-progress-bar {
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+}
+/* ======================================= */
+/* ===== Swal Edit Subject UI Revamp ===== */
+/* ======================================= */
+
+/* จัด Layout ของส่วนเลือกสีใน Popup */
+.swal-color-picker-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px auto 0;
+    padding: 10px 15px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-width: 90%; /* ให้พอดีกับความกว้างของ input ด้านบน */
+}
+
+/* สไตล์ของป้ายกำกับ (Label) */
+.swal-color-label {
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* สไตล์ของช่องเลือกสี (ทำให้เป็นวงกลมและดูดี) */
+.swal-color-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    background-color: transparent;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.swal-color-input:hover {
+    transform: scale(1.1);
+}
+
+/* สไตล์ของ "สี" ที่แสดงอยู่ข้างใน */
+.swal-color-input::-webkit-color-swatch {
+    border-radius: 50%;
+    border: none;
+}

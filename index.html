@@ -270,20 +270,16 @@
         <!-- Focus Page -->
         <div id="focus-page" class="page">
             <h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1>
+            
             <div class="focus-topic-selector card">
-                <label for="focus-topic">คุณกำลังจะโฟกัสเรื่องอะไร?</label>
-                <select id="focus-topic">
-                    <option value="general">เรื่องทั่วไป</option>
-                    <option value="math">คณิตศาสตร์</option>
-                    <option value="physics">ฟิสิกส์</option>
-                    <option value="chemistry">เคมี</option>
-                    <option value="biology">ชีววิทยา</option>
-                    <option value="english">ภาษาอังกฤษ</option>
-                    <option value="reading">การอ่าน</option>
-                    <option value="writing">การเขียน</option>
-                    <option value="work">การทำงาน</option>
-                </select>
+                <label for="focus-topic-selector-btn">คุณกำลังจะโฟกัสเรื่องอะไร?</label>
+                <!-- นี่คือปุ่มใหม่ของเรา -->
+                <div id="focus-topic-selector-btn" class="custom-selector-display" data-value="general">
+                    <span>เรื่องทั่วไป</span>
+                    <i data-feather="chevron-down"></i>
+                </div>
             </div>
+
             <div class="card timer-card">
                 <div id="timer-display">25:00</div>
                 <div id="timer-mode">Focus</div>
@@ -302,18 +298,6 @@
                 </div>
                 <div id="focus-stats-display"></div>
             </section>
-            <div id="timer-settings" class="card hidden">
-                <h3>ตั้งค่าเวลา (นาที)</h3>
-                <div class="form-group">
-                    <label for="focus-duration">เวลาโฟกัส:</label>
-                    <input type="number" id="focus-duration" value="25" min="1">
-                </div>
-                <div class="form-group">
-                    <label for="break-duration">เวลาพัก:</label>
-                    <input type="number" id="break-duration" value="5" min="1">
-                </div>
-                <button id="save-timer-settings-btn">บันทึก</button>
-            </div>
         </div>
         <!-- Mood Page -->
         <div id="mood-page" class="page">
@@ -494,6 +478,26 @@
             </div>
         </div>
     </main>
+
+    <div id="timer-settings-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i data-feather="sliders"></i> ตั้งค่าเวลา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div style="padding: 15px 30px 30px;">
+                <div class="form-group">
+                    <label for="focus-duration">เวลาโฟกัส (นาที)</label>
+                    <input type="number" id="focus-duration" value="25" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="break-duration">เวลาพัก (นาที)</label>
+                    <input type="number" id="break-duration" value="5" min="1">
+                </div>
+                <button id="save-timer-settings-btn" style="width: 100%;">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    </div>
     
     <!-- MODALS -->
     <div id="auth-modal" class="modal-overlay hidden">
@@ -547,6 +551,8 @@
             <div class="custom-subject-footer">
                 <form id="add-custom-subject-form">
                     <input type="text" id="custom-subject-input" placeholder="หรือเพิ่มวิชาใหม่..." required>
+                    <!-- เพิ่มช่องเลือกสีตรงนี้ -->
+                    <input type="color" id="custom-subject-color" value="#4A90E2" title="เลือกสีประจำวิชา">
                     <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
                 </form>
             </div>

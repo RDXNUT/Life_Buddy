@@ -37,11 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
         planner: {},
         revisitTopics: {},
         subjects: [
-            { value: 'physics', name: 'ฟิสิกส์', removable: false },
-            { value: 'chemistry', name: 'เคมี', removable: false },
-            { value: 'biology', name: 'ชีววิทยา', removable: false },
-            { value: 'english', name: 'ภาษาอังกฤษ', removable: false },
-            { value: 'social', name: 'สังคมศึกษา', removable: false }
+            { value: 'physics', name: 'ฟิสิกส์', removable: false, color: '#0A84FF' },
+            { value: 'chemistry', name: 'เคมี', removable: false, color: '#FF9F0A' },
+            { value: 'biology', name: 'ชีววิทยา', removable: false, color: '#30D158' },
+            { value: 'english', name: 'ภาษาอังกฤษ', removable: false, color: '#FF453A' },
+            { value: 'social', name: 'สังคมศึกษา', removable: false, color: '#AF52DE' }
         ],
         moods: {},
         focus: { totalSessions: 0, todaySessions: 0, lastFocusDate: null, combo: 0 },
@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let toastTimeout, areListenersSetup = false;
     let currentChatId = null, unsubscribeChatListener = null, friendListeners = [];
     let lastSearchResults = [];
+    let currentSubjectSelectionCallback = null;
     const allPages = document.querySelectorAll('.page');
     const allNavLinks = document.querySelectorAll('.nav-link');
 
@@ -380,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateHeaderUI() {
     if (!currentUser) return;
-    
+
     const streakCountEl = document.getElementById('streak-count');
     if (streakCountEl) streakCountEl.textContent = state.streak || 0;
     
@@ -914,17 +915,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Subject Selector Functions ---
-    function openSubjectSelector() {
+    function openSubjectSelector(onSelectCallback) {
+        currentSubjectSelectionCallback = onSelectCallback; // เก็บ callback ไว้ใช้งาน
         renderSubjectOptions();
         document.getElementById('subject-selector-modal').classList.remove('hidden');
+        feather.replace();
     }
+    
+    async function handleEditSubject(subjectValue) {
+        const subjectIndex = state.subjects.findIndex(s => s.value === subjectValue);
+        if (subjectIndex === -1) return;
+
+        const currentSubject = state.subjects[subjectIndex];
+
+        const { value: formValues } = await Swal.fire({
+            title: 'แก้ไขรายละเอียดวิชา',
+            html: `
+                <input id="swal-subject-name" class="swal2-input" value="${currentSubject.name}" placeholder="ชื่อวิชา">
+                <div class="swal-color-picker-wrapper">
+                    <label for="swal-subject-color" class="swal-color-label">สีประจำวิชา</label>
+                    <input id="swal-subject-color" type="color" class="swal-color-input" value="${currentSubject.color}">
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'บันทึก',
+            cancelButtonText: 'ยกเลิก',
+            preConfirm: () => {
+                const name = document.getElementById('swal-subject-name').value.trim();
+                const color = document.getElementById('swal-subject-color').value;
+                if (!name) {
+                    Swal.showValidationMessage('กรุณาใส่ชื่อวิชา');
+                    return false;
+                }
+                return { name, color };
+            }
+        });
+
+        if (formValues) {
+            // อัปเดตข้อมูลใน state
+            state.subjects[subjectIndex].name = formValues.name;
+            state.subjects[subjectIndex].color = formValues.color;
+            
+            saveState(); // บันทึกการเปลี่ยนแปลง
+            renderSubjectOptions(); // วาดรายการวิชาใหม่
+            showToast('อัปเดตวิชาเรียบร้อยแล้ว');
+        }
+    }
+    
     function renderSubjectOptions() {
         const container = document.getElementById('subject-selector-body');
         const subjects = state.subjects || [];
         container.innerHTML = subjects.map(subject => `
             <div class="subject-option" data-value="${subject.value}">
-                <span>${subject.name}</span>
-                ${subject.removable ? `<button class="remove-custom-subject-btn icon-button" data-value="${subject.value}" title="ลบวิชานี้"><i data-feather="trash-2"></i></button>` : ''}
+                <div class="subject-option-details">
+                    <!-- [คืนชีพ] แสดงวงกลมสีประจำวิชาตรงนี้ -->
+                    <div class="subject-color-dot" style="background-color: ${subject.color || '#8E8E93'};"></div>
+                    <span>${subject.name}</span>
+                </div>
+                <div class="subject-option-actions">
+                    <button class="edit-subject-btn icon-button" data-value="${subject.value}" title="แก้ไขวิชานี้">
+                        <i data-feather="edit-2"></i>
+                    </button>
+                    ${subject.removable ? `
+                    <button class="remove-custom-subject-btn icon-button" data-value="${subject.value}" title="ลบวิชานี้">
+                        <i data-feather="trash-2"></i>
+                    </button>` : ''}
+                </div>
             </div>
         `).join('');
         feather.replace();
@@ -937,7 +994,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleAddCustomSubject(e) {
         e.preventDefault();
         const input = document.getElementById('custom-subject-input');
+        const colorInput = document.getElementById('custom-subject-color'); // <-- ดึงช่องเลือกสี
+        
         const newName = input.value.trim();
+        const newColor = colorInput.value; // <-- ดึงค่าสี
         if (!newName) return;
         const newValue = `custom_${newName.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
         if (!state.subjects) state.subjects = [];
@@ -945,7 +1005,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("มีวิชานี้อยู่แล้ว");
             return;
         }
-        state.subjects.push({ value: newValue, name: newName, removable: true });
+
+        state.subjects.push({ value: newValue, name: newName, removable: true, color: newColor });
         saveState();
         renderSubjectOptions();
         input.value = '';
@@ -1572,37 +1633,55 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             filteredHistory = allFocusHistory;
         }
+
         if (filteredHistory.length === 0) {
-            displayEl.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color);"><i>ยังไม่มีข้อมูลการโฟกัสในช่วงเวลานี้</i></p>';
+            displayEl.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 20px 0;"><i>ยังไม่มีข้อมูลการโฟกัสในช่วงเวลานี้</i></p>';
             return;
         }
+
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
-            if (!acc[topicKey]) {
-                acc[topicKey] = 0;
-            }
+            if (!acc[topicKey]) { acc[topicKey] = 0; }
             acc[topicKey] += item.duration;
             return acc;
         }, {});
+        
+        const totalMinutesOverall = Object.values(statsByTopic).reduce((sum, mins) => sum + mins, 0);
+
         const sortedStats = Object.entries(statsByTopic)
             .map(([topic, totalMinutes]) => ({ topic, totalMinutes }))
             .sort((a, b) => b.totalMinutes - a.totalMinutes);
-        const topicOptions = {};
-        document.querySelectorAll('#focus-topic option').forEach(opt => {
-            topicOptions[opt.value] = opt.textContent;
-        });
+            
+        const topicOptions = { 'general': { name: 'เรื่องทั่วไป', color: '#8E8E93' } }; // สีเทาสำหรับเรื่องทั่วไป
+        if (state.subjects && Array.isArray(state.subjects)) {
+            state.subjects.forEach(subject => {
+                topicOptions[subject.value] = { name: subject.name, color: subject.color };
+            });
+        }
+        
         displayEl.innerHTML = sortedStats.map(stat => {
-            const topicName = topicOptions[stat.topic] || 'เรื่องทั่วไป';
+            const topicData = topicOptions[stat.topic] || topicOptions['general'];
+            const topicName = topicData.name;
+            const topicColor = topicData.color; // <-- ดึงสีมาเก็บไว้
+
             const hours = Math.floor(stat.totalMinutes / 60);
             const minutes = stat.totalMinutes % 60;
             let timeString = '';
-            if (hours > 0) timeString += `${hours} ชั่วโมง `;
+            if (hours > 0) timeString += `${hours} ชม. `;
             if (minutes > 0 || hours === 0) timeString += `${minutes} นาที`;
             if (timeString.trim() === '0 นาที') timeString = 'น้อยกว่า 1 นาที';
+
+            const percentage = totalMinutesOverall > 0 ? (stat.totalMinutes / totalMinutesOverall) * 100 : 0;
+
             return `
                 <div class="stat-item-focus">
-                    <span class="stat-topic-name">${topicName}</span>
-                    <span class="stat-topic-time">${timeString}</span>
+                    <div class="stat-topic-name">
+                        <span>${topicName}</span>
+                        <span>${timeString}</span>
+                    </div>
+                    <div class="stat-progress-bar-wrapper">
+                        <div class="stat-progress-bar" style="width: ${percentage}%; background: ${topicColor};"></div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -1613,29 +1692,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!startBtn) return;
         startBtn.innerHTML = '<i data-feather="pause"></i> หยุดชั่วคราว';
         feather.replace();
-        const topicSelect = document.getElementById('focus-topic');
+        
+        const topicSelectorBtn = document.getElementById('focus-topic-selector-btn');
         const settingsBtn = document.getElementById('settings-timer-btn');
-        if (topicSelect) topicSelect.disabled = true;
+        
+        if (topicSelectorBtn) topicSelectorBtn.style.pointerEvents = 'none'; // ปิดการคลิกปุ่มเลือกหัวข้อ
         if (settingsBtn) settingsBtn.disabled = true;
+
         timerInterval = setInterval(() => {
             timeLeft--;
             updateTimerDisplay(timeLeft);
+
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 timerInterval = null;
+
                 if (isFocusing) {
                     state.focus.combo = (state.focus.combo || 0) + 1;
                     state.focus.todaySessions = (state.focus.todaySessions || 0) + 1;
                     state.focus.totalSessions = (state.focus.totalSessions || 0) + 1;
                     state.focus.lastFocusDate = dayjs().format('YYYY-MM-DD');
-                    const topicSelectEl = document.getElementById('focus-topic');
-                    const topicText = topicSelectEl ? topicSelectEl.options[topicSelectEl.selectedIndex].text : 'เรื่องทั่วไป';
+                    
+                    // แก้ไขตรงนี้: ดึงค่าจากปุ่มใหม่
+                    const topicText = topicSelectorBtn ? topicSelectorBtn.querySelector('span').textContent : 'เรื่องทั่วไป';
+                    const topicValue = topicSelectorBtn ? topicSelectorBtn.dataset.value : 'general';
+                    
                     const baseCoin = 10;
                     const comboBonus = state.focus.combo >= 5 ? 20 : state.focus.combo >= 3 ? 10 : 0;
                     const totalCoin = baseCoin + comboBonus;
                     updateCoins(totalCoin, `โฟกัส: ${topicText}`);
                     addExp(25);
-                    const topicValue = topicSelectEl ? topicSelectEl.value : 'general';
+                    
                     const duration = state.settings.focusDuration || 25;
                     if (!state.focusHistory) state.focusHistory = [];
                     state.focusHistory.push({
@@ -1648,11 +1735,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     saveState();
                     checkForDailyBonus();
-                    renderFocusStats();
+                    renderFocusStats('day'); // อัปเดตสถิติ
+
                     isFocusing = false;
                     timeLeft = (state.settings.breakDuration || 5) * 60;
                     document.getElementById('timer-mode').textContent = 'Break';
                     updateTimerDisplay(timeLeft);
+
                     Swal.fire({
                         title: "เยี่ยมมาก! โฟกัสสำเร็จ",
                         text: `พักสักหน่อยนะ 🧘 (${state.settings.breakDuration} นาที)`,
@@ -1663,14 +1752,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (!timerInterval) startTimer();
                         }
                     });
+
                 } else {
                     isFocusing = true;
                     timeLeft = (state.settings.focusDuration || 25) * 60;
                     document.getElementById('timer-mode').textContent = 'Focus';
                     updateTimerDisplay(timeLeft);
-                    if (topicSelect) topicSelect.disabled = false;
+                    
+                    if (topicSelectorBtn) topicSelectorBtn.style.pointerEvents = 'auto'; // เปิดการคลิกปุ่มเลือกหัวข้ออีกครั้ง
                     if (settingsBtn) settingsBtn.disabled = false;
+                    
                     Swal.fire("หมดเวลาพักแล้ว", "กลับมาโฟกัสกันต่อ! 💪", "info");
+                    
                     const startBtnEl = document.getElementById('start-timer-btn');
                     if(startBtnEl) {
                         startBtnEl.innerHTML = '<i data-feather="play"></i> เริ่ม';
@@ -1702,10 +1795,42 @@ document.addEventListener('DOMContentLoaded', () => {
             startBtn.innerHTML = '<i data-feather="play"></i> เริ่ม'; 
             feather.replace(); 
         }
-        const topicSelect = document.getElementById('focus-topic');
+
+        // [สำคัญ] เปิดการใช้งานปุ่มที่เคยปิดไว้อีกครั้ง
+        const topicSelectorBtn = document.getElementById('focus-topic-selector-btn');
         const settingsBtn = document.getElementById('settings-timer-btn');
-        if (topicSelect) topicSelect.disabled = false;
+        if (topicSelectorBtn) topicSelectorBtn.style.pointerEvents = 'auto';
         if (settingsBtn) settingsBtn.disabled = false;
+    }
+
+    function handleSaveTimerSettings() {
+        if (!state.settings) {
+            state.settings = {};
+        }
+        
+        // 1. ดึงค่าจาก input
+        const newFocusDuration = parseInt(document.getElementById('focus-duration').value, 10);
+        const newBreakDuration = parseInt(document.getElementById('break-duration').value, 10);
+
+        // 2. ตรวจสอบว่าค่าถูกต้อง (เป็นตัวเลขและมากกว่า 0)
+        if (isNaN(newFocusDuration) || newFocusDuration < 1 || isNaN(newBreakDuration) || newBreakDuration < 1) {
+            showToast("กรุณาใส่เวลาเป็นตัวเลขที่มากกว่า 0");
+            return;
+        }
+
+        // 3. อัปเดตค่าใน state
+        state.settings.focusDuration = newFocusDuration;
+        state.settings.breakDuration = newBreakDuration;
+        
+        // 4. บันทึก state ลง Firestore
+        saveState();
+
+        // 5. [สำคัญ] เรียกใช้ resetTimer() เพื่ออัปเดตหน้าปัดนาฬิกาทันที
+        resetTimer();
+
+        // 6. ปิด Modal และแจ้งเตือนผู้ใช้
+        document.getElementById('timer-settings-modal').classList.add('hidden');
+        showToast("บันทึกการตั้งค่าเรียบร้อยแล้ว!");
     }
 
     function updateTimerDisplay(time) { 
@@ -2498,16 +2623,33 @@ async function renderChatList() {
             const closest = (selector) => e.target.closest(selector);
 
             // Revisit & Quiz UI
-            if (closest('#revisit-subject-display')) { openSubjectSelector(); return; }
-            const subjectOption = closest('.subject-option');
+            if (closest('#revisit-subject-display')) { 
+                // ส่งฟังก์ชัน selectSubject เข้าไปเป็น callback
+                openSubjectSelector(selectSubject); 
+                return; 
+            }
+            
+           const subjectOption = closest('.subject-option');
             if (subjectOption) {
-                if (e.target.closest('.remove-custom-subject-btn')) {
+                // ตรวจสอบว่าคลิกที่ปุ่มแก้ไขหรือไม่
+                if (e.target.closest('.edit-subject-btn')) {
+                    handleEditSubject(subjectOption.dataset.value);
+                
+                // ตรวจสอบว่าคลิกที่ปุ่มลบหรือไม่
+                } else if (e.target.closest('.remove-custom-subject-btn')) {
                     const valueToRemove = e.target.closest('.remove-custom-subject-btn').dataset.value;
                     state.subjects = state.subjects.filter(s => s.value !== valueToRemove);
                     saveState();
                     renderSubjectOptions();
+                
+                // ถ้าไม่ได้คลิกปุ่มใดๆ ให้ถือว่าเป็นการเลือกวิชา
                 } else {
-                    selectSubject(subjectOption.dataset.value, subjectOption.querySelector('span').textContent);
+                    if (typeof currentSubjectSelectionCallback === 'function') {
+                        const value = subjectOption.dataset.value;
+                        const name = subjectOption.querySelector('span').textContent;
+                        currentSubjectSelectionCallback(value, name);
+                    }
+                    document.getElementById('subject-selector-modal').classList.add('hidden');
                 }
                 return;
             }
@@ -2711,7 +2853,7 @@ async function renderChatList() {
             }
 
             const targetId = e.target.id || closest('[id]')?.id;
-            switch(targetId) {
+            switch(targetId) { //==== click =====
                 case 'login-btn': openAuthModal(); break;
                 case 'show-signup-link': e.preventDefault(); document.getElementById('login-view').classList.add('hidden'); document.getElementById('signup-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;
                 case 'show-login-link': e.preventDefault(); document.getElementById('signup-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;
@@ -2721,8 +2863,34 @@ async function renderChatList() {
                 case 'check-in-btn': handleCheckIn(); break;
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); timerInterval = null; } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
-                case 'settings-timer-btn': document.getElementById('timer-settings').classList.toggle('hidden'); break;
+                // แก้ไขบรรทัดนี้: ให้เปิด Modal ใหม่แทน
+                case 'settings-timer-btn': 
+                    // ตรวจสอบให้แน่ใจว่า state.settings มีอยู่จริง
+                    if (!state.settings) {
+                        state.settings = { focusDuration: 25, breakDuration: 5 };
+                    }
+                    // นำค่าปัจจุบันจาก state มาใส่ในฟอร์มก่อนเปิด Modal
+                    document.getElementById('focus-duration').value = state.settings.focusDuration || 25;
+                    document.getElementById('break-duration').value = state.settings.breakDuration || 5;
+                    
+                    // เปิด Modal
+                    document.getElementById('timer-settings-modal').classList.remove('hidden'); 
+                    
+                    // สั่งให้ Feather Icons ทำงานใหม่ (สำคัญมากหาก Modal มี icon)
+                    feather.replace(); 
+                    break;
+                case 'save-timer-settings-btn': handleSaveTimerSettings(); break; 
                 case 'change-banner-btn': openBannerSelector(); break;
+                case 'focus-topic-selector-btn':
+                    // สร้าง callback สำหรับหน้า Focus
+                    const focusPageCallback = (value, name) => {
+                        const btn = document.getElementById('focus-topic-selector-btn');
+                        btn.querySelector('span').textContent = name;
+                        btn.dataset.value = value;
+                    };
+                    // เรียก modal พร้อมกับส่ง callback ของหน้า focus เข้าไป
+                    openSubjectSelector(focusPageCallback);
+                    break;
                 case 'main-edit-profile-btn': document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden'); break;
                 case 'cancel-edit-profile-btn': document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); break;
                 case 'edit-profile-picture-btn': populateProfileSelector(); document.getElementById('profile-selector-modal').classList.remove('hidden'); break;
