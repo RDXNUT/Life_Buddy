@@ -226,6 +226,101 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHeaderUI();
         updateSettingsUI();
     }
+      function calculateLevel(exp) {
+        if (typeof exp !== 'number') exp = 0; // ตรวจสอบให้แน่ใจว่าเป็นตัวเลข
+        
+        let currentLevel = 1;
+        let accumulatedExp = 0;
+        let expForNextLevel = Math.floor(100 * Math.pow(currentLevel, 1.15));
+
+        while (exp >= accumulatedExp + expForNextLevel && currentLevel < 999) {
+            accumulatedExp += expForNextLevel;
+            currentLevel++;
+            expForNextLevel = Math.floor(100 * Math.pow(currentLevel, 1.15));
+        }
+        
+        const expInCurrentLevel = exp - accumulatedExp;
+
+        // กรณีที่ Level สูงสุดแล้ว
+        if (currentLevel === 999) {
+            return { 
+                level: 999, 
+                expInCurrentLevel: expForNextLevel, 
+                expForNextLevel: expForNextLevel, 
+                progress: 100 
+            };
+        }
+
+        const progress = Math.min(100, (expInCurrentLevel / expForNextLevel) * 100);
+
+        return { 
+            level: currentLevel, 
+            expInCurrentLevel, 
+            expForNextLevel, 
+            progress 
+        };
+    }
+
+    function checkBadges() {
+        if(!currentUser || !state) return;
+        if(!state.badges) state.badges = {};
+
+        // Badge: ความสม่ำเสมอ
+        state.badges.streak15 = (state.streak || 0) >= 15;
+        state.badges.streak30 = (state.streak || 0) >= 30;
+        state.badges.loyalist45 = (state.streak || 0) >= 45;
+
+        // Badge: การวางแผน
+        let totalPlannerEntries = 0;
+        if (typeof state.planner === 'object' && state.planner !== null) {
+            totalPlannerEntries = Object.values(state.planner).reduce((sum, day) => sum + (Array.isArray(day) ? day.length : 0), 0);
+        }
+        state.badges.proPlanner = totalPlannerEntries >= 15;
+        state.badges.lifeArchitect = totalPlannerEntries >= 30;
+        
+        // Badge: การทบทวน
+        let totalTopics = 0;
+        let totalQuizzes = 0; // เปลี่ยนจาก flashcards
+        if (typeof state.revisitTopics === 'object' && state.revisitTopics !== null) {
+            Object.values(state.revisitTopics).forEach(subjectArray => {
+                if (Array.isArray(subjectArray)) {
+                    totalTopics += subjectArray.length;
+                    subjectArray.forEach(topic => {
+                        totalQuizzes += (topic.quizzes || []).length; // เปลี่ยนเป็น quizzes
+                    });
+                }
+            });
+        }
+        state.badges.eagerLearner = totalTopics > 0;
+        state.badges.knowledgeHoarder = totalTopics >= 10;
+        state.badges.cardCreator = totalQuizzes >= 25; // อาจจะเปลี่ยนชื่อ badge นี้ในอนาคตเป็น QuizCreator
+
+        // Badge: การโฟกัส
+        const focusDurationHours = (state.settings?.focusDuration || 25) / 60;
+        state.badges.deepFocus = (state.focus?.combo || 0) >= 5;
+        state.badges.focusMarathon = ((state.focus?.totalSessions || 0) * focusDurationHours) >= 5;
+
+        // Badge: สุขภาพจิต
+        let moodStreak = 0;
+        if(typeof state.moods === 'object' && state.moods !== null) {
+            const sortedMoodDays = Object.keys(state.moods).sort((a,b) => b.localeCompare(a));
+            if (sortedMoodDays.length > 0) {
+                moodStreak = 1;
+                for(let i = 1; i < sortedMoodDays.length; i++) {
+                    if (dayjs(sortedMoodDays[i-1]).diff(dayjs(sortedMoodDays[i]), 'day') === 1) {
+                        moodStreak++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        state.badges.emotionalBalance = moodStreak >= 7;
+
+        // Badge: สังคม
+        state.badges.firstFriend = (state.followers || []).length > 0;
+        state.badges.socialButterfly = (state.followers || []).length >= 10;
+    }
 
     // ==================================
     // ===== 5. UI & PAGE RENDERING =====
