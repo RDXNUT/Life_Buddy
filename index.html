@@ -119,17 +119,15 @@
                         <h2>เพิ่มกิจกรรม</h2>
                         <h4 id="selected-planner-date-display"></h4>
                         <form id="planner-form">
-                            <input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required>
-                            <select id="event-category" required>
-                                <option value="" disabled selected>เลือกหมวดหมู่</option>
-                                <option value="การบ้าน">การบ้าน</option>
-                                <option value="สอบ">สอบ</option>
-                                <option value="งานกลุ่ม">งานกลุ่ม</option>
-                                <option value="เวลาอ่านหนังสือ">เวลาอ่านหนังสือ</option>
-                                <option value="เวลาเล่น">เวลาเล่น</option>
-                                <option value="เวลาออกกำลังกาย">เวลาออกกำลังกาย</option>
-                            </select>
-                            <input type="time" id="event-time" required>
+                            <!-- เพิ่ม div นี้เข้าไปเพื่อครอบ input ทั้งหมด -->
+                            <div class="planner-form-grid">
+                                <input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required>
+                                <div id="event-category-selector-btn" class="custom-selector-display" data-value="">
+                                    <span>เลือกหมวดหมู่</span>
+                                    <i data-feather="chevron-down"></i>
+                                </div>
+                                <input type="time" id="event-time" required>
+                            </div>
                             <button type="submit">+ เพิ่มกิจกรรม</button>
                         </form>
                     </div>
@@ -558,7 +556,27 @@
             </div>
         </div>
     </div>
-    <div id="toast-notification" class="hidden"></div>
+
+        <!-- MODAL สำหรับเลือกหมวดหมู่กิจกรรม -->
+    <div id="event-category-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>เลือกหมวดหมู่</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="category-selector-body" class="subject-selector-body">
+                <!-- รายการหมวดหมู่จะถูกสร้างโดย JS ที่นี่ -->
+            </div>
+            <div class="custom-subject-footer">
+                <form id="add-custom-category-form">
+                    <input type="text" id="custom-category-input" placeholder="หรือเพิ่มหมวดหมู่ใหม่..." required>
+                    <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="hidden"></div> 
 
      <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>

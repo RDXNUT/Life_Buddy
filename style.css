@@ -388,9 +388,24 @@ body[data-theme="dark"] #quiz-progress-bar { background-image: linear-gradient(9
 #revisit-subject-display { cursor: pointer; background-color: var(--card-bg-color); background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right .75rem center; background-size: 16px 12px; }
 body[data-theme="dark"] #revisit-subject-display { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e5e5e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e"); }
 .subject-selector-body { padding: 10px 25px; max-height: 50vh; overflow-y: auto; text-align: left; }
-.subject-option { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
-.subject-option:last-child { border-bottom: none; }
-.subject-option:hover { background-color: var(--bg-color); }
+.subject-option,
+.category-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.subject-option:last-child,
+.category-option:last-child {
+    border-bottom: none;
+}
+.subject-option:hover,
+.category-option:hover {
+    background-color: var(--bg-color);
+}
 .subject-option .remove-custom-subject-btn { background: none; border: none; color: var(--danger-color); padding: 5px; width: auto; margin: 0; opacity: 0.5; transition: opacity 0.2s; }
 .subject-option:hover .remove-custom-subject-btn { opacity: 1; }
 .custom-subject-footer { padding: 20px 25px; border-top: 1px solid var(--border-color); background-color: var(--bg-color); }
@@ -645,4 +660,96 @@ body[data-theme="dark"] .timer-controls .icon-button {
 .swal-color-input::-webkit-color-swatch {
     border-radius: 50%;
     border: none;
+}
+/* ======================================= */
+/* ====== Planner Form Layout Revamp ====== */
+/* ======================================= */
+
+/* สร้าง Layout แบบ Grid */
+.planner-form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* แบ่งคอลัมน์เป็น 2 ส่วน (ส่วนแรกกว้างกว่า) */
+    gap: 15px; /* ระยะห่างระหว่างช่อง */
+    margin-bottom: 15px;
+}
+
+/* ทำให้ช่อง "ชื่อกิจกรรม" กินพื้นที่เต็มความกว้าง (ทั้ง 2 คอลัมน์) */
+#event-name {
+    grid-column: 1 / -1; /* สั่งให้เริ่มจากเส้น Grid ที่ 1 ไปจนถึงเส้นสุดท้าย */
+}
+
+/* ทำให้ปุ่มเลือกหมวดหมู่และช่องเวลา อยู่ใน Grid โดยไม่มี margin ที่ไม่จำเป็น */
+.planner-form-grid #event-category-selector-btn,
+.planner-form-grid #event-time {
+    margin-bottom: 0;
+}
+
+/* ทำให้ปุ่ม "เพิ่มกิจกรรม" มีความกว้างเต็ม 100% เพื่อความสวยงาม */
+#planner-form button[type="submit"] {
+    width: 100%;
+}
+/* ======================================= */
+/* ====== Planner UI/UX Enhancement ====== */
+/* ======================================= */
+
+/* ปรับปรุงฟอร์มเพิ่มหมวดหมู่ใหม่ใน Modal */
+#add-custom-category-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+#add-custom-category-form input {
+    flex-grow: 1;
+    margin: 0;
+}
+#add-custom-category-form button {
+    flex-shrink: 0;
+    margin: 0;
+    box-shadow: 0 4px 12px -3px var(--primary-color); /* เพิ่มเงาให้ปุ่ม */
+    transition: all 0.2s ease;
+}
+#add-custom-category-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px -3px var(--primary-color);
+}
+
+/* ปรับปรุงรายการกิจกรรมที่แสดงผล */
+#events-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#events-list li {
+    display: flex;
+    justify-content: space-between; /* จัดให้เวลาอยู่ขวาสุด */
+    align-items: center;
+    padding: 12px 15px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color); /* เพิ่มแถบสีด้านซ้าย */
+}
+
+#events-list .event-details {
+    display: flex;
+    flex-direction: column; /* ทำให้ชื่อกิจกรรมและหมวดหมู่เรียงกันแนวตั้ง */
+}
+
+#events-list .event-name {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+#events-list .event-category {
+    font-size: 0.85em;
+    color: var(--subtle-text-color);
+}
+
+#events-list .event-time {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-color);
 }

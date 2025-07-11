@@ -62,6 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 { id: 'CuteBanner.png', name: 'แบนเนอร์สุดคิวท์', price: 350 , image: 'assets/banner/CuteBanner.png' }
             ]
         },
+        eventCategories: [
+            { value: 'homework', name: 'การบ้าน', removable: false },
+            { value: 'exam', name: 'สอบ', removable: false },
+            { value: 'group-project', name: 'งานกลุ่ม', removable: false }
+        ],
         profile: {
             displayName: '',
             gender: 'unspecified',
@@ -856,11 +861,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateDisplay = document.getElementById('selected-planner-date-display');
         const eventsList = document.getElementById('events-list');
         if (!dateDisplay || !eventsList) return;
+
         dateDisplay.textContent = `สำหรับวันที่ ${dayjs(dateStr).format('D MMMM')}`;
         const events = (state.planner && state.planner[dateStr]) || [];
+        
         if (events.length > 0) {
+            // จัดเรียง event ตามเวลาก่อนแสดงผล
             events.sort((a,b) => a.time.localeCompare(b.time));
-            eventsList.innerHTML = events.map(e => `<li><strong>${e.time}</strong> - ${e.name} (${e.category})</li>`).join('');
+            // สร้าง HTML รูปแบบใหม่
+            eventsList.innerHTML = events.map(e => `
+                <li>
+                    <div class="event-details">
+                        <span class="event-name">${e.name}</span>
+                        <span class="event-category">${e.category}</span>
+                    </div>
+                    <span class="event-time">${e.time}</span>
+                </li>
+            `).join('');
         } else {
             eventsList.innerHTML = '<li>ไม่มีกิจกรรม</li>';
         }
@@ -990,6 +1007,51 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('revisit-subject-display').value = name;
         document.getElementById('revisit-subject-value').value = value;
         document.getElementById('subject-selector-modal').classList.add('hidden');
+    }
+    // 1. ฟังก์ชันเปิด Modal
+    function openCategorySelectorModal() {
+        renderCategoryOptions();
+        document.getElementById('event-category-modal').classList.remove('hidden');
+        feather.replace();
+    }
+
+    // 2. ฟังก์ชันวาดรายการหมวดหมู่ใน Modal
+    function renderCategoryOptions() {
+        const container = document.getElementById('category-selector-body');
+        const categories = state.eventCategories || [];
+        container.innerHTML = categories.map(cat => `
+            <div class="category-option" data-value="${cat.name}">
+                <div class="subject-option-details">
+                    <span>${cat.name}</span>
+                </div>
+                <div class="subject-option-actions">
+                    ${cat.removable ? `
+                    <button class="remove-custom-category-btn icon-button" data-value="${cat.value}" title="ลบหมวดหมู่นี้">
+                        <i data-feather="trash-2"></i>
+                    </button>` : ''}
+                </div>
+            </div>
+        `).join('');
+        feather.replace();
+    }
+
+    // 3. ฟังก์ชันจัดการการเพิ่มหมวดหมู่ใหม่
+    function handleAddCustomCategory(e) {
+        e.preventDefault();
+        const input = document.getElementById('custom-category-input');
+        const newName = input.value.trim();
+        if (!newName) return;
+        
+        const newValue = `custom_${newName.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
+        if (!state.eventCategories) state.eventCategories = [];
+        if (state.eventCategories.some(c => c.name.toLowerCase() === newName.toLowerCase())) {
+            showToast("มีหมวดหมู่นี้อยู่แล้ว");
+            return;
+        }
+        state.eventCategories.push({ value: newValue, name: newName, removable: true });
+        saveState();
+        renderCategoryOptions();
+        input.value = '';
     }
     function handleAddCustomSubject(e) {
         e.preventDefault();
@@ -2432,11 +2494,19 @@ async function renderChatList() {
     function handlePlannerFormSubmit(e) { 
         e.preventDefault(); 
         const eventNameInput = document.getElementById('event-name'); 
-        const eventCategoryInput = document.getElementById('event-category'); 
+        
+        // [แก้ไข] เปลี่ยนตัวแปร eventCategoryInput
+        const eventCategoryBtn = document.getElementById('event-category-selector-btn'); 
+        
         const eventTimeInput = document.getElementById('event-time'); 
         const eventName = eventNameInput.value.trim(); 
-        const eventCategory = eventCategoryInput.value; 
+        
+        // [แก้ไข] อ่านค่าจาก data-value ของปุ่ม
+        const eventCategory = eventCategoryBtn.dataset.value; 
+        
         const eventTime = eventTimeInput.value; 
+
+        // [แก้ไข] เพิ่มการตรวจสอบว่าเลือกหมวดหมู่หรือยัง
         if (eventName && eventCategory && eventTime) { 
             const newEvent = { name: eventName, category: eventCategory, time: eventTime }; 
             if (!state.planner) state.planner = {}; 
@@ -2446,15 +2516,19 @@ async function renderChatList() {
             state.planner[selectedPlannerDate].push(newEvent); 
             saveState(); 
             renderPlannerCalendar(currentPlannerDate); 
-            renderPlannerDetails(selectedPlannerDate); 
+            
+            // รีเซ็ตฟอร์ม
             eventNameInput.value = ''; 
-            eventCategoryInput.value = ''; 
             eventTimeInput.value = ''; 
+            eventCategoryBtn.dataset.value = '';
+            eventCategoryBtn.querySelector('span').textContent = 'เลือกหมวดหมู่';
+
             showToast("เพิ่มกิจกรรมเรียบร้อยแล้ว!"); 
         } else { 
             showToast("กรุณากรอกข้อมูลให้ครบทุกช่อง"); 
         } 
     }
+
 
     function handleRevisitFormSubmit(e) {
         e.preventDefault();
@@ -2629,20 +2703,15 @@ async function renderChatList() {
                 return; 
             }
             
-           const subjectOption = closest('.subject-option');
+            const subjectOption = closest('.subject-option');
             if (subjectOption) {
-                // ตรวจสอบว่าคลิกที่ปุ่มแก้ไขหรือไม่
                 if (e.target.closest('.edit-subject-btn')) {
                     handleEditSubject(subjectOption.dataset.value);
-                
-                // ตรวจสอบว่าคลิกที่ปุ่มลบหรือไม่
                 } else if (e.target.closest('.remove-custom-subject-btn')) {
                     const valueToRemove = e.target.closest('.remove-custom-subject-btn').dataset.value;
                     state.subjects = state.subjects.filter(s => s.value !== valueToRemove);
                     saveState();
                     renderSubjectOptions();
-                
-                // ถ้าไม่ได้คลิกปุ่มใดๆ ให้ถือว่าเป็นการเลือกวิชา
                 } else {
                     if (typeof currentSubjectSelectionCallback === 'function') {
                         const value = subjectOption.dataset.value;
@@ -2651,7 +2720,25 @@ async function renderChatList() {
                     }
                     document.getElementById('subject-selector-modal').classList.add('hidden');
                 }
-                return;
+                return; // หยุดการทำงานทันที
+            }
+            const categoryOption = closest('.category-option');
+            if (categoryOption) {
+                if (e.target.closest('.remove-custom-category-btn')) {
+                    const valueToRemove = e.target.closest('.remove-custom-category-btn').dataset.value;
+                    state.eventCategories = state.eventCategories.filter(c => c.value !== valueToRemove);
+                    saveState();
+                    renderCategoryOptions();
+                } else {
+                    const value = categoryOption.dataset.value;
+                    const btn = document.getElementById('event-category-selector-btn');
+                    if (btn) {
+                        btn.dataset.value = value;
+                        btn.querySelector('span').textContent = value;
+                    }
+                    document.getElementById('event-category-modal').classList.add('hidden');
+                }
+                return; // หยุดการทำงานทันที
             }
             const quizChoiceBtn = closest('.quiz-choice-btn');
             if (quizChoiceBtn && !quizChoiceBtn.disabled) {
@@ -2890,6 +2977,13 @@ async function renderChatList() {
                     };
                     // เรียก modal พร้อมกับส่ง callback ของหน้า focus เข้าไป
                     openSubjectSelector(focusPageCallback);
+                    break;
+                case 'event-category-selector-btn':
+                    openCategorySelectorModal();
+                    break;
+                
+                case 'add-custom-category-form':
+                    handleAddCustomCategory(e);
                     break;
                 case 'main-edit-profile-btn': document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden'); break;
                 case 'cancel-edit-profile-btn': document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); break;
