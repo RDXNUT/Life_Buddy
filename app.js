@@ -2529,6 +2529,42 @@ async function renderChatList() {
         } 
     }
 
+    function handleTodoFormSubmit(e) {
+        e.preventDefault();
+        const todoInput = document.getElementById('todo-input');
+        const newTodoText = todoInput.value.trim();
+
+        // ตรวจสอบว่าผู้ใช้กรอกข้อความหรือไม่
+        if (!newTodoText) {
+            showToast("กรุณาใส่เป้าหมายของคุณ");
+            return;
+        }
+        
+        // ตรวจสอบว่ามี state.todos อยู่หรือไม่ ถ้าไม่มีให้สร้างขึ้นมาใหม่
+        if (!state.todos) {
+            state.todos = [];
+        }
+        
+        // สร้าง object สำหรับ to-do ใหม่
+        const newTodo = {
+            id: Date.now(), // ใช้ timestamp เป็น ID ที่ไม่ซ้ำกัน
+            text: newTodoText,
+            completed: false,
+            rewarded: false // เพิ่ม property นี้เพื่อป้องกันการให้รางวัลซ้ำ
+        };
+        
+        // เพิ่ม to-do ใหม่เข้าไปใน state
+        state.todos.push(newTodo);
+        
+        // บันทึก state และอัปเดต UI
+        saveState();
+        updateHomePageUI(); // เรียกฟังก์ชันนี้เพื่อวาดรายการ to-do ใหม่
+        
+        // เคลียร์ช่อง input ให้พร้อมสำหรับเป้าหมายถัดไป
+        todoInput.value = '';
+        
+        showToast("เพิ่มเป้าหมายสำเร็จ!");
+    }
 
     function handleRevisitFormSubmit(e) {
         e.preventDefault();
