@@ -1267,10 +1267,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const titleEl = document.getElementById('feedback-title');
         const explanationEl = document.getElementById('feedback-explanation-preview');
         const explainBtn = document.getElementById('explain-btn');
-        footer.className = 'quiz-feedback-footer';
+        footer.className = 'quiz-feedback-footer'; // Reset classes
         footer.classList.add(isCorrect ? 'correct' : 'incorrect');
-        titleEl.innerHTML = isCorrect ? `ถูกต้อง! <span style="font-size:1rem; font-weight:400;">+1 <i class="feather" data-feather="dollar-sign"></i> +10 EXP</span>` : 'ยังไม่ถูกนะ';
-        feather.replace();
+        
+        // [แก้ไข] เปลี่ยนไอคอนเป็น Emoji 🪙 และลบ feather.replace() ที่ไม่จำเป็นแล้ว
+        titleEl.innerHTML = isCorrect ? `ถูกต้อง! <span style="font-size:1rem; font-weight:400;">+1 🪙 +10 EXP</span>` : 'ยังไม่ถูกนะ';
+        
         if (explanation) {
             explanationEl.textContent = `คำอธิบาย: ${explanation.substring(0, 80)}...`;
             explainBtn.classList.remove('hidden');
@@ -1286,9 +1288,37 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentQuizState.currentQuizIndex < currentQuizState.quizzes.length) {
             renderCurrentQuizQuestion();
         } else {
+            // เมื่อทำควิซข้อสุดท้ายเสร็จ
             document.getElementById('quiz-progress-bar').style.width = '100%';
             document.getElementById('quiz-taking-view').classList.add('hidden');
+            
             const topic = state.revisitTopics[currentQuizState.subject].find(t => t.id === currentQuizState.topicId);
+
+            // [สำคัญ] ตรวจสอบก่อนว่าวันนี้เป็นวันครบกำหนดทบทวนหรือไม่
+            if (dayjs(topic.nextReviewDate).isSame(dayjs(), 'day')) {
+                
+                // ถ้าใช่ (ถึงกำหนดแล้ว) ให้ทำการเลื่อนระดับและคำนวณวันทบทวนครั้งถัดไป
+                const nextLevel = (topic.level || 0) + 1;
+                if (nextLevel < topic.reviewIntervals.length) {
+                    topic.level = nextLevel;
+                    const daysToAdd = topic.reviewIntervals[nextLevel];
+                    topic.nextReviewDate = dayjs().add(daysToAdd, 'day').format('YYYY-MM-DD');
+                    showToast("เลื่อนขั้นการทบทวนสำเร็จ!");
+                } else {
+                    // ถ้าเป็นระดับสุดท้ายแล้ว ให้ถือว่าเชี่ยวชาญ
+                    topic.nextReviewDate = dayjs().add(1, 'year').format('YYYY-MM-DD'); // เลื่อนไปไกลๆ
+                    showToast("คุณเชี่ยวชาญในหัวข้อนี้แล้ว!");
+                }
+                
+                // บันทึก state ก็ต่อเมื่อมีการเปลี่ยนแปลงเท่านั้น
+                saveState();
+
+            } else {
+                // ถ้ายังไม่ถึงกำหนด (แค่เข้ามาฝึกซ้อม) ไม่ต้องทำอะไรกับวันที่
+                showToast("ฝึกซ้อมสำเร็จ!");
+            }
+
+            // แสดงผลสรุปคะแนนเสมอ ไม่ว่าจะเป็นการทบทวนจริงหรือฝึกซ้อม
             Swal.fire({
                 title: 'ทำควิซเสร็จแล้ว!',
                 html: `คุณตอบถูก <strong>${currentQuizState.correctAnswers}</strong> จาก ${currentQuizState.quizzes.length} ข้อ<br>เก่งมาก!`,
@@ -1296,17 +1326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonText: 'ยอดเยี่ยม!'
             }).then(() => {
                 document.getElementById('revisit-list-view').classList.remove('hidden');
-                renderRevisitList();
+                renderRevisitList(); // วาดรายการใหม่เพื่อให้เห็นวันที่ (ซึ่งอาจจะเปลี่ยนหรือไม่เปลี่ยนก็ได้)
             });
-            const nextLevel = (topic.level || 0) + 1;
-            if (nextLevel < topic.reviewIntervals.length) {
-                topic.level = nextLevel;
-                const daysToAdd = topic.reviewIntervals[nextLevel];
-                topic.nextReviewDate = dayjs().add(daysToAdd, 'day').format('YYYY-MM-DD');
-            } else {
-                topic.nextReviewDate = dayjs().add(1, 'year').format('YYYY-MM-DD');
-            }
-            saveState();
         }
     };
     function resetQuizCreationForm() {
