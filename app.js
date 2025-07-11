@@ -2367,6 +2367,130 @@ async function renderChatList() {
         addExp(15);
     }
 
+    async function handleSignupFormSubmit(e) {
+        e.preventDefault();
+        const emailInput = document.getElementById('signup-email');
+        const passwordInput = document.getElementById('signup-password');
+        const confirmPasswordInput = document.getElementById('signup-password-confirm');
+        const authErrorEl = document.getElementById('auth-error');
+
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        // 1. ตรวจสอบรหัสผ่านว่าตรงกันหรือไม่
+        if (password !== confirmPassword) {
+            Swal.fire({
+                title: 'เกิดข้อผิดพลาด',
+                text: 'รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+            if (authErrorEl) authErrorEl.textContent = 'รหัสผ่านไม่ตรงกัน';
+            return;
+        }
+
+        // 2. ตรวจสอบความปลอดภัยของรหัสผ่าน (ขั้นต่ำ 6 ตัวอักษรตามที่ Firebase กำหนด)
+        if (password.length < 6) {
+            Swal.fire({
+                title: 'รหัสผ่านไม่ปลอดภัย',
+                text: 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง'
+            });
+            if (authErrorEl) authErrorEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+            return;
+        }
+
+        try {
+            // 3. ใช้ Firebase auth เพื่อสร้างผู้ใช้ใหม่
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // 4. [สำคัญ] สร้างข้อมูลเริ่มต้นสำหรับผู้ใช้ใหม่ใน Firestore
+            // เราจะสร้าง LifeBuddy ID ที่ไม่ซ้ำกัน และตั้งค่าเริ่มต้นอื่นๆ
+            const initialName = user.email.split('@')[0];
+            const randomTag = Math.floor(1000 + Math.random() * 9000);
+            const newUserProfileData = JSON.parse(JSON.stringify(initialState)); // คัดลอกโครงสร้างข้อมูลเริ่มต้น
+            newUserProfileData.profile.displayName = initialName;
+            newUserProfileData.profile.lifebuddyId = `${initialName}#${randomTag}`;
+            newUserProfileData.profile.joinDate = new Date().toISOString(); // บันทึกวันเข้าร่วม
+
+            // บันทึกข้อมูลโปรไฟล์ใหม่ลง Firestore
+            await db.collection('users').doc(user.uid).set(newUserProfileData);
+
+            // 5. หากสมัครและสร้างข้อมูลสำเร็จ
+            closeAuthModal();
+            showToast('สมัครสมาชิกสำเร็จ ยินดีต้อนรับ!');
+            // onAuthStateChanged จะทำงานต่อและโหลดข้อมูลผู้ใช้ใหม่โดยอัตโนมัติ
+
+        } catch (error) {
+            // 6. หากเกิดข้อผิดพลาดจาก Firebase (เช่น อีเมลนี้ถูกใช้แล้ว)
+            const friendlyMessage = getFriendlyAuthError(error);
+
+            // แสดงข้อความใน Modal
+            if (authErrorEl) {
+                authErrorEl.textContent = friendlyMessage;
+            }
+
+            // แสดง Popup แจ้งเตือน
+            Swal.fire({
+                title: 'สมัครสมาชิกไม่สำเร็จ',
+                text: friendlyMessage,
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+        }
+    }
+
+    async function handleLoginFormSubmit(e) {
+        e.preventDefault();
+        const emailInput = document.getElementById('login-email');
+        const passwordInput = document.getElementById('login-password');
+        const authErrorEl = document.getElementById('auth-error');
+
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        // ตรวจสอบเบื้องต้นว่ากรอกข้อมูลครบหรือไม่
+        if (!email || !password) {
+            Swal.fire({
+                title: 'ข้อมูลไม่ครบถ้วน',
+                text: 'กรุณากรอกอีเมลและรหัสผ่าน',
+                icon: 'warning',
+                confirmButtonText: 'ตกลง'
+            });
+            return;
+        }
+
+        try {
+            // ใช้ Firebase auth เพื่อพยายามเข้าสู่ระบบ
+            await auth.signInWithEmailAndPassword(email, password);
+
+            // หากสำเร็จ onAuthStateChanged จะทำงานต่อเอง
+            // เราแค่ปิดหน้าต่าง Modal ก็พอ
+            closeAuthModal();
+            showToast('เข้าสู่ระบบสำเร็จ!');
+
+        } catch (error) {
+            // หากเกิดข้อผิดพลาด (เช่น รหัสผิด, ไม่มีผู้ใช้)
+            const friendlyMessage = getFriendlyAuthError(error);
+
+            // แสดงข้อความใน Modal (เผื่อไว้)
+            if (authErrorEl) {
+                authErrorEl.textContent = friendlyMessage;
+            }
+
+            // แสดง Popup แจ้งเตือนตามที่คุณต้องการ
+            Swal.fire({
+                title: 'เข้าสู่ระบบไม่สำเร็จ',
+                text: friendlyMessage,
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+        }
+    }
+
     function updatePasswordStrength() {
         const password = document.getElementById('signup-password').value;
         const strengthText = document.getElementById('password-strength-text');
