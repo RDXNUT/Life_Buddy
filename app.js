@@ -786,6 +786,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
+        feather.replace(); // วาดไอคอนใหม่
+
     } catch (error) {
         console.error("Error showing friend profile:", error);
         contentEl.innerHTML = '<p>เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
@@ -2098,30 +2100,30 @@ document.addEventListener('DOMContentLoaded', () => {
         listEl.innerHTML = '<li>กำลังโหลด...</li>';
         const followingIds = state.following || [];
         if (followingIds.length === 0) {
-            listEl.innerHTML = '<li>ยังไม่ได้ติดตามใครเลย...</li>';
+            listEl.innerHTML = '<li class="empty-placeholder">คุณยังไม่ได้ติดตามใครเลย...</li>';
             return;
         }
         try {
             const followingPromises = followingIds.map(uid => db.collection('users').doc(uid).get());
             const followingDocs = await Promise.all(followingPromises);
+
+            // [จุดสำคัญอยู่ตรงนี้]
             listEl.innerHTML = followingDocs.map(doc => {
                 if (!doc.exists) return '';
                 const friendData = doc.data();
-                const isMutual = (friendData.following || []).includes(currentUser.uid);
+                const isMutual = (friendData.followers || []).includes(currentUser.uid);
                 const displayName = friendData.profile.displayName || 'User';
-                const listItemClass = isMutual ? 'user-list-item' : 'user-list-item disabled';
-                const onClickAction = isMutual ? 
-                    `onclick="startChat('${doc.id}')"` : 
-                    `onclick="showToast('ต้องติดตามซึ่งกันและกันถึงจะแชทได้')"`;
-                const mutualIcon = isMutual ? '<i data-feather="repeat" class="mutual-icon" title="ติดตามซึ่งกันและกัน"></i>' : '';
+                const { level } = calculateLevel(friendData.exp || 0);
+
+                // [สำคัญมาก] onclick ต้องเรียก showFriendProfile เท่านั้น
                 return `
-                    <li class="${listItemClass}" ${onClickAction}>
+                    <li class="user-list-item" style="cursor: pointer;" onclick="showFriendProfile('${doc.id}')">
                         <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
                         <div class="user-info">
                             <h4>${displayName}</h4>
-                            <p>Level ${calculateLevel(friendData.exp || 0).level}</p>
+                            <p class="subtle-text">Level ${level}</p>
                         </div>
-                        ${mutualIcon}
+                        ${isMutual ? '<i data-feather="repeat" class="mutual-icon" title="ติดตามซึ่งกันและกัน"></i>' : ''}
                     </li>
                 `;
             }).join('');
