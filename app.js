@@ -2226,15 +2226,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // eslint-disable-next-line no-unused-vars
     window.handleAcceptFollowRequest = async (senderId) => {
         if (!currentUser) return;
-        const recipientId = currentUser.uid;
+        console.log("--- 2. Accepting Follow Request from:", senderId, "---");
+        console.log('Before accepting, requests in state are:', state.followRequests);
 
+        const recipientId = currentUser.uid;
         const senderRef = db.collection('users').doc(senderId);
         const recipientRef = db.collection('users').doc(recipientId);
 
         try {
             const batch = db.batch();
 
-            // ทำให้การติดตามเป็นแบบ 2 ทาง (mutual) ทันที
             // 1. เราไปติดตามเขา
             batch.update(recipientRef, { following: firebase.firestore.FieldValue.arrayUnion(senderId) });
             // 2. เขากลายเป็นผู้ติดตามของเรา
@@ -2249,16 +2250,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 5. อัปเดต State ฝั่ง Client ทันที
             state.followRequests = state.followRequests.filter(id => id !== senderId);
+            console.log('After accepting, requests in state should be empty/filtered:', state.followRequests);
+            
             if (!state.followers) state.followers = [];
             state.followers.push(senderId);
             if (!state.following) state.following = [];
             state.following.push(senderId);
-            
+
+            console.log("Now, calling renderFollowRequests to update UI...");
             // 6. วาดหน้ารายการคำขอใหม่ (ซึ่งตอนนี้ควรจะว่างเปล่า)
             renderFollowRequests();
 
             showToast("ยอมรับคำขอติดตามแล้ว ตอนนี้คุณเป็นเพื่อนกัน!");
-
         } catch (error) {
             console.error("Error accepting follow request:", error);
             showToast("เกิดข้อผิดพลาดในการยอมรับคำขอ");
@@ -2337,23 +2340,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     async function renderFollowRequests() {
+        console.log("--- 1. Rendering Follow Requests ---");
+
         const listEl = document.getElementById('friend-requests-list');
         const badgeEl = document.getElementById('request-count-badge'); 
-
         if (!listEl) return;
 
         listEl.innerHTML = '<li>กำลังโหลด...</li>';
 
         const requestIds = state.followRequests || [];
+        console.log("State before rendering:", requestIds);
+
         badgeEl.textContent = requestIds.length;
         badgeEl.classList.toggle('hidden', requestIds.length === 0);
 
         if (requestIds.length === 0) {
-            listEl.innerHTML = '<li>ไม่มีคำขอติดตาม</li>';
+            console.log("No requests found. Displaying empty message.");
+            listEl.innerHTML = '<li class="empty-placeholder">ไม่มีคำขอติดตาม</li>';
             return;
         }
-        
+
         try {
+            console.log("Fetching profiles for:", requestIds);
             const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
             const requestDocs = await Promise.all(requestPromises);
             listEl.innerHTML = requestDocs.map(doc => {
