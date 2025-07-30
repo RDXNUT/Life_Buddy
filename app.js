@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
 }
 
-    async function showFriendProfile(friendId) {
+    window.showFriendProfile = async (friendId) => {
     if (friendId === currentUser.uid) {
         showPage('profile'); // ถ้าเป็น ID ตัวเอง ให้ไปหน้าโปรไฟล์ปกติ
         return;
