@@ -2227,29 +2227,74 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleAcceptFollowRequest = async (senderId) => {
         if (!currentUser) return;
         const recipientId = currentUser.uid;
+
         const senderRef = db.collection('users').doc(senderId);
         const recipientRef = db.collection('users').doc(recipientId);
-        const batch = db.batch();
-        batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
-        batch.update(recipientRef, {
-            followers: firebase.firestore.FieldValue.arrayUnion(senderId),
-            followRequests: firebase.firestore.FieldValue.arrayRemove(senderId)
-        });
-        await batch.commit();
-        showToast("ตอบรับคำขอแล้ว");
+
+        try {
+            const batch = db.batch();
+
+            // ทำให้การติดตามเป็นแบบ 2 ทาง (mutual) ทันที
+            // 1. เราไปติดตามเขา
+            batch.update(recipientRef, { following: firebase.firestore.FieldValue.arrayUnion(senderId) });
+            // 2. เขากลายเป็นผู้ติดตามของเรา
+            batch.update(recipientRef, { followers: firebase.firestore.FieldValue.arrayUnion(senderId) });
+            
+            // 3. ลบคำขอออกจาก List ของเรา
+            batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
+            // 4. ลบคำขอที่เขาส่งไป (sent request) ออกจาก List ของเขา
+            batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
+
+            await batch.commit();
+
+            // 5. อัปเดต State ฝั่ง Client ทันที
+            state.followRequests = state.followRequests.filter(id => id !== senderId);
+            if (!state.followers) state.followers = [];
+            state.followers.push(senderId);
+            if (!state.following) state.following = [];
+            state.following.push(senderId);
+            
+            // 6. วาดหน้ารายการคำขอใหม่ (ซึ่งตอนนี้ควรจะว่างเปล่า)
+            renderFollowRequests();
+
+            showToast("ยอมรับคำขอติดตามแล้ว ตอนนี้คุณเป็นเพื่อนกัน!");
+
+        } catch (error) {
+            console.error("Error accepting follow request:", error);
+            showToast("เกิดข้อผิดพลาดในการยอมรับคำขอ");
+        }
     };
     
     // eslint-disable-next-line no-unused-vars
     window.handleDeclineFollowRequest = async (senderId) => {
         if (!currentUser) return;
         const recipientId = currentUser.uid;
+
         const senderRef = db.collection('users').doc(senderId);
         const recipientRef = db.collection('users').doc(recipientId);
-        const batch = db.batch();
-        batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
-        batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
-        await batch.commit();
-        showToast("ปฏิเสธคำขอแล้ว");
+
+        try {
+            const batch = db.batch();
+
+            // ลบคำขอออกจาก List ของเรา
+            batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
+            // ลบคำขอที่เขาส่งไป (sent request) ออกจาก List ของเขา
+            batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
+
+            await batch.commit();
+
+            // อัปเดต State ฝั่ง Client ทันที
+            state.followRequests = state.followRequests.filter(id => id !== senderId);
+
+            // วาดหน้ารายการคำขอใหม่
+            renderFollowRequests();
+
+            showToast("ลบคำขอติดตามแล้ว");
+
+        } catch (error) {
+            console.error("Error declining follow request:", error);
+            showToast("เกิดข้อผิดพลาดในการลบคำขอ");
+        }
     };
     
     // eslint-disable-next-line no-unused-vars
@@ -2293,13 +2338,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function renderFollowRequests() {
         const listEl = document.getElementById('friend-requests-list');
+        const badgeEl = document.getElementById('request-count-badge'); 
+
         if (!listEl) return;
+
         listEl.innerHTML = '<li>กำลังโหลด...</li>';
+
         const requestIds = state.followRequests || [];
+        badgeEl.textContent = requestIds.length;
+        badgeEl.classList.toggle('hidden', requestIds.length === 0);
+
         if (requestIds.length === 0) {
             listEl.innerHTML = '<li>ไม่มีคำขอติดตาม</li>';
             return;
         }
+        
         try {
             const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
             const requestDocs = await Promise.all(requestPromises);
