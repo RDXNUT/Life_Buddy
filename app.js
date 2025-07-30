@@ -2940,6 +2940,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const tabBtn = closest('.tab-btn');
+            if (tabBtn) {
+                // เรียกใช้ฟังก์ชันสลับแท็บ โดยส่งชื่อแท็บ (เช่น 'followers') เข้าไป
+                showCommunityTab(tabBtn.dataset.tab); 
+                return; // หยุดการทำงานของ Listener ทันทีเมื่อเจอการคลิกที่แท็บ
+            }
 
             const targetId = e.target.id || closest('[id]')?.id;
             switch(targetId) { //==== click =====
