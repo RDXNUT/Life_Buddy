@@ -384,9 +384,13 @@
             </div>
         </div>
         <!-- Community Page -->
-        <div id="community-page" class="page"></div>
+        <!-- ค้นหา div นี้ในไฟล์ index.html ของคุณ -->
+        <div id="community-page" class="page">
+
+            <!-- [สำคัญ] ตรวจสอบให้แน่ใจว่าโค้ดทั้งหมดนี้อยู่ "ข้างใน" div ข้างบน -->
+
             <h1><i data-feather="users"></i> เพื่อน</h1>
-            
+
             <!-- ส่วนของ Tabs -->
             <div class="community-tabs">
                 <button class="tab-btn active" data-tab="following">กำลังติดตาม</button>
@@ -398,21 +402,22 @@
             <div class="community-content">
                 <div id="following-list-container" class="tab-content active">
                     <ul id="following-list" class="user-list">
-                        <!-- รายชื่อคนที่กำลังติดตามจะแสดงที่นี่ -->
+                        <!-- JS จะวาดรายชื่อคนที่กำลังติดตามที่นี่ -->
                     </ul>
                 </div>
                 <div id="followers-list-container" class="tab-content">
                     <ul id="followers-list" class="user-list">
-                        <!-- รายชื่อผู้ติดตามจะแสดงที่นี่ -->
+                        <!-- JS จะวาดรายชื่อผู้ติดตามที่นี่ -->
                     </ul>
                 </div>
                 <div id="friend-requests-list-container" class="tab-content">
                     <ul id="friend-requests-list" class="user-list">
-                        <!-- คำขอติดตามจะแสดงที่นี่ -->
+                        <!-- JS จะวาดคำขอติดตามที่นี่ -->
                     </ul>
                 </div>
             </div>
-        </div>
+
+        </div> <!-- ปิด div ของ community-page -->
         <!-- Rewards Page -->
         <div id="rewards-page" class="page">
             <h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1>
