@@ -2253,16 +2253,42 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // eslint-disable-next-line no-unused-vars
-    window.handleFollowBack = async (targetUserId) => {
+    window .handleFollowBack = async (targetUserId) => {
         if (!currentUser) return;
         const currentUserId = currentUser.uid;
+
+        // ดึง Reference ของ Document ทั้งสอง
         const userRef = db.collection('users').doc(currentUserId);
         const targetUserRef = db.collection('users').doc(targetUserId);
-        const batch = db.batch();
-        batch.update(userRef, { following: firebase.firestore.FieldValue.arrayUnion(targetUserId) });
-        batch.update(targetUserRef, { followers: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
-        await batch.commit();
-        showToast("ติดตามกลับแล้ว!");
+
+        try {
+            // ใช้ Batch เพื่อให้การเขียนข้อมูล 2 ที่สำเร็จพร้อมกัน
+            const batch = db.batch();
+
+            // 1. อัปเดต Document ของเรา: เพิ่ม targetUserId เข้าไปใน array 'following'
+            batch.update(userRef, { following: firebase.firestore.FieldValue.arrayUnion(targetUserId) });
+            
+            // 2. อัปเดต Document ของเป้าหมาย: เพิ่ม currentUserId เข้าไปใน array 'followers'
+            batch.update(targetUserRef, { followers: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
+            
+            // สั่งให้ Batch ทำงาน
+            await batch.commit();
+            
+            // [ส่วนที่เพิ่มเข้ามา]
+            // 3. อัปเดต State ฝั่ง Client ทันทีเพื่อความรวดเร็ว
+            if (!state.following) state.following = [];
+            state.following.push(targetUserId);
+
+            // 4. สั่งให้วาดรายการผู้ติดตามใหม่ทั้งหมดด้วยข้อมูลล่าสุด
+            renderFollowersList(); 
+
+            // 5. แสดง Toast แจ้งเตือน
+            showToast("ติดตามกลับแล้ว!");
+
+        } catch (error) {
+            console.error("Error following back user:", error);
+            showToast("เกิดข้อผิดพลาดในการติดตามกลับ");
+        }
     };
     
     async function renderFollowRequests() {
