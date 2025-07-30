@@ -276,35 +276,6 @@ label.reason-option:has(input:checked) .reason-icon-group { color: white; }
 .shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"] { background-color: var(--success-color); }
 .shop-item-card .btn-buy[onclick*="ปลดล็อกแล้ว"]:hover { background-color: var(--success-color); }
 .owned-tag { position: absolute; top: 12px; right: 12px; background-color: var(--success-color); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.community-container-new { display: grid; grid-template-columns: 350px 1fr; gap: 0; height: calc(100vh - 120px); max-height: 800px; }
-@media (max-width: 900px) {
-    .community-container-new { grid-template-columns: 1fr; }
-    #chat-list-panel.has-active-chat ~ #chat-panel { display: flex; }
-    #chat-list-panel { display: flex; flex-direction: column; }
-    #chat-list-panel.has-active-chat { display: none; }
-}
-#chat-list-panel { border-radius: 16px 0 0 16px; border-right: 1px solid var(--border-color); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
-.chat-list-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-.chat-list-header h3 { margin: 0; }
-.chat-list { list-style: none; padding: 10px 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-.chat-list-item { display: flex; align-items: center; padding: 12px 20px; cursor: pointer; transition: background-color 0.2s; border-left: 4px solid transparent; }
-.chat-list-item:hover { background-color: var(--bg-color); }
-.chat-list-item.active { background-color: var(--bg-color); border-left-color: var(--primary-color); }
-.chat-list-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; margin-right: 15px; flex-shrink: 0; }
-.chat-list-info { overflow: hidden; flex-grow: 1; }
-.chat-list-name { font-weight: 500; display: block; color: var(--text-color); }
-.chat-list-last-message { font-size: 0.9em; color: var(--subtle-text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
-#chat-panel { border-radius: 0 16px 16px 0; padding: 0; display: flex; flex-direction: column; }
-.chat-view { width: 100%; height: 100%; display: flex; flex-direction: column; }
-.chat-view.hidden { display: none; }
-#chat-welcome-view { justify-content: center; align-items: center; text-align: center; color: var(--subtle-text-color); }
-#chat-welcome-view .feather { width: 60px; height: 60px; stroke-width: 1.5; margin-bottom: 20px; }
-.chat-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-.chat-header .profile-pic { width: 45px; height: 45px; margin-right: 15px; }
-.chat-header-info h3, .chat-header-info p { margin: 0; line-height: 1.3; }
-.chat-header-info h3 { font-size: 1.1rem; }
-.chat-messages-container { flex-grow: 1; overflow-y: auto; padding: 20px; }
-.chat-input-area { padding: 15px 20px; border-top: 1px solid var(--border-color); flex-shrink: 0; }
 .banner-selector-body { padding: 25px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; }
 .banner-option-card { border: 2px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all 0.2s ease-in-out; position: relative; background-color: var(--bg-color); }
 .banner-option-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: var(--shadow); }
@@ -883,4 +854,61 @@ body[data-theme="dark"] .timer-controls .icon-button {
     border-bottom: none;
     margin: 0;
     padding: 0;
+}
+/* ===== Community Page Tabs ===== */
+.community-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 25px;
+}
+.tab-btn {
+    padding: 10px 20px;
+    margin-bottom: -1px; /* ทำให้เส้นขอบล่างของปุ่มที่ active ทับเส้นของ container */
+    border: none;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--subtle-text-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.tab-btn:hover {
+    color: var(--text-color);
+}
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+.badge-count {
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 0.75em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: bold;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.user-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.user-list-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background-color: var(--bg-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }

@@ -80,14 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
         followers: [],
         followRequests: [],
         sentFollowRequests: [],
-        chatStreaks: {}
     };
 
     let timerInterval, timeLeft, isFocusing = true;
     let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
     let currentMoodDate = dayjs(), selectedMoodDate = dayjs().format('YYYY-MM-DD');
     let toastTimeout, areListenersSetup = false;
-    let currentChatId = null, unsubscribeChatListener = null, friendListeners = [];
+    friendListeners = [];
     let lastSearchResults = [];
     let currentSubjectSelectionCallback = null;
     const allPages = document.querySelectorAll('.page');
@@ -357,9 +356,9 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'focus': resetTimer(); renderFocusStats('day'); break;
             case 'mood': renderMoodCalendar(currentMoodDate); break;
             case 'community':
-                document.getElementById('chat-conversation-view').classList.add('hidden');
-                document.getElementById('chat-welcome-view').classList.remove('hidden');
-                renderChatList();
+                // เมื่อเข้ามาหน้านี้ ให้แสดงแท็บ "กำลังติดตาม" เป็นค่าเริ่มต้น
+                showCommunityTab('following'); 
+                renderFollowingList();
                 break;
             case 'shop': renderShop(); break;
             case 'rewards': updateRewardsUI(); break;
@@ -660,10 +659,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const followingDiv = document.getElementById('profile-stat-following').parentElement;
 
     followersDiv.style.cursor = "pointer";
-    followersDiv.onclick = () => showUserListModal('followers', state.followers);
-    
+    followersDiv.onclick = () => {
+        showPage('community'); // ไปที่หน้าเพื่อน
+        showCommunityTab('followers'); // เปิดแท็บผู้ติดตาม
+    };
+        
     followingDiv.style.cursor = "pointer";
-    followingDiv.onclick = () => showUserListModal('following', state.following);
+    followingDiv.onclick = () => {
+        showPage('community'); // ไปที่หน้าเพื่อน
+        showCommunityTab('following'); // เปิดแท็บกำลังติดตาม
+    };
 
     // 7. แสดงสถิติการใช้งานแอป
     document.getElementById('profile-stat-streak').textContent = state.streak || 0;
@@ -2067,6 +2072,26 @@ document.addEventListener('DOMContentLoaded', () => {
         feather.replace();
     }
 
+    function showCommunityTab(tabName) {
+        // จัดการ class 'active' ของปุ่มแท็บ
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        // จัดการ class 'active' ของเนื้อหาแท็บ
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('active', content.id.startsWith(tabName));
+        });
+
+        // เรียกฟังก์ชันวาดข้อมูลตามแท็บที่เลือก
+        if (tabName === 'following') {
+            renderFollowingList();
+        } else if (tabName === 'followers') {
+            renderFollowersList();
+        } else if (tabName === 'requests') {
+            renderFollowRequests();
+        }
+    }
+
     async function renderFollowingList() {
         const listEl = document.getElementById('following-list');
         if (!listEl) return;
@@ -2108,119 +2133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ใน app.js, แทนที่ฟังก์ชัน renderChatList เดิมด้วยเวอร์ชันนี้
-
-async function renderChatList() {
-    // 1. ตรวจสอบเบื้องต้นและเตรียม Element
-    if (!currentUser) return;
-    const listEl = document.getElementById('chat-list');
-    if (!listEl) return;
-
-    listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลดรายการแชท...</li>';
-
-    // 2. === [ส่วนแสดงคำขอติดตาม] ===
-    const requestIds = state.followRequests || [];
-    let requestHtml = '';
-
-    if (requestIds.length > 0) {
-        // ดึงข้อมูลโปรไฟล์ของผู้ที่ส่งคำขอทั้งหมด
-        const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
-        const requestDocs = await Promise.all(requestPromises);
-        
-        // สร้าง HTML สำหรับแต่ละคำขอ
-        const requestItemsHtml = requestDocs.map(doc => {
-            if (!doc.exists) return ''; // ถ้าหา user ไม่เจอ ให้ข้ามไป
-            const senderData = doc.data();
-            return `
-                <div class="follow-request-item">
-                    <img src="${senderData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="chat-list-avatar">
-                    <div class="request-info">
-                        <strong>${senderData.profile.displayName || 'User'}</strong>
-                        <span>ส่งคำขอติดตามคุณ</span>
-                    </div>
-                    <div class="request-actions">
-                        <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')">ยอมรับ</button>
-                        <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')">ลบ</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // รวมเป็น Section ของคำขอติดตาม
-        requestHtml = `
-            <li class="chat-list-section-header">
-                <h4>คำขอติดตาม (${requestIds.length})</h4>
-            </li>
-            <li class="follow-request-container">${requestItemsHtml}</li>
-        `;
-    }
-
-    // 3. === [ส่วนแสดงรายการแชท] ===
-    const following = state.following || [];
-    const followers = state.followers || [];
-    // กรองหาเฉพาะเพื่อนที่ติดตามกันและกัน (Mutual Friends)
-    const mutualFriendIds = following.filter(id => followers.includes(id));
-
-    let chatItemsHtml = '';
-
-    // ตรวจสอบว่าถ้าไม่มีทั้งคำขอและเพื่อน ให้แสดงข้อความว่าง
-    if (mutualFriendIds.length === 0 && requestIds.length === 0) {
-        listEl.innerHTML = '<li class="empty-placeholder">หาเพื่อนและติดตามกันเพื่อเริ่มแชท!</li>';
-        return;
-    }
-
-    if (mutualFriendIds.length > 0) {
-        // ดึงข้อมูลโปรไฟล์และข้อความล่าสุดของเพื่อนทุกคน
-        const chatDataPromises = mutualFriendIds.map(async (friendId) => {
-            const chatId = [currentUser.uid, friendId].sort().join('_');
-            const [friendDoc, chatDoc] = await Promise.all([
-                db.collection('users').doc(friendId).get(),
-                db.collection('chats').doc(chatId).get()
-            ]);
-            if (!friendDoc.exists) return null;
-            return {
-                friendProfile: friendDoc.data().profile,
-                friendId: friendId,
-                lastMessage: chatDoc.exists ? chatDoc.data().lastMessage : null
-            };
-        });
-
-        // รอให้ข้อมูลทั้งหมดโหลดเสร็จ
-        let chatItems = (await Promise.all(chatDataPromises)).filter(item => item !== null);
-
-        // จัดเรียงรายการแชทตามเวลาของข้อความล่าสุด (ใหม่สุดอยู่บน)
-        chatItems.sort((a, b) => {
-            if (!a.lastMessage) return 1; // แชทที่ยังไม่เคยคุยจะอยู่ล่างสุด
-            if (!b.lastMessage) return -1;
-            // เปรียบเทียบเวลาของ Firestore Timestamp
-            return b.lastMessage.timestamp.toMillis() - a.lastMessage.timestamp.toMillis();
-        });
-
-        // สร้าง HTML สำหรับแต่ละรายการแชท
-        chatItemsHtml = chatItems.map(item => {
-            const { friendProfile, friendId, lastMessage } = item;
-            let lastMessageText = "เริ่มการสนทนา...";
-            if (lastMessage) {
-                const prefix = lastMessage.senderId === currentUser.uid ? "คุณ: " : "";
-                lastMessageText = prefix + lastMessage.text;
-            }
-            const isActive = currentChatId === [currentUser.uid, friendId].sort().join('_');
-            
-            // เพิ่ม data-friend-id เพื่อให้ click listener รู้ว่าจะต้องจัดการกับเพื่อนคนไหน
-            return `
-                <li class="chat-list-item ${isActive ? 'active' : ''}" data-friend-id="${friendId}">
-                    <img src="${friendProfile.photoURL || 'assets/profiles/startprofile.png'}" alt="${friendProfile.displayName}" class="chat-list-avatar">
-                    <div class="chat-list-info">
-                        <span class="chat-list-name">${friendProfile.displayName || 'User'}</span>
-                        <p class="chat-list-last-message">${lastMessageText}</p>
-                    </div>
-                </li>
-            `;
-        }).join('');
-    }
-
-    // 4. รวม HTML ทั้งหมด (คำขอ + รายการแชท) แล้วแสดงผลในหน้าเว็บ
-    listEl.innerHTML = requestHtml + chatItemsHtml;
-}
     
     async function handleFriendSearch(e) {
         e.preventDefault();
@@ -2390,82 +2302,6 @@ async function renderChatList() {
             console.error("Error rendering follow requests:", error);
             listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
         }
-    }
-
-    // eslint-disable-next-line no-unused-vars
-    window.startChat = async (friendId) => {
-        // ซ่อน/แสดง panel ที่ถูกต้องสำหรับจอเล็ก
-        const chatListPanel = document.getElementById('chat-list-panel');
-        if (chatListPanel) chatListPanel.classList.add('has-active-chat');
-
-        currentChatId = [currentUser.uid, friendId].sort().join('_');
-        if (unsubscribeChatListener) { unsubscribeChatListener(); }
-
-        // ทำให้รายการที่เลือกอยู่ active
-        await renderChatList(); 
-
-        const friendDoc = await db.collection('users').doc(friendId).get();
-        if(!friendDoc.exists) return;
-
-        const friendData = friendDoc.data();
-        const profile = friendData.profile;
-        const { level } = calculateLevel(friendData.exp || 0);
-
-        renderProfilePicture(profile.photoURL, document.getElementById('chat-partner-photo'));
-        document.getElementById('chat-partner-name').textContent = profile.displayName || 'User';
-        document.getElementById('chat-partner-level').textContent = `Level ${level}`;
-    
-        document.getElementById('chat-welcome-view').classList.add('hidden');
-        document.getElementById('chat-conversation-view').classList.remove('hidden');
-    
-        const messagesContainer = document.getElementById('chat-messages');
-        messagesContainer.innerHTML = ''; 
-
-        const chatQuery = db.collection('chats').doc(currentChatId).collection('messages').orderBy('timestamp', 'asc').limitToLast(50);
-        unsubscribeChatListener = chatQuery.onSnapshot(snapshot => {
-            snapshot.docChanges().forEach(change => {
-                if (change.type === 'added') {
-                    const messageData = change.doc.data();
-                    if (!messageData.text) return;
-                    const messageEl = document.createElement('div');
-                    messageEl.classList.add('chat-message', messageData.senderId === currentUser.uid ? 'sent' : 'received');
-                    const bubble = document.createElement('div');
-                    bubble.classList.add('message-bubble');
-                    bubble.textContent = messageData.text;
-                    messageEl.appendChild(bubble);
-                    messagesContainer.appendChild(messageEl);
-                }
-            });
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        });
-    };
-
-
-    async function sendMessage(text) {
-        if (!currentChatId || !text.trim()) return;
-
-        const messageData = {
-            text: text.trim(),
-            senderId: currentUser.uid,
-            imestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-    
-        const chatRef = db.collection('chats').doc(currentChatId);
-
-        // 1. เพิ่มข้อความใหม่เข้าไปใน sub-collection 'messages'
-        await chatRef.collection('messages').add(messageData);
-    
-        // เพื่อให้เราดึงข้อมูลไปแสดงในรายการแชทได้เร็ว
-        const lastMessageUpdate = {
-            text: messageData.text,
-            senderId: messageData.senderId,
-            timestamp: messageData.timestamp // ใช้ timestamp เดียวกัน
-        };
-
-        await chatRef.set({
-            participants: currentChatId.split('_'),
-            lastMessage: lastMessageUpdate
-        }, { merge: true }); // ใช้ merge: true เพื่อไม่ให้ลบข้อมูลอื่น
     }
 
     // =========================================
@@ -3244,14 +3080,6 @@ async function renderChatList() {
                 case 'search-friends-form': handleFriendSearch(e); break;
                 case 'quiz-creation-form': handleQuizCreationForm(e); break;
                 case 'add-custom-subject-form': handleAddCustomSubject(e); break;
-                case 'chat-form': {
-                    const input = document.getElementById('chat-input');
-                    if (input.value.trim()) {
-                        sendMessage(input.value.trim());
-                        input.value = '';
-                    }
-                    break;
-                }
             }
         });
         
