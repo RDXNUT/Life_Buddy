@@ -2339,54 +2339,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // [ADVANCED DEBUG VERSION]
     async function renderFollowRequests() {
         console.log("--- 1. Rendering Follow Requests ---");
 
         const listEl = document.getElementById('friend-requests-list');
-        const badgeEl = document.getElementById('request-count-badge'); 
-        if (!listEl) return;
+        const badgeEl = document.getElementById('request-count-badge');
+        if (!listEl || !badgeEl) return;
 
-        listEl.innerHTML = '<li>กำลังโหลด...</li>';
+        listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลด...</li>';
 
         const requestIds = state.followRequests || [];
-        console.log("State before rendering:", requestIds);
+        console.log("State before rendering:", JSON.parse(JSON.stringify(requestIds)));
 
         badgeEl.textContent = requestIds.length;
         badgeEl.classList.toggle('hidden', requestIds.length === 0);
 
         if (requestIds.length === 0) {
-            console.log("No requests found. Displaying empty message.");
             listEl.innerHTML = '<li class="empty-placeholder">ไม่มีคำขอติดตาม</li>';
             return;
         }
 
         try {
-            console.log("Fetching profiles for:", requestIds);
+            console.log("Fetching profiles for:", JSON.parse(JSON.stringify(requestIds)));
             const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
             const requestDocs = await Promise.all(requestPromises);
-            listEl.innerHTML = requestDocs.map(doc => {
-                if (!doc.exists) return '';
+
+            console.log("--- DEBUG: Inspecting fetched documents ---"); // DEBUG
+            let finalHtml = '';
+            
+            // ใช้ forEach แทน map เพื่อให้ console.log ทำงานได้ง่ายขึ้น
+            requestDocs.forEach((doc, index) => {
+                console.log(`Processing doc ${index} (ID: ${doc.id}):`); // DEBUG
+                
+                if (!doc.exists) {
+                    console.log(`  -> Document does NOT exist.`); // DEBUG
+                    return; // ถ้า document ไม่มีอยู่จริง ให้ข้ามไปเลย
+                }
+
                 const senderData = doc.data();
+                console.log(`  -> Document exists. Data:`, senderData); // DEBUG
+
                 const displayName = senderData.profile.displayName || 'User';
-                return `
+                const lifebuddyId = senderData.profile.lifebuddyId || '';
+                const photoURL = senderData.profile.photoURL || 'assets/profiles/startprofile.png';
+                
+                // สร้าง HTML ของรายการนี้
+                const itemHtml = `
                     <li class="user-list-item">
-                        <img src="${senderData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
+                        <img src="${photoURL}" alt="Profile Photo" class="user-list-avatar">
                         <div class="user-info">
                             <h4>${displayName}</h4>
-                            <p>${senderData.profile.lifebuddyId || ''}</p>
+                            <p class="subtle-text">${lifebuddyId}</p>
                         </div>
                         <div class="user-actions">
-                            <button class="small-btn btn-accept-request" data-sender-id="${doc.id}">
+                            <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')">
                                 <i data-feather="check"></i> ยอมรับ
                             </button>
-                            <button class="small-btn btn-secondary btn-decline-request" data-sender-id="${doc.id}">
-                                <i data-feather="x"></i> ปฏิเสธ
+                            <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')">
+                                <i data-feather="x"></i> ลบ
                             </button>
                         </div>
                     </li>
                 `;
-            }).join('');
+                finalHtml += itemHtml; // เพิ่ม HTML เข้าไปในตัวแปร
+            });
+
+            console.log("--- Finished processing. Final HTML will be set. ---"); // DEBUG
+            listEl.innerHTML = finalHtml || '<li class="empty-placeholder">ไม่พบข้อมูลคำขอ</li>'; // ถ้าวนลูปแล้วไม่มีอะไรเลย ให้แสดงข้อความ
             feather.replace();
+
         } catch (error) {
             console.error("Error rendering follow requests:", error);
             listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
