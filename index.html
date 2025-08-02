@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Buddy – คู่หูชีวิต</title>
+    <link rel="icon" href="data:,">
+
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+<body data-theme="light">
+    <!-- Loading Screen -->
+    <div id="loading-overlay"><div class="loader"></div></div>
+
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <h3>Life Buddy</h3>
+            <button id="close-menu" class="icon-button"><i data-feather="x"></i></button>
+        </div>
+        <ul>
+            <li><a href="#" class="nav-link active" data-page="home"><i data-feather="home"></i>ภาพรวม</a></li>
+            <li><a href="#" class="nav-link" data-page="planner"><i data-feather="calendar"></i>ระบบตารางชีวิต</a></li>
+            <li><a href="#" class="nav-link" data-page="revisit"><i data-feather="book-open"></i>ทบทวนความรู้</a></li>
+            <li><a href="#" class="nav-link" data-page="focus"><i data-feather="clock"></i>จับเวลาโฟกัส</a></li>
+            <li><a href="#" class="nav-link" data-page="mood"><i data-feather="smile"></i>บันทึกอารมณ์</a></li>
+            <li><a href="#" class="nav-link" data-page="community"><i data-feather="users"></i>เพื่อน</a></li>
+            <li><a href="#" class="nav-link" data-page="shop"><i data-feather="shopping-cart"></i>ร้านค้า</a></li>
+            <li><a href="#" class="nav-link" data-page="rewards"><i data-feather="award"></i>รางวัลและความสำเร็จ</a></li>
+            <li><a href="#" class="nav-link" data-page="settings"><i data-feather="settings"></i>การตั้งค่า</a></li>
+            <li><a href="#" class="nav-link" data-page="profile"><i data-feather="user"></i>โปรไฟล์ของฉัน</a></li>
+        </ul>
+    </nav>
+    <div id="overlay"></div>
+
+    <!-- Header -->
+    <header>
+        <button id="open-menu" class="icon-button"><i data-feather="menu"></i></button>
+        <div class="header-right">
+            <div id="guest-header" class="guest-container">
+                <span id="guest-mode-indicator">โหมดทดลองเล่น</span>
+                <button id="login-btn" class="small-btn pill-btn">เข้าสู่ระบบ / สมัคร</button>
+            </div>
+            <div id="user-header" class="user-stats hidden">
+                <button id="search-friends-btn" class="icon-button" title="ค้นหาเพื่อน"><i data-feather="search"></i></button>
+                <span id="streak-display" title="สตรีคการเช็คอิน">🔥 <span id="streak-count">0</span></span>
+                <button id="check-in-btn"><span class="check-in-text">เช็คอิน</span><i data-feather="check" class="check-in-icon hidden"></i></button>
+                <button id="logout-btn" class="icon-button" title="ออกจากระบบ"><i data-feather="log-out"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <section id="home-banner" class="home-banner-card">
+            </section>
+            <section class="card"><h2><i data-feather="clipboard"></i> ภาพรวมวันนี้</h2>
+               <div class="overview-grid">
+                    <!-- การ์ดย่อยสำหรับ ตารางงาน -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #EBF5FF; color: #0A84FF;">
+                                <i data-feather="list"></i>
+                            </div>
+                            <h3>สรุปตารางงานวันนี้</h3>
+                        </div>
+                        <ul id="today-tasks-summary" class="overview-card-content">
+                            <li>ไม่มีงานสำหรับวันนี้</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- การ์ดย่อยสำหรับ การทบทวน -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #FFF6E5; color: #FF9F0A;">
+                                <i data-feather="book-open"></i>
+                            </div>
+                            <h3>การทบทวนที่ต้องทำ</h3>
+                        </div>
+                        <ul id="today-revisit-summary" class="overview-card-content">
+                            <li>ไม่มีหัวข้อต้องทบทวน</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- การ์ดย่อยสำหรับ สถิติโฟกัส -->
+                    <div class="overview-card">
+                        <div class="overview-card-header">
+                            <div class="overview-icon-wrapper" style="background-color: #E5F9ED; color: #30D158;">
+                                <i data-feather="watch"></i>
+                            </div>
+                            <h3>สถิติการโฟกัส</h3>
+                        </div>
+                        <div class="overview-card-content focus-stats-content">
+                            <p>วันนี้โฟกัสสำเร็จ <strong id="today-focus-count">0</strong> รอบ</p>
+                            <button class="small-btn pill-btn" onclick="showPage('focus')">ไปที่หน้าจับเวลา</button>
+                        </div>
+                    </div>
+                </div>
+            <div class="home-grid">
+                <section class="card"><h2><i data-feather="target"></i> เป้าหมายรายวัน</h2><form id="todo-form"><input type="text" id="todo-input" placeholder="เพิ่มเป้าหมายใหม่..." required><button type="submit" aria-label="เพิ่มเป้าหมาย"><i data-feather="plus"></i></button></form><ul id="todo-list"></ul></section>
+                <section class="card">
+                    <div class="card-header-actions"><h2><i data-feather="zap"></i> กิจกรรมแก้เบื่อ</h2><button id="manage-activities-btn" class="icon-button" title="จัดการรายการกิจกรรม"><i data-feather="settings"></i></button></div>
+                    <button id="random-activity-btn">สุ่มกิจกรรมคลายเหงา 🎲</button><p id="activity-suggestion" class="suggestion-text"></p>
+                </section>
+            </div>
+
+             <section class="card wishlist-card">
+            <h2><i data-feather="gift"></i> Wish List / กระปุกออมสิน</h2>
+            <div id="wishlist-container">
+                <div class="wishlist-header">
+                    <span id="wishlist-name">ของชิ้นต่อไป!</span>
+                    <button id="edit-wishlist-btn" class="icon-button" title="แก้ไขเป้าหมาย"><i data-feather="edit-3"></i></button>
+                </div>
+                <div class="progress-bar-wrapper">
+                    <div id="wishlist-progress-bar" class="progress-bar"></div>
+                </div>
+                <div class="wishlist-info">
+                    <span id="wishlist-progress-text">0 / 1000</span>
+                    <span id="wishlist-percentage">0%</span>
+                </div>
+            </div>
+        </section>
+
+            <section class="card">
+                <div class="card-header-actions">
+                    <h2><i data-feather="sunrise"></i> คำแนะนำประจำวัน</h2>
+                    <button id="manage-advice-btn" class="icon-button" title="จัดการรายการคำแนะนำ"><i data-feather="settings"></i></button>
+                </div>
+                <p id="daily-advice" class="suggestion-text">กดปุ่มเพื่อรับคำแนะนำดีๆ สำหรับวันนี้</p>
+                <button id="random-advice-btn">สุ่มใหม่</button>
+            </section>
+        </div>
+        <!-- Planner Page -->
+        <div id="planner-page" class="page">
+            <h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1>
+            <div class="planner-container">
+                <div class="calendar-main card">
+                    <div class="calendar-controls">
+                        <button id="planner-prev-month" class="calendar-nav-btn" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button>
+                        <h3 id="planner-month-year"></h3>
+                        <button id="planner-next-month" class="calendar-nav-btn" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button>
+                    </div>
+                    <div id="planner-calendar" class="calendar"></div>
+                </div>
+                <div class="planner-sidebar">
+                    <div class="card">
+                        <h2>เพิ่มกิจกรรม</h2>
+                        <h4 id="selected-planner-date-display"></h4>
+                        <form id="planner-form">
+                            <!-- เพิ่ม div นี้เข้าไปเพื่อครอบ input ทั้งหมด -->
+                            <div class="planner-form-grid">
+                                <input type="text" id="event-name" placeholder="ชื่อกิจกรรม" required>
+                                <div id="event-category-selector-btn" class="custom-selector-display" data-value="">
+                                    <span>เลือกหมวดหมู่</span>
+                                    <i data-feather="chevron-down"></i>
+                                </div>
+                                <input type="time" id="event-time" required>
+                            </div>
+                            <button type="submit">+ เพิ่มกิจกรรม</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h2>กิจกรรมในวันที่เลือก</h2>
+                        <ul id="events-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Shop Page -->
+        <div id="shop-page" class="page">
+            <h1><i data-feather="shopping-cart"></i> ร้านค้า</h1>
+            <p class="subtle-text" style="text-align: center; margin-top: -1.5rem; margin-bottom: 2rem;">ใช้ Coins ที่คุณสะสมมาเพื่อปลดล็อกของตกแต่งโปรไฟล์สุดพิเศษ!</p>
+            <section class="card">
+                <h2><i data-feather="image"></i> แบนเนอร์โปรไฟล์ (Banners)</h2>
+                <div id="shop-banners-container" class="shop-grid"></div>
+            </section>
+        </div>
+        <!-- Revisit Page -->
+        <div id="revisit-page" class="page">
+            <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
+
+            <!-- [VIEW 1] View สำหรับแสดงรายการหัวข้อตามหมวดหมู่ -->
+            <div id="revisit-list-view" class="page-view">
+                <section class="card">
+                    <h2><i data-feather="plus-circle"></i> เพิ่มหัวข้อใหม่สำหรับทบทวน</h2>
+                    <form id="revisit-form">
+                        <div class="form-group">
+                            <label for="revisit-subject-display">เลือกวิชา</label>
+                            <input type="text" id="revisit-subject-display" placeholder="-- เลือกวิชา --" readonly>
+                            <input type="hidden" id="revisit-subject-value" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="revisit-topic-name">ชื่อหัวข้อ</label>
+                            <input type="text" id="revisit-topic-name" placeholder="เช่น ระบบหมุนเวียนเลือด, พันธุกรรม..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="revisit-topic-notes">ใส่โน้ตย่อ / Bullet / คำสำคัญ</label>
+                            <textarea id="revisit-topic-notes" placeholder="ใส่เนื้อหาสรุปสั้นๆ ที่นี่..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>เลือกรอบการทบทวน (Spaced Repetition)</label>
+                            <div class="review-interval-selector">
+                                <label><input type="checkbox" name="review-interval" value="1" checked> 1 วัน</label>
+                                <label><input type="checkbox" name="review-interval" value="3" checked> 3 วัน</label>
+                                <label><input type="checkbox" name="review-interval" value="7" checked> 7 วัน</label>
+                                <label><input type="checkbox" name="review-interval" value="14"> 14 วัน</label>
+                                <label><input type="checkbox" name="review-interval" value="30" checked> 30 วัน</label>
+                                <label><input type="checkbox" name="review-interval" value="60"> 60 วัน</label>
+                            </div>
+                        </div>
+                        <button type="submit">+ เพิ่มหัวข้อ</button>
+                    </form>
+                </section>
+                <section class="card">
+                    <h2><i data-feather="archive"></i> คลังความรู้ของฉัน</h2>
+                    <div id="revisit-topics-by-subject"></div>
+                </section>
+            </div>
+
+            <!-- [VIEW 2] หน้าจัดการและสร้างควิซ -->
+            <div id="quiz-creation-view" class="page-view hidden">
+                <button id="back-to-revisit-list-from-creation" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปที่รายการหัวข้อ</button>
+                <section class="card">
+                    <h2><i data-feather="edit"></i> สร้าง/จัดการควิซสำหรับ: <span id="creation-topic-title"></span></h2>
+                    <div id="created-quizzes-list-container">
+                        <h3>รายการควิซในหัวข้อนี้ (<span id="quiz-count">0</span>)</h3>
+                        <ul id="created-quizzes-list"></ul>
+                        <button id="start-quiz-btn" class="hidden"><i data-feather="play-circle"></i> เริ่มทำควิซ</button>
+                    </div>
+                    <hr class="section-divider">
+                    <form id="quiz-creation-form">
+                        <h3 id="creation-form-title"><i data-feather="plus-circle"></i> เพิ่มควิซใหม่</h3>
+                        <div class="form-group">
+                            <label for="quiz-question-input">คำถาม</label>
+                            <textarea id="quiz-question-input" placeholder="ใส่คำถามของควิซที่นี่..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>ประเภทคำตอบ</label>
+                            <div class="quiz-type-selector">
+                                <label><input type="radio" name="quiz-type" value="multiple-choice" checked> หลายตัวเลือก (Choice)</label>
+                                <label><input type="radio" name="quiz-type" value="typed"> พิมพ์ตอบ</label>
+                            </div>
+                        </div>
+                        <div id="mc-options-container">
+                            <div class="form-group">
+                                <label>ตัวเลือก (ทำเครื่องหมายที่คำตอบที่ถูก)</label>
+                                <div id="choices-wrapper"></div>
+                                <button type="button" id="add-choice-btn" class="small-btn btn-secondary"><i data-feather="plus"></i> เพิ่มตัวเลือก</button>
+                            </div>
+                        </div>
+                        <div id="typed-answer-container" class="hidden">
+                             <div class="form-group">
+                                <label>คำตอบที่ถูกต้อง (สามารถเพิ่มได้หลายคำตอบ)</label>
+                                <div id="typed-answers-wrapper"></div>
+                                <button type="button" id="add-typed-answer-btn" class="small-btn btn-secondary"><i data-feather="plus"></i> เพิ่มรูปแบบคำตอบ</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="quiz-explanation-input">คำอธิบายเพิ่มเติม</label>
+                            <textarea id="quiz-explanation-input" placeholder="ใส่คำอธิบาย/เหตุผลของคำตอบที่ถูกต้อง..."></textarea>
+                        </div>
+                        <input type="hidden" id="editing-quiz-id">
+                        <button type="submit" id="save-quiz-btn"><i data-feather="save"></i> บันทึกควิซข้อนี้</button>
+                        <button type="button" id="cancel-edit-quiz-btn" class="btn-secondary hidden">ยกเลิกการแก้ไข</button>
+                    </form>
+                </section>
+            </div>
+
+            <!-- [VIEW 3] หน้าทำควิซ -->
+            <div id="quiz-taking-view" class="page-view hidden">
+                <div class="quiz-header">
+                    <button id="exit-quiz-btn" class="icon-button" title="ออกจากการทำควิซ"><i data-feather="x"></i></button>
+                    <div class="progress-bar-wrapper">
+                        <div id="quiz-progress-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+                <div class="quiz-content">
+                    <h2 id="quiz-question-display">คำถามจะแสดงที่นี่...?</h2>
+                    <div id="quiz-answers-container"></div>
+                    <button id="submit-typed-answer-btn" class="hidden">ส่งคำตอบ</button>
+                </div>
+                <div id="quiz-feedback-footer" class="hidden">
+                    <div class="feedback-content">
+                        <div class="feedback-left">
+                            <h3 id="feedback-title"></h3>
+                            <p id="feedback-explanation-preview"></p>
+                        </div>
+                        <div class="feedback-right">
+                            <button id="explain-btn" class="small-btn btn-secondary">อธิบาย</button>
+                            <button id="continue-quiz-btn" class="small-btn">ไปต่อ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Focus Page -->
+        <div id="focus-page" class="page">
+            <h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1>
+            
+            <div class="focus-topic-selector card">
+                <label for="focus-topic-selector-btn">คุณกำลังจะโฟกัสเรื่องอะไร?</label>
+                <!-- นี่คือปุ่มใหม่ของเรา -->
+                <div id="focus-topic-selector-btn" class="custom-selector-display" data-value="general">
+                    <span>เรื่องทั่วไป</span>
+                    <i data-feather="chevron-down"></i>
+                </div>
+            </div>
+
+            <div class="card timer-card">
+                <div id="timer-display">25:00</div>
+                <div id="timer-mode">Focus</div>
+                <div class="timer-controls">
+                    <button id="start-timer-btn"><i data-feather="play"></i> เริ่ม</button>
+                    <button id="reset-timer-btn" class="btn-secondary"><i data-feather="rotate-cw"></i> รีเซ็ต</button>
+                    <button id="settings-timer-btn" class="icon-button"><i data-feather="settings"></i></button>
+                </div>
+            </div>
+            <section id="focus-stats-section" class="card">
+                <h2><i data-feather="bar-chart"></i> สถิติการโฟกัส</h2>
+                <div class="stats-controls">
+                    <button class="stats-tab-btn active" data-period="day">วันนี้</button>
+                    <button class="stats-tab-btn" data-period="week">สัปดาห์นี้</button>
+                    <button class="stats-tab-btn" data-period="all">ทั้งหมด</button>
+                </div>
+                <div id="focus-stats-chart-container">
+                    <!-- กราฟแท่งจะถูกสร้างโดย JS ที่นี่ -->
+                </div>
+                <div id="focus-stats-legend">
+                    <!-- คำอธิบายสีและไอคอนจะถูกสร้างโดย JS ที่นี่ -->
+                </div>
+            </section>
+        </div>
+        <!-- Mood Page -->
+        <div id="mood-page" class="page">
+            <h1><i data-feather="smile"></i> บันทึกอารมณ์</h1>
+            <div class="mood-container">
+                <div class="mood-calendar-area card">
+                    <div class="calendar-controls">
+                        <button id="mood-prev-month" class="calendar-nav-btn" aria-label="เดือนก่อนหน้า"><i data-feather="chevron-left"></i></button>
+                        <h3 id="mood-month-year"></h3>
+                        <button id="mood-next-month" class="calendar-nav-btn" aria-label="เดือนถัดไป"><i data-feather="chevron-right"></i></button>
+                    </div>
+                    <div id="mood-calendar" class="calendar"></div>
+                </div>
+                <div class="mood-entry-area">
+                    <div class="card">
+                        <h2>บันทึกสำหรับ <span id="selected-mood-date-display"></span></h2>
+                        <div id="mood-details"><p><i>เลือกวันในปฏิทินเพื่อดูหรือเพิ่มบันทึก</i></p></div>
+                    </div>
+                    <div class="card">
+                        <h2>วันนี้รู้สึกอย่างไร?</h2>
+                        <form id="mood-form">
+                            <div class="emoji-selector">
+                                <span class="emoji-option" data-mood="happy">😊</span>
+                                <span class="emoji-option" data-mood="excited">🤩</span>
+                                <span class="emoji-option" data-mood="neutral">😐</span>
+                                <span class="emoji-option" data-mood="sad">😢</span>
+                                <span class="emoji-option" data-mood="angry">😡</span>
+                            </div>
+                            <input type="hidden" id="selected-mood" required>
+                            <textarea id="mood-notes" placeholder="วันนี้เกิดอะไรขึ้นบ้าง?"></textarea>
+                            <h3 class="reason-title">เหตุผลหลัก (เลือกได้หลายข้อ)</h3>
+                            <div class="reason-selector">
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="study"><div class="reason-icon-group">📚<i data-feather="book-open"></i></div><span>การเรียน</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="family"><div class="reason-icon-group">👨‍👩‍👧‍👦<i data-feather="home"></i></div><span>ครอบครัว</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="friends"><div class="reason-icon-group">💬<i data-feather="message-circle"></i></div><span>เพื่อน</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="work"><div class="reason-icon-group">🧑‍💻<i data-feather="briefcase"></i></div><span>งาน/กิจกรรม</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="love"><div class="reason-icon-group">💖<i data-feather="heart"></i></div><span>ความรัก</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="health"><div class="reason-icon-group">😷<i data-feather="activity"></i></div><span>สุขภาพ</span></label>
+                                <label class="reason-option"><input type="checkbox" name="mood-reason" value="other"><div class="reason-icon-group">❓<i data-feather="help-circle"></i></div><span>อื่นๆ</span></label>
+                            </div>
+                            <button type="submit">บันทึกอารมณ์</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Community Page -->
+        <!-- ค้นหา div นี้ในไฟล์ index.html ของคุณ -->
+        <div id="community-page" class="page">
+
+            <!-- [สำคัญ] ตรวจสอบให้แน่ใจว่าโค้ดทั้งหมดนี้อยู่ "ข้างใน" div ข้างบน -->
+
+            <h1><i data-feather="users"></i> เพื่อน</h1>
+
+            <!-- ส่วนของ Tabs -->
+            <div class="community-tabs">
+                <button class="tab-btn active" data-tab="following">กำลังติดตาม</button>
+                <button class="tab-btn" data-tab="followers">ผู้ติดตาม</button>
+                <button class="tab-btn" data-tab="requests">คำขอ <span id="request-count-badge" class="badge-count hidden">0</span></button>
+            </div>
+
+            <!-- ส่วนแสดงเนื้อหาของแต่ละ Tab -->
+            <div class="community-content">
+                <div id="following-list-container" class="tab-content active">
+                    <ul id="following-list" class="user-list">
+                        <!-- JS จะวาดรายชื่อคนที่กำลังติดตามที่นี่ -->
+                    </ul>
+                </div>
+                <div id="followers-list-container" class="tab-content">
+                    <ul id="followers-list" class="user-list">
+                        <!-- JS จะวาดรายชื่อผู้ติดตามที่นี่ -->
+                    </ul>
+                </div>
+                <div id="friend-requests-list-container" class="tab-content">
+                    <ul id="friend-requests-list" class="user-list">
+                        <!-- JS จะวาดคำขอติดตามที่นี่ -->
+                    </ul>
+                </div>
+            </div>
+
+        </div> <!-- ปิด div ของ community-page -->
+        <!-- Rewards Page -->
+        <div id="rewards-page" class="page">
+            <h1><i data-feather="award"></i> รางวัลและความสำเร็จ</h1>
+            <section class="card exp-total-card"><p>EXP สะสมทั้งหมด</p><div id="total-exp-display">0</div></section>
+            <section class="card"><h2>เหรียญตราสะสม (Badges)</h2><div id="badges-container" class="badges-grid"></div></section>
+        </div>
+        <!-- Settings Page -->
+        <div id="settings-page" class="page">
+            <h1><i data-feather="settings"></i> การตั้งค่า</h1>
+            <section class="card">
+                <h2><i data-feather="sun"></i> การปรับแต่งธีม</h2>
+                <div class="theme-switcher">
+                    <button id="theme-light-btn" class="theme-btn"><i data-feather="sun"></i> โทนสว่าง</button>
+                    <button id="theme-dark-btn" class="theme-btn"><i data-feather="moon"></i> โทนมืด</button>
+                </div>
+            </section>
+            <section class="card">
+                <h2><i data-feather="bar-chart-2"></i> ระดับและประสบการณ์</h2>
+                <div class="level-progress-container">
+                    <div class="level-info">
+                        <span class="level-badge" id="current-level">Level 1</span>
+                        <span class="exp-text" id="exp-progress-text">0 / 100 EXP</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="exp-progress-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <div id="profile-view-mode">
+                <div class="profile-header-card">
+                    <div class="profile-banner">
+                        <button id="change-banner-btn" class="edit-profile-fab" title="เปลี่ยนแบนเนอร์"><i data-feather="image"></i></button>
+                    </div>
+                    <img id="profile-view-photo" src="" alt="Profile Photo" class="avatar-display">
+                    <div class="profile-info">
+                        <h2 id="profile-view-name">ชื่อผู้ใช้</h2>
+                        <span class="level-badge" id="profile-view-level">Level 1</span>
+                        <div id="lifebuddy-id-container" class="id-container">
+                            <p id="profile-view-lifebuddy-id" class="subtle-text"><em>lifebuddy_id#0000</em></p>
+                            <button id="copy-id-btn" class="icon-button" title="คัดลอก ID"><i data-feather="copy"></i></button>
+                        </div>
+                        <p id="profile-view-bio" class="bio-text">คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ...</p>
+                        <div class="profile-follow-stats">
+                            <div class="follow-stat-item"><span class="follow-stat-value" id="profile-stat-followers">0</span><span class="follow-stat-label">ผู้ติดตาม</span></div>
+                            <div class="follow-stat-item"><span class="follow-stat-value" id="profile-stat-following">0</span><span class="follow-stat-label">กำลังติดตาม</span></div>
+                        </div>
+                        <button id="main-edit-profile-btn" class="small-btn" style="margin-top: 15px; width: auto; padding: 8px 25px;"><i data-feather="edit-2"></i> แก้ไขข้อมูลโปรไฟล์</button>
+                        <p id="profile-view-joindate" class="subtle-text join-date" style="margin-top: 20px;"><i data-feather="calendar"></i> เข้าร่วมเมื่อ...</p>
+                    </div>
+                </div>
+                <section class="card stats-grid">
+                    <h2><i data-feather="bar-chart-2"></i> สถิติของฉัน</h2>
+                    <div class="stats-container">
+                        <div class="stat-item"><span class="stat-icon">🔥</span><span class="stat-value" id="profile-stat-streak">0</span><span class="stat-label">วันต่อเนื่อง</span></div>
+                        <div class="stat-item"><span class="stat-icon">⚡️</span><span class="stat-value" id="profile-stat-total-exp">0</span><span class="stat-label">XP ทั้งหมด</span></div>
+                        <div class="stat-item"><span class="stat-icon">🎯</span><span class="stat-value" id="profile-stat-focus">0</span><span class="stat-label">รอบการโฟกัส</span></div>
+                        <div class="stat-item"><span class="stat-icon">😊</span><span class="stat-value" id="profile-stat-moods">0</span><span class="stat-label">ครั้งที่บันทึกอารมณ์</span></div>
+                    </div>
+                </section>
+                <section class="card">
+                    <div class="card-header-actions">
+                        <h2><i data-feather="award"></i> ความสำเร็จ</h2>
+                        <a href="#" class="view-all-link" onclick="showPage('rewards')">ดูทั้งหมด <i data-feather="chevron-right"></i></a>
+                    </div>
+                    <div id="profile-achievements-container" class="achievements-grid"></div>
+                </section>
+            </div>
+            <div id="profile-edit-mode" class="hidden">
+                <h1><i data-feather="user-check"></i> แก้ไขข้อมูลโปรไฟล์</h1>
+                <div class="profile-container">
+                    <div class="card profile-card">
+                        <div class="profile-picture-wrapper">
+                            <img id="profile-edit-photo" src="" alt="Profile Photo" class="avatar-display">
+                            <button id="edit-profile-picture-btn" class="photo-upload-label" title="เปลี่ยนรูปโปรไฟล์"><i data-feather="camera"></i></button>
+                        </div>
+                        <h2 id="profile-edit-name"></h2>
+                        <p id="profile-edit-email" class="subtle-text"></p>
+                    </div>
+                    <div class="card profile-details-card">
+                        <h2>แก้ไขข้อมูลส่วนตัว</h2>
+                        <form id="profile-form">
+                            <div class="form-group"><label for="display-name">ชื่อที่แสดง (Display Name)</label><input type="text" id="display-name" placeholder="ชื่อที่คุณต้องการให้แสดง"></div>
+                            <div class="form-group"><label for="gender">เพศ</label><select id="gender"><option value="unspecified">ไม่ระบุ</option><option value="male">ชาย</option><option value="female">หญิง</option></select></div>
+                            <div class="form-group"><label for="age">อายุ</label><input type="number" id="age" placeholder="กรอกอายุของคุณ" min="1"></div>
+                            <div class="form-group"><label for="bio">เกี่ยวกับฉัน (Bio)</label><textarea id="bio" placeholder="คำอธิบายสั้นๆ เกี่ยวกับตัวคุณ..." maxlength="150"></textarea></div>
+                            <div class="form-group privacy-setting">
+                                <label for="show-email-toggle">แสดงอีเมลในโปรไฟล์สาธารณะ</label>
+                                <div class="toggle-switch-container"><input type="checkbox" id="show-email-toggle" class="toggle-switch"><label for="show-email-toggle" class="toggle-label"></label></div>
+                            </div>
+                            <button type="submit" id="save-profile-btn"><span class="btn-text">บันทึกการเปลี่ยนแปลง</span><span class="btn-loader hidden"></span></button>
+                            <button type="button" id="cancel-edit-profile-btn" class="btn-secondary">ยกเลิก</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="timer-settings-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i data-feather="sliders"></i> ตั้งค่าเวลา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div style="padding: 15px 30px 30px;">
+                <div class="form-group">
+                    <label for="focus-duration">เวลาโฟกัส (นาที)</label>
+                    <input type="number" id="focus-duration" value="25" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="break-duration">เวลาพัก (นาที)</label>
+                    <input type="number" id="break-duration" value="5" min="1">
+                </div>
+                <button id="save-timer-settings-btn" style="width: 100%;">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALS -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="close-btn">×</button>
+            <div id="login-view">
+                <h2>เข้าสู่ระบบ</h2>
+                <form id="login-form">
+                    <div class="form-group"><input type="email" id="login-email" placeholder="อีเมล" required></div>
+                    <div class="form-group"><div class="input-with-icon-wrapper"><input type="password" id="login-password" placeholder="รหัสผ่าน" required><button type="button" class="password-toggle-btn" data-target="login-password" aria-label="แสดง/ซ่อนรหัสผ่าน"><i data-feather="eye"></i></button></div></div>
+                    <button type="submit">เข้าสู่ระบบ</button>
+                </form>
+                <p class="form-switcher">ยังไม่มีบัญชี? <a href="#" id="show-signup-link">สมัครสมาชิกที่นี่</a></p>
+            </div>
+            <div id="signup-view" class="hidden">
+                <h2>สมัครสมาชิกใหม่</h2>
+                <form id="signup-form">
+                    <div class="form-group"><input type="email" id="signup-email" placeholder="อีเมล" required></div>
+                    <div class="form-group">
+                        <div class="input-with-icon-wrapper"><input type="password" id="signup-password" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)" required><button type="button" class="password-toggle-btn" data-target="signup-password" aria-label="แสดง/ซ่อนรหัสผ่าน"><i data-feather="eye"></i></button></div>
+                        <p id="password-strength-text" class="password-feedback-text hidden"></p>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-with-icon-wrapper"><input type="password" id="signup-password-confirm" placeholder="ยืนยันรหัสผ่าน" required><div id="password-match-indicator" class="hidden"><i data-feather="check"></i></div><button type="button" class="password-toggle-btn" data-target="signup-password-confirm" aria-label="แสดง/ซ่อนรหัสผ่าน"><i data-feather="eye"></i></button></div>
+                    </div>
+                    <button type="submit">สมัครสมาชิก</button>
+                </form>
+                <p class="form-switcher">มีบัญชีอยู่แล้ว? <a href="#" id="show-login-link">เข้าสู่ระบบที่นี่</a></p>
+            </div>
+            <div class="social-login-container">
+                <p class="separator"><span>หรือ</span></p>
+                <button id="google-signin-btn" class="google-btn"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon"> เข้าสู่ระบบด้วย Google</button>
+            </div>
+            <p id="auth-error" class="error-message"></p>
+        </div>
+    </div>
+    <div id="activity-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการกิจกรรม</h2><p>เพิ่มกิจกรรมที่คุณชอบ หรือลบกิจกรรมที่ไม่ต้องการ</p><div id="activity-list-container"></div><form id="add-activity-form"><input type="text" id="new-activity-input" placeholder="เพิ่มกิจกรรมใหม่ที่นี่..." required><button type="submit">เพิ่มกิจกรรม</button></form></div></div>
+    <div id="advice-manager-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>จัดการรายการคำแนะนำ</h2><p>เพิ่มคำคมหรือกำลังใจส่วนตัวของคุณที่นี่</p><div id="advice-list-container"></div><form id="add-advice-form"><input type="text" id="new-advice-input" placeholder="เพิ่มคำแนะนำใหม่ที่นี่..." required><button type="submit">เพิ่มคำแนะนำ</button></form></div></div>
+    <div id="search-friends-modal" class="modal-overlay hidden"><div class="modal-content"><button class="close-btn">×</button><h2>ค้นหาเพื่อน</h2><form id="search-friends-form"><input type="text" id="search-friends-input" placeholder="ค้นหาด้วยชื่อเล่น หรือ LifeBuddy ID" required><button type="submit">ค้นหา</button></form><div id="search-results-container"></div></div></div>
+    <div id="profile-selector-modal" class="modal-overlay hidden"><div class="modal-content large"><div class="modal-header"><h3>เลือกรูปโปรไฟล์ของคุณ</h3><button class="close-btn">×</button></div><div class="profile-selector-body"></div></div></div>
+    <div id="banner-selector-modal" class="modal-overlay hidden"><div class="modal-content large"><div class="modal-header"><h3>เลือกแบนเนอร์โปรไฟล์ของคุณ</h3><button class="close-btn">×</button></div><div id="banner-selector-body" class="banner-selector-body"></div></div></div>
+    <div id="user-list-modal" class="modal-overlay hidden"><div class="modal-content"><div class="modal-header"><h3 id="user-list-modal-title">รายชื่อ</h3><button class="close-btn">×</button></div><div id="user-list-modal-body" class="user-list-modal-body"></div></div></div>
+    <div id="friend-profile-modal" class="modal-overlay hidden"><div class="modal-content large" style="padding: 0; max-width: 800px;"><div id="friend-profile-content"></div><button class="close-btn" style="top: 10px; right: 10px; z-index: 10;">×</button></div></div>
+    <div id="subject-selector-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>เลือกวิชา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="subject-selector-body" class="subject-selector-body"></div>
+            <div class="custom-subject-footer">
+                <form id="add-custom-subject-form">
+                    <input type="text" id="custom-subject-input" placeholder="หรือเพิ่มวิชาใหม่..." required>
+                    <input type="color" id="custom-subject-color" value="#4A90E2" title="เลือกสีประจำวิชา">
+                    
+                    <!-- ปุ่มไอคอนที่เราจะเพิ่มเข้ามา -->
+                    <button type="button" id="add-custom-subject-icon-btn" class="icon-button">
+                        <img id="add-custom-subject-icon-preview" src="assets/subject-icons/light14.png" alt="icon">
+                    </button>
+                    
+                    <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL สำหรับเลือกไอคอน -->
+    <div id="icon-selector-modal" class="modal-overlay hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>เลือกไอคอนสำหรับวิชา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="icon-selector-grid" class="icon-selector-body">
+                <!-- ไอคอนทั้งหมดจะถูกสร้างโดย JS ที่นี่ -->
+            </div>
+        </div>
+    </div>
+
+        <!-- MODAL สำหรับเลือกหมวดหมู่กิจกรรม -->
+    <div id="event-category-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>เลือกหมวดหมู่</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="category-selector-body" class="subject-selector-body">
+                <!-- รายการหมวดหมู่จะถูกสร้างโดย JS ที่นี่ -->
+            </div>
+            <div class="custom-subject-footer">
+                <form id="add-custom-category-form">
+                    <input type="text" id="custom-category-input" placeholder="หรือเพิ่มหมวดหมู่ใหม่..." required>
+                    <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="hidden"></div> 
+
+     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/th.js"></script>
+    <script>dayjs.locale('th')</script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
