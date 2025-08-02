@@ -1826,7 +1826,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
-
         if (period === 'day') {
             filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'day'));
         } else if (period === 'week') {
@@ -1835,22 +1834,19 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredHistory = allFocusHistory;
         }
 
-        chartContainer.innerHTML = ''; // ล้างกราฟเก่าก่อน
-        legendContainer.innerHTML = ''; // ล้างคำอธิบายเก่าก่อน
+        chartContainer.innerHTML = '';
+        legendContainer.innerHTML = '';
         if (filteredHistory.length === 0) {
             chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 20px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
-
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
-            if (!acc[topicKey]) {
-                acc[topicKey] = 0;
-            }
+            if (!acc[topicKey]) { acc[topicKey] = 0; }
             acc[topicKey] += item.duration;
             return acc;
         }, {});
-
+        
         const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
         const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
             
@@ -1858,31 +1854,26 @@ document.addEventListener('DOMContentLoaded', () => {
             acc[subject.value] = subject;
             return acc;
         }, {});
-        
-        // เพิ่มข้อมูลสำหรับ "เรื่องทั่วไป" เข้าไปใน Map
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
-        // --- ส่วนที่ 5: วนลูปสร้างกราฟและคำอธิบาย ---
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
             const barHeight = (totalMinutes / maxMinutes) * 100;
             
-            // 1. ดึงธีมปัจจุบัน (light หรือ dark)
             const currentTheme = document.body.dataset.theme || 'light';
             
-            // 2. ดึงชื่อไฟล์ไอคอนจาก subject
-            const iconFilename = subject.icon || '14'; 
+            // ดึง iconNumber มาจาก `subject.icon` โดยตรง
+            const iconNumberForThisSubject = subject.icon || '14'; 
             
             let iconSrc = '';
             if (topicKey === 'general') {
-                // กรณีพิเศษสำหรับ general
-                iconSrc = `assets/subject-icons/general-${currentTheme}${iconNumber}.png`;
+                // ใช้ iconNumberForThisSubject ที่เราเพิ่งสร้าง
+                iconSrc = `assets/subject-icons/general-${currentTheme}${iconNumberForThisSubject}.png`;
             } else {
-                // กรณีวิชาทั่วไป
-                iconSrc = `assets/subject-icons/${currentTheme}${iconNumber}.png`;
+                // ใช้ iconNumberForThisSubject ที่เราเพิ่งสร้าง
+                iconSrc = `assets/subject-icons/${currentTheme}${iconNumberForThisSubject}.png`;
             }
-                
-            // สร้างกราฟแท่ง
+
             const barWrapper = document.createElement('div');
             barWrapper.className = 'chart-bar-wrapper';
             barWrapper.innerHTML = `
@@ -1895,7 +1886,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             chartContainer.appendChild(barWrapper);
             
-            // สร้างคำอธิบายใต้กราฟ (เหมือนเดิม)
             const legendItem = document.createElement('div');
             legendItem.className = 'legend-item';
             legendItem.innerHTML = `
@@ -1904,7 +1894,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             legendContainer.appendChild(legendItem);
         });
-
     }
     
     function startTimer() {
