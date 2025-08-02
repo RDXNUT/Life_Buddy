@@ -989,6 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentTheme = document.body.dataset.theme || 'light';
         const iconNumber = currentSubject.icon || '14';
+
         const iconSrc = iconNumber === '14'
             ? `assets/subject-icons/general-${currentTheme}${iconNumber}.png`
             : `assets/subject-icons/${currentTheme}${iconNumber}.png`;
@@ -1838,7 +1839,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- ส่วนที่ 2: จัดการ UI และข้อมูลเบื้องต้น ---
         chartContainer.innerHTML = '';
         legendContainer.innerHTML = '';
-
         if (filteredHistory.length === 0) {
             chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
@@ -1861,30 +1861,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
-        // --- ส่วนที่ 3: วนลูปสร้างกราฟ (มีการแก้ไขตรรกะ) ---
+        // วนลูปสร้างกราฟ
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
-            
-            // ตรวจสอบให้แน่ใจว่า totalMinutes เป็นตัวเลขและคำนวณ barHeight
-            const currentTotalMinutes = Number(totalMinutes) || 0;
-            const barHeight = (currentTotalMinutes / maxMinutes) * 100;
-            
+            const barHeight = (totalMinutes / maxMinutes) * 100;
             const currentTheme = document.body.dataset.theme || 'light';
             const iconForThisSubject = subject.icon || '14'; 
             
-            let iconSrc = '';
-            if (topicKey === 'general') {
-                iconSrc = `assets/subject-icons/general-${currentTheme}${iconForThisSubject}.png`;
-            } else {
-                iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
-            }
+            const iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
 
             const barWrapper = document.createElement('div');
             barWrapper.className = 'chart-bar-wrapper';
-            // ตรวจสอบว่า .chart-bar ถูกสร้างขึ้นมาด้วย
             barWrapper.innerHTML = `
                 <div class="chart-bar" style="height: ${barHeight}%; background-color: ${subject.color};">
-                    <div class="chart-tooltip">${currentTotalMinutes} นาที</div>
+                    <div class="chart-tooltip">${totalMinutes} นาที</div>
                 </div>
                 <div class="chart-icon">
                     <img src="${iconSrc}" alt="${subject.name}">
