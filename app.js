@@ -1824,7 +1824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const chartContainer = document.getElementById('focus-stats-chart-container');
         if (!chartContainer) return;
 
-        // ... (ส่วนของการกรองข้อมูล filteredHistory และรวมข้อมูล statsByTopic เหมือนเดิม) ...
+        // --- ส่วนที่ 1: กรองข้อมูล  ---
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
@@ -1842,6 +1842,8 @@ document.addEventListener('DOMContentLoaded', () => {
             chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
+
+        // --- ส่วนที่ 2: รวมผลและคำนวณค่าสูงสุด ---
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
             if (!acc[topicKey]) { acc[topicKey] = 0; }
@@ -1849,9 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
         
-        // [สำคัญ] หาเวลาที่มากที่สุด เพื่อให้ Progress Bar ของวิชานั้นยาวเต็ม 100%
         const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
-        
         const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
             
         const subjectMap = (state.subjects || []).reduce((acc, subject) => {
@@ -1860,11 +1860,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
-        // วนลูปสร้างรายการ Progress Bar
+        // --- ส่วนที่ 3: วนลูปสร้างรายการ Progress Bar ---
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
-            
-            // คำนวณ % ความยาวของ Progress Bar
             const barPercentage = (totalMinutes / maxMinutes) * 100;
             
             const currentTheme = document.body.dataset.theme || 'light';
@@ -1887,7 +1885,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rowElement = document.createElement('div');
             rowElement.className = 'stat-item-row';
             rowElement.innerHTML = `
-                <div class="stat-icon">
+                <div class.stat-icon">
                     <img src="${iconSrc}" alt="${subject.name}">
                 </div>
                 <div class="stat-details">

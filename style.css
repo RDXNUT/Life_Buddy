@@ -912,14 +912,16 @@ body[data-theme="dark"] .timer-controls .icon-button {
     border-radius: 12px;
     border: 1px solid var(--border-color);
 }
-/* ===== New Focus Stats Chart ===== */
+/* ===== [แบบใหม่] Focus Stats Progress Bars ===== */
 #focus-stats-chart-container {
+    /* เปลี่ยนจาก Flexbox แนวนอนเป็นแนวตั้ง */
     display: flex;
     flex-direction: column;
     gap: 20px; /* ระยะห่างระหว่างแต่ละรายการ */
     width: 100%;
     padding: 10px 0;
 }
+
 .stat-item-row {
     display: grid;
     /* แบ่งเป็น 3 คอลัมน์: ไอคอน, ชื่อ+บาร์, เวลา */
@@ -978,64 +980,10 @@ body[data-theme="dark"] .timer-controls .icon-button {
     color: var(--subtle-text-color);
     font-size: 0.95em;
 }
-.chart-bar-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    max-width: 60px;
-}
-.chart-bar {
-    width: 100%;
-    background-color: var(--primary-color);
-    border-radius: 8px 8px 0 0;
-    transition: height 0.5s ease-in-out;
-    position: relative;
-    cursor: pointer;
-}
-.chart-bar:hover .chart-tooltip {
-    opacity: 1;
-    transform: translateY(-5px);
-}
-.chart-tooltip {
-    position: absolute;
-    top: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--text-color);
-    color: var(--bg-color);
-    padding: 5px 10px;
-    border-radius: 6px;
-    font-size: 0.85em;
-    font-weight: 500;
-    white-space: nowrap;
-    opacity: 0;
-    transition: all 0.2s ease;
-    pointer-events: none;
-}
-.chart-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    overflow: hidden; 
-    background-color: var(--border-color); /* สีพื้นหลังสำรองเผื่อรูปโหลดไม่ขึ้น */
-}
-.chart-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* ทำให้รูปเต็มพื้นที่โดยไม่เสียสัดส่วน */
-}
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-}
-.legend-color-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+
+/* ซ่อน Legend ที่ไม่ได้ใช้แล้ว */
+#focus-stats-legend {
+    display: none;
 }
 /* ===== Icon Selector Modal Styles ===== */
 .icon-selector-body {
