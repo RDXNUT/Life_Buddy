@@ -1288,3 +1288,360 @@ body[data-theme="dark"] .timer-controls .icon-button {
 #sidebar-coin-count {
     color: var(--primary-color);
 }
+/* ======================================= */
+/* ======    Student Hub Page     ====== */
+/* ======================================= */
+
+/* จัดวางการ์ดฟีเจอร์ต่างๆ ด้วย Grid */
+.student-hub-grid {
+    display: grid;
+    /* สร้างคอลัมน์อัตโนมัติ โดยแต่ละคอลัมน์กว้างอย่างน้อย 320px */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+}
+
+/* สไตล์ของการ์ดแต่ละใบ */
+.student-feature-card {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* ดันป้ายสถานะไปไว้ด้านล่าง (ถ้าไม่ใช้ position) */
+    min-height: 200px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; /* สำคัญมากสำหรับการทำป้าย Ribbon */
+    overflow: hidden; /* ซ่อนส่วนเกินของ Ribbon */
+    border: 1px solid var(--border-color);
+}
+
+.student-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+}
+
+.student-feature-card h2 {
+    font-size: 1.4rem;
+    border-bottom: none; /* ไม่ต้องมีเส้นใต้ */
+    padding-bottom: 0;
+}
+
+/* ทำให้ p tag กินพื้นที่ที่เหลือเพื่อดันองค์ประกอบอื่น */
+.student-feature-card p {
+    margin: 10px 0 auto;
+}
+/* ======================================= */
+/* ======   GPA Calculator Styles   ====== */
+/* ======================================= */
+#gpa-table-container {
+    margin-top: 25px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden; /* ทำให้ขอบมนสวยงาม */
+    background-color: var(--card-bg-color);
+}
+
+/* ใช้ Grid Layout สำหรับตาราง */
+.gpa-table-header, .gpa-table-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 150px 120px; /* ขนาดคอลัมน์: ลำดับ, ชื่อวิชา, หน่วยกิต, เกรด */
+    align-items: center;
+    gap: 15px;
+    padding: 0 15px;
+}
+
+.gpa-table-header {
+    background-color: var(--bg-color);
+    padding: 12px 15px;
+    font-weight: 500;
+    color: var(--subtle-text-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.gpa-table-row {
+    border-bottom: 1px solid var(--border-color);
+}
+.gpa-table-row:last-child {
+    border-bottom: none;
+}
+.gpa-table-row span:first-child {
+    font-weight: 500;
+    color: var(--subtle-text-color);
+    text-align: center;
+}
+
+/* สไตล์ Input และ Custom Control */
+.gpa-table-row input[type="text"],
+.gpa-table-row .credit-stepper,
+.gpa-table-row .grade-selector {
+    padding: 10px;
+    margin: 10px 0; /* เพิ่ม margin บนล่าง */
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+/* สไตล์สำหรับช่อง "หน่วยกิต" แบบกำหนดเอง */
+.credit-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.credit-stepper-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    transition: all 0.2s;
+}
+.credit-stepper-btn:hover {
+    background-color: var(--border-color);
+    color: var(--primary-color);
+}
+.credit-value {
+    font-weight: 500;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* สไตล์สำหรับช่อง "เกรด" แบบกำหนดเอง */
+.grade-selector {
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.grade-selector:hover {
+    border-color: var(--primary-color);
+}
+.grade-selector.active {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-color-light);
+}
+
+/* สไตล์สำหรับ Pop-up เลือกเกรด */
+#grade-popup {
+    position: absolute;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    z-index: 1050; /* ให้อยู่เหนือองค์ประกอบอื่น */
+    padding: 5px;
+    width: 150px;
+}
+.grade-option {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+}
+.grade-option:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* สไตล์ปุ่มควบคุมด้านล่าง */
+.gpa-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+}
+.gpa-actions button {
+    width: auto;
+    padding: 12px 30px;
+}
+.btn-danger-secondary {
+    background-color: rgba(255, 59, 48, 0.15);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+.btn-danger-secondary:hover {
+    background-color: rgba(255, 59, 48, 0.3);
+}
+/* ======================================= */
+/* ====== GPA Result Swal Styles  ====== */
+/* ======================================= */
+
+.swal-gpa-result {
+    padding: 10px 0;
+}
+
+/* สไตล์ของตัวเลข GPA ตัวใหญ่ */
+.gpa-value {
+    display: block;
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.1;
+    margin: 15px 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* สไตล์ของส่วนสรุปคะแนนและหน่วยกิต */
+.gpa-summary {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.gpa-summary p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin: 8px 0;
+}
+
+.gpa-summary strong {
+    color: var(--text-color);
+}
+/* ======================================= */
+/* ====== GPA View Header & Buttons ====== */
+/* ======================================= */
+
+/* จัดการ Layout ของส่วนหัวในหน้า GPA */
+.gpa-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* ทำให้ปุ่มตกบรรทัดได้บนจอมือถือ */
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.gpa-view-header h2 {
+    margin: 0; /* เอา margin เดิมออก */
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* อัปเกรดสไตล์ของปุ่มใน Header */
+.header-actions .small-btn {
+    border-radius: 50px; /* ทำให้โค้งมนเป็นทรงแคปซูล */
+    font-weight: 500;
+    padding: 10px 20px;
+    box-shadow: 0 4px 12px -3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-out;
+}
+body[data-theme="dark"] .header-actions .small-btn {
+     box-shadow: 0 4px 15px -3px rgba(0,0,0,0.4);
+}
+
+.header-actions .small-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -3px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] .header-actions .small-btn:hover {
+     box-shadow: 0 6px 20px -3px rgba(0,0,0,0.5);
+}
+
+/* สไตล์ปุ่ม "กลับ" (ปุ่มหลัก) */
+#gpa-back-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+/* สไตล์ปุ่ม "บันทึก" (ปุ่มรอง) */
+#gpa-save-btn {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+#gpa-save-btn:hover {
+     background-color: var(--border-color);
+}
+/* ======================================= */
+/* ====== GPA History & Add New   ====== */
+/* ======================================= */
+
+/* ปุ่มใหญ่สำหรับเพิ่มผลการเรียนใหม่ */
+.add-new-record-btn {
+    width: 100%;
+    padding: 25px;
+    margin: 25px 0;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    background-color: var(--bg-color);
+    color: var(--subtle-text-color);
+    font-size: 1.2rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.add-new-record-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background-color: rgba(10, 132, 255, 0.05); /* สีฟ้าอ่อนๆ */
+}
+.add-new-record-btn .feather {
+    width: 32px;
+    height: 32px;
+}
+
+/* รายการประวัติผลการเรียน */
+#gpa-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.gpa-history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.gpa-history-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary-color);
+}
+.history-item-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+.history-item-info {
+    flex-grow: 1;
+}
+.history-item-info h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+.history-item-info p {
+    margin: 0;
+    font-size: 0.9em;
+}
+.history-item-actions .icon-button:hover {
+    color: var(--danger-color);
+}
+
+/* แก้ไขปุ่มคำนวณในหน้า GPA เดิมให้เป็นปุ่มบันทึก */
+#gpa-save-record-btn {
+    /* ใช้สไตล์เดียวกับปุ่มคำนวณเดิม */
+    background-color: var(--primary-color);
+    color: white;
+}

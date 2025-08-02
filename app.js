@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         followers: [],
         followRequests: [],
         sentFollowRequests: [],
+        gpaHistory: [],
     };
 
     let timerInterval, timeLeft, isFocusing = true;
@@ -94,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let toastTimeout, areListenersSetup = false;
     friendListeners = [];
     let lastSearchResults = [];
+    let currentGpaRecord = null;
     let currentSubjectSelectionCallback = null;
     const allPages = document.querySelectorAll('.page');
     const allNavLinks = document.querySelectorAll('.nav-link');
@@ -562,6 +564,199 @@ document.addEventListener('DOMContentLoaded', () => {
         
         renderWishList();
         feather.replace(); // สั่งให้วาดไอคอนใหม่
+    }
+
+    function renderGpaTable(courses = []) {
+        const tableBody = document.getElementById('gpa-table-body');
+        if (!tableBody) return;
+
+        let tableHTML = '';
+        for (let i = 1; i <= 30; i++) {
+            const course = courses[i - 1] || {};
+            const subjectName = course.subject || '';
+            const credit = course.credit !== undefined ? course.credit.toFixed(1) : '3.0';
+            const grade = course.grade !== undefined ? course.grade : '';
+            const gradeText = getGradeText(grade); // ฟังก์ชันใหม่ที่เราจะสร้าง
+
+            tableHTML += `
+                <div class="gpa-table-row" data-row-id="${i}">
+                    <span>${i}</span>
+                    <input type="text" placeholder="ชื่อวิชา (ไม่บังคับ)" value="${subjectName}">
+                    <div class="credit-stepper">
+                        <button class="credit-stepper-btn" data-action="decrease" aria-label="ลดหน่วยกิต">-</button>
+                        <span class="credit-value">${credit}</span>
+                        <button class="credit-stepper-btn" data-action="increase" aria-label="เพิ่มหน่วยกิต">+</button>
+                    </div>
+                    <div class="grade-selector" data-value="${grade}">${gradeText}</div>
+                </div>
+            `;
+        }
+        tableBody.innerHTML = tableHTML;
+    }
+
+    // ฟังก์ชันช่วย แปลงค่าเกรดเป็นข้อความ
+    function getGradeText(value) {
+        switch(String(value)) {
+            case '4': return '4.00 (A)';
+            case '3.5': return '3.50 (B+)';
+            case '3': return '3.00 (B)';
+            case '2.5': return '2.50 (C+)';
+            case '2': return '2.00 (C)';
+            case '1.5': return '1.50 (D+)';
+            case '1': return '1.00 (D)';
+            case '0': return '0.00 (F)';
+            default: return 'เลือกเกรด';
+        }
+    }
+
+    /**
+     * รีเซ็ตข้อมูลในตาราง GPA ทั้งหมด
+     */
+    function resetGpaTable() {
+        const tableBody = document.getElementById('gpa-table-body');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = ''; // เคลียร์ตารางเก่าทิ้ง
+        renderGpaTable(currentGpaRecord ? currentGpaRecord.courses : []); // สร้างตารางใหม่
+
+        showToast("ล้างข้อมูลทั้งหมดแล้ว");
+    }
+
+    function calculateAndDisplayGpa() {
+        const rows = document.querySelectorAll('#gpa-table-body .gpa-table-row');
+        let totalCreditPoints = 0; // ผลรวมของ (เกรด x หน่วยกิต)
+        let totalCredits = 0;      // ผลรวมของหน่วยกิตทั้งหมด
+
+        rows.forEach(row => {
+            const creditValue = parseFloat(row.querySelector('.credit-value').textContent);
+            const gradeValue = parseFloat(row.querySelector('.grade-selector').dataset.value);
+
+            // ตรวจสอบว่าผู้ใช้ได้เลือกเกรดแล้วหรือยัง (ไม่ใช่ค่าว่าง หรือ NaN)
+            if (!isNaN(gradeValue)) {
+                totalCreditPoints += (gradeValue * creditValue);
+                totalCredits += creditValue;
+            }
+        });
+
+        // ป้องกันการหารด้วยศูนย์
+        if (totalCredits === 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'ข้อมูลไม่เพียงพอ',
+                text: 'กรุณากรอกหน่วยกิตและเลือกเกรดอย่างน้อย 1 วิชาก่อนทำการคำนวณ',
+            });
+            return;
+        }
+
+        const gpa = totalCreditPoints / totalCredits;
+
+        // แสดงผลลัพธ์ด้วย SweetAlert2
+        Swal.fire({
+            icon: 'success',
+            title: 'ผลการคำนวณเกรดเฉลี่ย (GPA)',
+            html: `
+                <div class="swal-gpa-result">
+                    <span class="gpa-value">${gpa.toFixed(3)}</span>
+                    <div class="gpa-summary">
+                        <p>คะแนนรวม: <strong>${totalCreditPoints.toFixed(2)}</strong></p>
+                        <p>หน่วยกิตรวม: <strong>${totalCredits.toFixed(1)}</strong></p>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'ยอดเยี่ยม!',
+            width: '400px',
+        });
+    }
+
+    function showGpaView(viewId) {
+        document.querySelectorAll('#gpa-feature-wrapper .page-view').forEach(view => {
+            view.classList.add('hidden');
+        });
+        document.getElementById(viewId).classList.remove('hidden');
+        feather.replace();
+    }
+
+    /**
+     * วาดรายการประวัติผลการเรียนทั้งหมด
+     */
+    function renderGpaHistoryList() {
+        const container = document.getElementById('gpa-history-list');
+        if (!container) return;
+
+        const history = state.gpaHistory || [];
+        if (history.length === 0) {
+            container.innerHTML = '<p class="subtle-text" style="text-align:center; padding: 20px;">ยังไม่มีผลการเรียนที่บันทึกไว้</p>';
+            return;
+        }
+
+        // เรียงจากใหม่ไปเก่า
+        history.sort((a, b) => b.id - a.id);
+
+        container.innerHTML = history.map(record => `
+            <div class="gpa-history-item" data-id="${record.id}">
+                <div class="history-item-icon">📘</div>
+                <div class="history-item-info">
+                    <h4>${record.level || ''} เทอม ${record.term || ''}</h4>
+                    <p>ปีการศึกษา: ${record.year || ''} — <strong>GPA: ${record.gpa.toFixed(2)}</strong></p>
+                </div>
+                <div class="history-item-actions">
+                    <button class="delete-gpa-record-btn icon-button" data-id="${record.id}" title="ลบรายการนี้">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        feather.replace();
+    }
+
+    /**
+     * จัดการการบันทึกข้อมูล GPA ลง State
+     */
+    function saveGpaRecord() {
+        const rows = document.querySelectorAll('#gpa-table-body .gpa-table-row');
+        let totalCreditPoints = 0;
+        let totalCredits = 0;
+        const courses = [];
+
+        rows.forEach(row => {
+            const subject = row.querySelector('input[type="text"]').value.trim();
+            const credit = parseFloat(row.querySelector('.credit-value').textContent);
+            const grade = parseFloat(row.querySelector('.grade-selector').dataset.value);
+
+            // บันทึกเฉพาะแถวที่มีการเลือกเกรด
+            if (!isNaN(grade)) {
+                totalCreditPoints += (grade * credit);
+                totalCredits += credit;
+                courses.push({ subject, credit, grade });
+            }
+        });
+
+        if (totalCredits === 0) {
+            showToast("กรุณากรอกข้อมูลอย่างน้อย 1 วิชา");
+            return;
+        }
+
+        const gpa = totalCreditPoints / totalCredits;
+        
+        // อัปเดตข้อมูลใน record ปัจจุบัน
+        currentGpaRecord.courses = courses;
+        currentGpaRecord.gpa = gpa;
+
+        // ตรวจสอบว่าเป็น record ใหม่หรือกำลังแก้ไขของเก่า
+        const existingRecordIndex = state.gpaHistory.findIndex(rec => rec.id === currentGpaRecord.id);
+
+        if (existingRecordIndex > -1) {
+            // แก้ไขของเก่า
+            state.gpaHistory[existingRecordIndex] = currentGpaRecord;
+        } else {
+            // เพิ่มของใหม่
+            state.gpaHistory.push(currentGpaRecord);
+        }
+
+        saveState();
+        showToast("บันทึกผลการเรียนสำเร็จ!");
+        renderGpaHistoryList();
+        showGpaView('gpa-history-view');
     }
 
     function updateRewardsUI() {
@@ -3116,6 +3311,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.addEventListener('click', (e) => {
         const closest = (selector) => e.target.closest(selector);
+        const gradePopup = document.getElementById('grade-popup');
+
+        // --- 1. จัดการ Navigation หลักของ Student Hub ---
+        if (closest('#gpa-feature-card')) {
+            document.getElementById('student-hub-main-view').classList.add('hidden');
+            document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
+            const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
+            header.innerHTML = `<i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)`;
+            renderGpaTable([]);
+            showGpaView('gpa-calculator-view');
+            return;
+        }
+        if (closest('#gpa-save-btn')) { // ปุ่ม "บันทึกผลการเรียน"
+            renderGpaHistoryList();
+            showGpaView('gpa-history-view');
+            return;
+        }
+        if (closest('#gpa-back-btn') || closest('#gpa-back-to-hub-btn')) { // ปุ่ม "กลับไปหน้าหลัก" (Student Hub)
+            document.getElementById('gpa-feature-wrapper').classList.add('hidden');
+            document.getElementById('student-hub-main-view').classList.remove('hidden');
+            return;
+        }
+
+
+        // --- 2. จัดการ Navigation ภายใน GPA Feature ---
+        if (closest('.gpa-back-to-history-btn')) {
+            showGpaView('gpa-history-view');
+            return;
+        }
+        if (closest('#gpa-add-new-record-btn')) {
+            document.getElementById('gpa-term-info-form').reset();
+            showGpaView('gpa-add-term-info-view');
+            return;
+        }
+
+        // --- 3. จัดการตาราง GPA และ Pop-up ---
+        const creditBtn = closest('.credit-stepper-btn');
+        if (creditBtn) {
+            const action = creditBtn.dataset.action;
+            const valueSpan = creditBtn.parentElement.querySelector('.credit-value');
+            let currentValue = parseFloat(valueSpan.textContent);
+            if (action === 'increase' && currentValue < 15) currentValue += 0.5;
+            else if (action === 'decrease' && currentValue > 0.5) currentValue -= 0.5;
+            valueSpan.textContent = currentValue.toFixed(1);
+            return;
+        }
+        const gradeSelector = closest('.grade-selector');
+        if (gradeSelector) {
+            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+            gradeSelector.classList.add('active');
+            const rect = gradeSelector.getBoundingClientRect();
+            gradePopup.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            gradePopup.style.left = `${rect.left + window.scrollX}px`;
+            gradePopup.classList.remove('hidden');
+            gradePopup.currentTargetSelector = gradeSelector;
+            return;
+        }
+        const gradeOption = closest('.grade-option');
+        if (gradeOption) {
+            const targetSelector = gradePopup.currentTargetSelector;
+            if (targetSelector) {
+                targetSelector.textContent = getGradeText(gradeOption.dataset.value);
+                targetSelector.dataset.value = gradeOption.dataset.value;
+            }
+            gradePopup.classList.add('hidden');
+            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+            return;
+        }
+        if (!gradePopup.classList.contains('hidden') && !closest('.grade-selector')) {
+            gradePopup.classList.add('hidden');
+            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+        }
+
+        // --- 4. จัดการปุ่มควบคุม GPA และประวัติ ---
+        if (closest('#gpa-clear-btn')) { resetGpaTable(); return; }
+        if (closest('#gpa-save-record-btn')) { saveGpaRecord(); return; }
+        const historyItem = closest('.gpa-history-item');
+        if (historyItem && !closest('.delete-gpa-record-btn')) {
+            const recordId = parseInt(historyItem.dataset.id);
+            currentGpaRecord = state.gpaHistory.find(rec => rec.id === recordId);
+            if (currentGpaRecord) {
+                const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
+                header.innerHTML = `<i data-feather="edit"></i> ${currentGpaRecord.level} - เทอม ${currentGpaRecord.term}`;
+                renderGpaTable(currentGpaRecord.courses);
+                showGpaView('gpa-calculator-view');
+            }
+            return;
+        }
+        const deleteGpaBtn = closest('.delete-gpa-record-btn');
+        if (deleteGpaBtn) {
+            const recordId = parseInt(deleteGpaBtn.dataset.id);
+            Swal.fire({
+                title: 'ยืนยันการลบ', text: "คุณต้องการลบผลการเรียนนี้ใช่ไหม?",
+                icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
+                confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก'
+            }).then(result => {
+                if(result.isConfirmed) {
+                    state.gpaHistory = state.gpaHistory.filter(rec => rec.id !== recordId);
+                    saveState();
+                    renderGpaHistoryList();
+                    showToast('ลบผลการเรียนแล้ว');
+                }
+            });
+            return;
+        }
 
         const deleteActivityBtn = closest('.delete-activity-btn');
         if (deleteActivityBtn) {
@@ -3148,6 +3448,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             return; // หยุดการทำงานของ listener ทันที
         }
+
+        // --- จัดการการติ๊ก To-Do List ---
+            if (e.target.matches('#todo-list input[type="checkbox"]')) {
+                const todoId = parseInt(e.target.dataset.id);
+                const todo = state.todos.find(t => t.id === todoId);
+                if (todo) {
+                    todo.completed = e.target.checked;
+                    const listItem = e.target.closest('li');
+                    if(listItem) listItem.classList.toggle('completed', todo.completed);
+                    if (todo.completed && !todo.rewarded) {
+                        todo.rewarded = true;
+                        addExp(5);
+                        updateCoins(1, `ทำเป้าหมายสำเร็จ`);
+                        showToast(`ทำ "${todo.text}" สำเร็จ! +1 Coin & +5 EXP`);
+                        setTimeout(() => {
+                            state.todos = state.todos.filter(t => t.id !== todoId);
+                            saveState();
+                            updateHomePageUI(); 
+                        }, 300000); // ลบออกจากลิสต์หลังจาก 5 นาที
+                    }
+                    saveState();
+                }
+                return;
+            }
 
         const deleteTodoBtn = closest('.delete-todo-btn');
         if (deleteTodoBtn) {
@@ -3400,30 +3724,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- จัดการการติ๊ก To-Do List ---
-            if (e.target.matches('#todo-list input[type="checkbox"]')) {
-                const todoId = parseInt(e.target.dataset.id);
-                const todo = state.todos.find(t => t.id === todoId);
-                if (todo) {
-                    todo.completed = e.target.checked;
-                    const listItem = e.target.closest('li');
-                    if(listItem) listItem.classList.toggle('completed', todo.completed);
-                    if (todo.completed && !todo.rewarded) {
-                        todo.rewarded = true;
-                        addExp(5);
-                        updateCoins(1, `ทำเป้าหมายสำเร็จ`);
-                        showToast(`ทำ "${todo.text}" สำเร็จ! +1 Coin & +5 EXP`);
-                        setTimeout(() => {
-                            state.todos = state.todos.filter(t => t.id !== todoId);
-                            saveState();
-                            updateHomePageUI(); 
-                        }, 300000); // ลบออกจากลิสต์หลังจาก 5 นาที
-                    }
-                    saveState();
-                }
-                return;
-            }
-
             const tabBtn = closest('.tab-btn');
             if (tabBtn) {
                 // เรียกใช้ฟังก์ชันสลับแท็บ โดยส่งชื่อแท็บ (เช่น 'followers') เข้าไป
@@ -3441,6 +3741,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
                 case 'close-menu': case 'overlay': closeSidebar(); break;
                 case 'check-in-btn': showStreakModal(); break;
+                case 'gpa-save-btn':
+                    // ในอนาคตจะเพิ่ม Logic การบันทึกข้อมูลลง state
+                    Swal.fire('เร็วๆ นี้!', 'ฟังก์ชันบันทึกผลการเรียนกำลังจะมาในเร็วๆ นี้ครับ', 'info');
+                    break;
                 case 'add-custom-subject-icon-btn':
                     openIconSelectorModal(); // เรียกโดยไม่ส่งค่าอะไรไป = เลือกให้วิชาใหม่
                     break;
@@ -3538,7 +3842,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'continue-quiz-btn': continueQuiz(); break;
                 case 'exit-quiz-btn': Swal.fire({ title: 'แน่ใจหรือไม่?', text: "คุณต้องการออกจากการทำควิซ? ความคืบหน้าจะไม่ถูกบันทึก", icon: 'warning', showCancelButton: true, confirmButtonText: 'ใช่, ออกเลย', cancelButtonText: 'ทำต่อ' }).then(r => { if(r.isConfirmed) { document.getElementById('quiz-taking-view').classList.add('hidden'); document.getElementById('revisit-list-view').classList.remove('hidden'); renderRevisitList(); }}); break;
                 case 'submit-typed-answer-btn': handleAnswer(document.getElementById('typed-answer-input').value); break;
+            default: break;
             }
+        });
+
+        document.getElementById('gpa-term-info-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const level = document.getElementById('gpa-level-input').value;
+            const term = document.getElementById('gpa-term-select').value;
+            const year = document.getElementById('gpa-year-input').value;
+            currentGpaRecord = { id: Date.now(), level, term, year, courses: [], gpa: 0 };
+            const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
+            header.innerHTML = `<i data-feather="edit-3"></i> ${level} - เทอม ${term}`;
+            renderGpaTable([]);
+            showGpaView('gpa-calculator-view');
         });
 
         document.body.addEventListener('change', (e) => {
@@ -3580,6 +3897,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'add-custom-subject-form': handleAddCustomSubject(e); break;
             }
         });
+
+
         
         areListenersSetup = true;
     }
