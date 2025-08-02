@@ -171,11 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const todayStr = dayjs().format('YYYY-MM-DD');
-        if (!sessionStorage.getItem('streakModalShownToday') && state.lastCheckIn !== todayStr) {
-            // หน่วงเวลาเล็กน้อยเพื่อให้ผู้ใช้เห็นหน้าจอหลักก่อน
-            setTimeout(showStreakModal, 1500); // แสดงผลหลังจากโหลดเสร็จ 1.5 วินาที
-            sessionStorage.setItem('streakModalShownToday', 'true');
-        }
+
+        // ทำให้เงื่อนไขที่เหลือคือ "ถ้ายังไม่ได้เช็คอินของวันนี้" เท่านั้น
+    if (state.lastCheckIn !== todayStr) {
+        // หน่วงเวลาเล็กน้อยเพื่อให้ผู้ใช้เห็นหน้าจอหลักก่อน
+        setTimeout(showStreakModal, 1500); 
+    }
 
         // 2. ตรวจสอบสถานะสตรีคที่ขาดไป
         const today = dayjs();
