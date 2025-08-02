@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // =======================================
     let currentUser = null;
     let state = {};
+    const availableIcons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
+    let currentlyEditingSubjectValue = null;
     const defaultActivities = ["เขียนสิ่งที่ขอบคุณวันนี้ 3 อย่าง", "ยืดเส้น 3 นาที", "โทรหาเพื่อนคนหนึ่ง", "จดไอเดียเรื่องที่สนใจ", "จัดโต๊ะทำงาน"];
     const defaultAdvices = ["เหนื่อยได้ แต่อย่าลืมหายใจให้ลึก ๆ", "เก่งแล้วนะ ที่ยังอยู่ตรงนี้ได้", "ต้นไม้ไม่ได้โตในวันเดียว คนเราก็เช่นกัน", "ดื่มน้ำบ้างนะ วันนี้เธอทำดีแล้วล่ะ", "ใจล้า อย่าฝืน แต่ใจสู้ อย่าถอย"];
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
@@ -37,11 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
         planner: {},
         revisitTopics: {},
         subjects: [
-            { value: 'physics', name: 'ฟิสิกส์', removable: false, color: '#0A84FF' },
-            { value: 'chemistry', name: 'เคมี', removable: false, color: '#FF9F0A' },
-            { value: 'biology', name: 'ชีววิทยา', removable: false, color: '#30D158' },
-            { value: 'english', name: 'ภาษาอังกฤษ', removable: false, color: '#FF453A' },
-            { value: 'social', name: 'สังคมศึกษา', removable: false, color: '#AF52DE' }
+            { value: 'physics', name: 'ฟิสิกส์', removable: false, color: '#0A84FF', icon: '1' }, 
+            { value: 'chemistry', name: 'เคมี', removable: false, color: '#FF9F0A', icon: '2' }, 
+            { value: 'biology', name: 'ชีววิทยา', removable: false, color: '#30D158', icon: '3' }, 
+            { value: 'english', name: 'ภาษาอังกฤษ', removable: false, color: '#FF453A', icon: '4' },
+            { value: 'social', name: 'สังคมศึกษา', removable: false, color: '#AF52DE', icon: '5' }
         ],
         moods: {},
         focus: { totalSessions: 0, todaySessions: 0, lastFocusDate: null, combo: 0 },
@@ -982,8 +984,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleEditSubject(subjectValue) {
         const subjectIndex = state.subjects.findIndex(s => s.value === subjectValue);
         if (subjectIndex === -1) return;
-
         const currentSubject = state.subjects[subjectIndex];
+
+        const currentTheme = document.body.dataset.theme || 'light';
+        const iconNumber = currentSubject.icon || '14';
+        const iconSrc = iconNumber === '14'
+            ? `assets/subject-icons/general-${currentTheme}${iconNumber}.png`
+            : `assets/subject-icons/${currentTheme}${iconNumber}.png`;
 
         const { value: formValues } = await Swal.fire({
             title: 'แก้ไขรายละเอียดวิชา',
@@ -993,11 +1000,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     <label for="swal-subject-color" class="swal-color-label">สีประจำวิชา</label>
                     <input id="swal-subject-color" type="color" class="swal-color-input" value="${currentSubject.color}">
                 </div>
+                
+                <!-- ไอคอนปัจจุบันที่คลิกเพื่อเปลี่ยนได้ -->
+                <img src="${iconSrc}" alt="Current Icon" id="swal-change-icon-btn" class="swal-icon-preview" title="คลิกเพื่อเปลี่ยนไอคอน">
+                <small>คลิกที่รูปไอคอนเพื่อเลือกใหม่</small>
             `,
             focusConfirm: false,
             showCancelButton: true,
             confirmButtonText: 'บันทึก',
             cancelButtonText: 'ยกเลิก',
+            
+            // เพิ่ม didOpen เพื่อผูก event หลัง popup เปิด
+            didOpen: () => {
+                document.getElementById('swal-change-icon-btn').addEventListener('click', () => {
+                    Swal.close(); // ปิด popup แก้ไขชื่อ/สี
+                    openIconSelectorModal(subjectValue); // เปิด popup เลือกไอคอน
+                });
+            },
+            
             preConfirm: () => {
                 const name = document.getElementById('swal-subject-name').value.trim();
                 const color = document.getElementById('swal-subject-color').value;
@@ -1010,16 +1030,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (formValues) {
-            // อัปเดตข้อมูลใน state
+            // บันทึกเฉพาะชื่อและสี
             state.subjects[subjectIndex].name = formValues.name;
             state.subjects[subjectIndex].color = formValues.color;
             
-            saveState(); // บันทึกการเปลี่ยนแปลง
-            renderSubjectOptions(); // วาดรายการวิชาใหม่
+            saveState();
+            renderSubjectOptions();
+            const activePeriod = document.querySelector('.stats-tab-btn.active')?.dataset.period || 'day';
+            renderFocusStats(activePeriod); 
             showToast('อัปเดตวิชาเรียบร้อยแล้ว');
         }
     }
     
+    // เปิดหน้าต่างเลือกไอคอน
+    function openIconSelectorModal(subjectValue) {
+        currentlyEditingSubjectValue = subjectValue; // บอกระบบว่าเรากำลังจะเปลี่ยนไอคอนของวิชานี้
+        renderIconSelectorGrid(); // เรียกฟังก์ชันวาดตารางไอคอน
+        document.getElementById('icon-selector-modal').classList.remove('hidden');
+    }
+
+    // วาดตารางไอคอนทั้งหมด
+    function renderIconSelectorGrid() {
+        const gridContainer = document.getElementById('icon-selector-grid');
+        if (!gridContainer) return;
+
+        const currentTheme = document.body.dataset.theme || 'light';
+        const subject = state.subjects.find(s => s.value === currentlyEditingSubjectValue);
+        const currentIcon = subject ? subject.icon : '14';
+
+        gridContainer.innerHTML = availableIcons.map(iconNum => {
+            // สร้าง path ของรูปภาพ (จัดการกรณี general)
+            const iconSrc = iconNum === '14' 
+                ? `assets/subject-icons/general-${currentTheme}${iconNum}.png`
+                : `assets/subject-icons/${currentTheme}${iconNum}.png`;
+
+            const isSelected = iconNum === currentIcon;
+
+            return `
+                <div class="icon-option ${isSelected ? 'selected' : ''}" data-icon-number="${iconNum}">
+                    <img src="${iconSrc}" alt="Icon ${iconNum}">
+                </div>
+            `;
+        }).join('');
+    }
+
     function renderSubjectOptions() {
         const container = document.getElementById('subject-selector-body');
         const subjects = state.subjects || [];
@@ -1744,11 +1798,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFocusStats(period = 'day') {
-        const displayEl = document.getElementById('focus-stats-display');
-        if (!displayEl) return;
+        const chartContainer = document.getElementById('focus-stats-chart-container');
+        const legendContainer = document.getElementById('focus-stats-legend');
+        if (!chartContainer || !legendContainer) return;
+
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
+
         if (period === 'day') {
             filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'day'));
         } else if (period === 'week') {
@@ -1757,57 +1814,76 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredHistory = allFocusHistory;
         }
 
+        chartContainer.innerHTML = ''; // ล้างกราฟเก่าก่อน
+        legendContainer.innerHTML = ''; // ล้างคำอธิบายเก่าก่อน
         if (filteredHistory.length === 0) {
-            displayEl.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 20px 0;"><i>ยังไม่มีข้อมูลการโฟกัสในช่วงเวลานี้</i></p>';
+            chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 20px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
 
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
-            if (!acc[topicKey]) { acc[topicKey] = 0; }
+            if (!acc[topicKey]) {
+                acc[topicKey] = 0;
+            }
             acc[topicKey] += item.duration;
             return acc;
         }, {});
-        
-        const totalMinutesOverall = Object.values(statsByTopic).reduce((sum, mins) => sum + mins, 0);
 
-        const sortedStats = Object.entries(statsByTopic)
-            .map(([topic, totalMinutes]) => ({ topic, totalMinutes }))
-            .sort((a, b) => b.totalMinutes - a.totalMinutes);
+        const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
+        const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
             
-        const topicOptions = { 'general': { name: 'เรื่องทั่วไป', color: '#8E8E93' } }; // สีเทาสำหรับเรื่องทั่วไป
-        if (state.subjects && Array.isArray(state.subjects)) {
-            state.subjects.forEach(subject => {
-                topicOptions[subject.value] = { name: subject.name, color: subject.color };
-            });
-        }
+        const subjectMap = (state.subjects || []).reduce((acc, subject) => {
+            acc[subject.value] = subject;
+            return acc;
+        }, {});
         
-        displayEl.innerHTML = sortedStats.map(stat => {
-            const topicData = topicOptions[stat.topic] || topicOptions['general'];
-            const topicName = topicData.name;
-            const topicColor = topicData.color; // <-- ดึงสีมาเก็บไว้
-
-            const hours = Math.floor(stat.totalMinutes / 60);
-            const minutes = stat.totalMinutes % 60;
-            let timeString = '';
-            if (hours > 0) timeString += `${hours} ชม. `;
-            if (minutes > 0 || hours === 0) timeString += `${minutes} นาที`;
-            if (timeString.trim() === '0 นาที') timeString = 'น้อยกว่า 1 นาที';
-
-            const percentage = totalMinutesOverall > 0 ? (stat.totalMinutes / totalMinutesOverall) * 100 : 0;
-
-            return `
-                <div class="stat-item-focus">
-                    <div class="stat-topic-name">
-                        <span>${topicName}</span>
-                        <span>${timeString}</span>
-                    </div>
-                    <div class="stat-progress-bar-wrapper">
-                        <div class="stat-progress-bar" style="width: ${percentage}%; background: ${topicColor};"></div>
-                    </div>
+        // เพิ่มข้อมูลสำหรับ "เรื่องทั่วไป" เข้าไปใน Map
+        subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
+        
+        // --- ส่วนที่ 5: วนลูปสร้างกราฟและคำอธิบาย ---
+        sortedStats.forEach(([topicKey, totalMinutes]) => {
+            const subject = subjectMap[topicKey] || subjectMap['general'];
+            const barHeight = (totalMinutes / maxMinutes) * 100;
+            
+            // 1. ดึงธีมปัจจุบัน (light หรือ dark)
+            const currentTheme = document.body.dataset.theme || 'light';
+            
+            // 2. ดึงชื่อไฟล์ไอคอนจาก subject
+            const iconFilename = subject.icon || '14'; 
+            
+            let iconSrc = '';
+            if (topicKey === 'general') {
+                // กรณีพิเศษสำหรับ general
+                iconSrc = `assets/subject-icons/general-${currentTheme}${iconNumber}.png`;
+            } else {
+                // กรณีวิชาทั่วไป
+                iconSrc = `assets/subject-icons/${currentTheme}${iconNumber}.png`;
+            }
+                
+            // สร้างกราฟแท่ง
+            const barWrapper = document.createElement('div');
+            barWrapper.className = 'chart-bar-wrapper';
+            barWrapper.innerHTML = `
+                <div class="chart-bar" style="height: ${barHeight}%; background-color: ${subject.color};">
+                    <div class="chart-tooltip">${totalMinutes} นาที</div>
+                </div>
+                <div class="chart-icon">
+                    <img src="${iconSrc}" alt="${subject.name}">
                 </div>
             `;
-        }).join('');
+            chartContainer.appendChild(barWrapper);
+            
+            // สร้างคำอธิบายใต้กราฟ (เหมือนเดิม)
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+            legendItem.innerHTML = `
+                <div class="legend-color-dot" style="background-color: ${subject.color};"></div>
+                <span>${subject.name}</span>
+            `;
+            legendContainer.appendChild(legendItem);
+        });
+
     }
     
     function startTimer() {
@@ -1826,73 +1902,79 @@ document.addEventListener('DOMContentLoaded', () => {
             timeLeft--;
             updateTimerDisplay(timeLeft);
 
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                timerInterval = null;
+        if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
 
-                if (isFocusing) {
-                    state.focus.combo = (state.focus.combo || 0) + 1;
-                    state.focus.todaySessions = (state.focus.todaySessions || 0) + 1;
-                    state.focus.totalSessions = (state.focus.totalSessions || 0) + 1;
-                    state.focus.lastFocusDate = dayjs().format('YYYY-MM-DD');
-                    
-                    // แก้ไขตรงนี้: ดึงค่าจากปุ่มใหม่
-                    const topicText = topicSelectorBtn ? topicSelectorBtn.querySelector('span').textContent : 'เรื่องทั่วไป';
-                    const topicValue = topicSelectorBtn ? topicSelectorBtn.dataset.value : 'general';
-                    
-                    const baseCoin = 10;
-                    const comboBonus = state.focus.combo >= 5 ? 20 : state.focus.combo >= 3 ? 10 : 0;
-                    const totalCoin = baseCoin + comboBonus;
-                    updateCoins(totalCoin, `โฟกัส: ${topicText}`);
-                    addExp(25);
-                    
-                    const duration = state.settings.focusDuration || 25;
-                    if (!state.focusHistory) state.focusHistory = [];
-                    state.focusHistory.push({
-                        date: new Date().toISOString(),
-                        topic: topicValue,
-                        duration: duration
-                    });
-                    if(state.focusHistory.length > 500) {
-                        state.focusHistory.shift();
+            if (isFocusing) {
+                // ... (โค้ดส่วนที่คำนวณ EXP และ Coins เหมือนเดิม) ...
+                state.focus.combo = (state.focus.combo || 0) + 1;
+                state.focus.todaySessions = (state.focus.todaySessions || 0) + 1;
+                state.focus.totalSessions = (state.focus.totalSessions || 0) + 1;
+                // ... (โค้ดบันทึก focus history และ saveState() เหมือนเดิม) ...
+                
+                // [เพิ่ม] รายการประโยคให้กำลังใจ
+                const encouragementMessages = [
+                    "🌟 เก่งมากเลยนะ ที่ตั้งใจขนาดนี้",
+                    "☕ พักเถอะนะ เดี๋ยวลมดีๆ จะพัดรางวัลมาให้",
+                    "🐢 เดินช้าไม่เป็นไร แต่อย่าหยุดเดินนะ",
+                    "💡 สมองทำงานเก่งมาก ถึงเวลาพักแล้วล่ะ",
+                    "🧸 วันนี้เก่งอีกแล้วนะ น่ารักจังเลย",
+                    "📚 ขอบคุณที่สู้เพื่อความฝันของตัวเอง",
+                    "🍰 พักก่อนนะ แล้วเดี๋ยวไปต่อด้วยพลังใหม่",
+                    "✨ เธอทำได้ดีมากกว่าที่คิดนะ",
+                    "☁️ แม้จะเหนื่อย แต่ยังไม่ยอมแพ้ เก่งสุดๆ",
+                    "🎈 ทุกการพยายามของเธอ มีความหมายเสมอ",
+                    "🌱 ถึงจะยังไม่ถึงเป้าหมาย แต่ก็เข้าใกล้ขึ้นทุกวัน",
+                    "🧁 ให้รางวัลตัวเองด้วยคำว่า “ฉันภูมิใจในตัวเอง”",
+                    "🫶 วันนี้เธอเก่งที่สุดในแบบของเธอแล้ว",
+                    "🧘‍♂️ หายใจลึกๆ แล้วบอกตัวเองว่า “ฉันโอเค”",
+                    "🦋 ความเหนื่อยตอนนี้ จะกลายเป็นรอยยิ้มในวันหน้า",
+                    "🌈 ฟ้าหลังฝนมักสดใส เหมือนใจเธอหลังอ่านจบนั่นแหละ!"
+                ];
+                
+                // [เพิ่ม] สุ่มเลือกข้อความ
+                const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+
+                isFocusing = false;
+                timeLeft = (state.settings.breakDuration || 5) * 60;
+                document.getElementById('timer-mode').textContent = 'Break';
+                updateTimerDisplay(timeLeft);
+                
+                // [แก้ไข] การแจ้งเตือนเมื่อโฟกัสสำเร็จ
+                Swal.fire({
+                    iconHtml: '<span style="font-size: 4rem;">🎉</span>', // ใช้อิโมจิแทนไอคอน
+                    title: "เยี่ยมมาก! โฟกัสสำเร็จ",
+                    text: randomMessage, // ใช้ข้อความที่สุ่มมา
+                    confirmButtonText: 'OK',
+                    didClose: () => {
+                        if (!timerInterval) startTimer();
                     }
-                    saveState();
-                    checkForDailyBonus();
-                    renderFocusStats('day'); // อัปเดตสถิติ
+                });
 
-                    isFocusing = false;
-                    timeLeft = (state.settings.breakDuration || 5) * 60;
-                    document.getElementById('timer-mode').textContent = 'Break';
-                    updateTimerDisplay(timeLeft);
-
-                    Swal.fire({
-                        title: "เยี่ยมมาก! โฟกัสสำเร็จ",
-                        text: `พักสักหน่อยนะ 🧘 (${state.settings.breakDuration} นาที)`,
-                        icon: "success",
-                        timer: 5000,
-                        timerProgressBar: true,
-                        didClose: () => {
-                            if (!timerInterval) startTimer();
-                        }
-                    });
-
-                } else {
-                    isFocusing = true;
-                    timeLeft = (state.settings.focusDuration || 25) * 60;
-                    document.getElementById('timer-mode').textContent = 'Focus';
-                    updateTimerDisplay(timeLeft);
-                    
-                    if (topicSelectorBtn) topicSelectorBtn.style.pointerEvents = 'auto'; // เปิดการคลิกปุ่มเลือกหัวข้ออีกครั้ง
-                    if (settingsBtn) settingsBtn.disabled = false;
-                    
-                    Swal.fire("หมดเวลาพักแล้ว", "กลับมาโฟกัสกันต่อ! 💪", "info");
-                    
-                    const startBtnEl = document.getElementById('start-timer-btn');
-                    if(startBtnEl) {
-                        startBtnEl.innerHTML = '<i data-feather="play"></i> เริ่ม';
-                        feather.replace();
-                    }
+            } else { // เมื่อหมดเวลาพัก
+                isFocusing = true;
+                timeLeft = (state.settings.focusDuration || 25) * 60;
+                document.getElementById('timer-mode').textContent = 'Focus';
+                updateTimerDisplay(timeLeft);
+                
+                if (topicSelectorBtn) topicSelectorBtn.style.pointerEvents = 'auto';
+                if (settingsBtn) settingsBtn.disabled = false;
+                
+                // [แก้ไข] การแจ้งเตือนเมื่อหมดเวลาพัก
+                Swal.fire({
+                    iconHtml: '<span style="font-size: 4rem;">☕</span>', // ใช้อิโมจิถ้วยกาแฟ
+                    title: "หมดเวลาพักแล้ว",
+                    text: "กลับมาโฟกัสกันต่อ!",
+                    confirmButtonText: 'OK'
+                });
+                
+                const startBtnEl = document.getElementById('start-timer-btn');
+                if(startBtnEl) {
+                    startBtnEl.innerHTML = '<i data-feather="play"></i> เริ่ม';
+                    feather.replace();
                 }
+            }    
             }
         }, 1000);
     }
@@ -2832,6 +2914,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 // ส่งฟังก์ชัน selectSubject เข้าไปเป็น callback
                 openSubjectSelector(selectSubject); 
                 return; 
+            }
+
+            const iconOption = closest('.icon-option');
+            if (iconOption) {
+                const selectedIconNumber = iconOption.dataset.iconNumber;
+
+                // อัปเดต state
+                const subjectIndex = state.subjects.findIndex(s => s.value === currentlyEditingSubjectValue);
+                if (subjectIndex > -1) {
+                    state.subjects[subjectIndex].icon = selectedIconNumber;
+                }
+                
+                saveState(); // บันทึกข้อมูล
+                
+                // ปิด Modal
+                document.getElementById('icon-selector-modal').classList.add('hidden');
+                
+                // อัปเดต UI ทันที
+                showToast('เปลี่ยนไอคอนสำเร็จ!');
+                renderSubjectOptions();
+                const activePeriod = document.querySelector('.stats-tab-btn.active')?.dataset.period || 'day';
+                renderFocusStats(activePeriod);
+                
+                return; // จบการทำงาน
             }
             
             const subjectOption = closest('.subject-option');

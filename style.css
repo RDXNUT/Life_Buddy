@@ -912,3 +912,135 @@ body[data-theme="dark"] .timer-controls .icon-button {
     border-radius: 12px;
     border: 1px solid var(--border-color);
 }
+/* ===== New Focus Stats Chart ===== */
+#focus-stats-chart-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    gap: 15px;
+    width: 100%;
+    height: 250px; /* ความสูงของกราฟ */
+    padding: 20px 10px 0;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+.chart-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 60px;
+}
+.chart-bar {
+    width: 100%;
+    background-color: var(--primary-color);
+    border-radius: 8px 8px 0 0;
+    transition: height 0.5s ease-in-out;
+    position: relative;
+    cursor: pointer;
+}
+.chart-bar:hover .chart-tooltip {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+.chart-tooltip {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+.chart-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden; 
+    background-color: var(--border-color); /* สีพื้นหลังสำรองเผื่อรูปโหลดไม่ขึ้น */
+}
+.chart-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* ทำให้รูปเต็มพื้นที่โดยไม่เสียสัดส่วน */
+}
+#focus-stats-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+.legend-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+/* ===== Icon Selector Modal Styles ===== */
+.icon-selector-body {
+    padding: 25px;
+    display: grid;
+    /* สร้างตารางไอคอนที่ปรับขนาดอัตโนมัติ */
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.icon-option {
+    width: 64px;
+    height: 64px;
+    padding: 4px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: var(--bg-color);
+    justify-self: center; /* จัดให้อยู่กลางช่องตาราง */
+}
+
+.icon-option:hover {
+    transform: scale(1.1);
+    border-color: var(--primary-color);
+}
+
+.icon-option.selected {
+    border-color: var(--success-color);
+    box-shadow: 0 0 10px var(--success-color);
+    transform: scale(1.1);
+}
+
+.icon-option img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+/* ทำให้ Icon Preview ใน Swal คลิกได้ */
+.swal-icon-preview {
+    display: block;
+    width: 80px;
+    height: 80px;
+    margin: 20px auto 10px;
+    border-radius: 50%;
+    border: 3px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.swal-icon-preview:hover {
+    transform: scale(1.1);
+}

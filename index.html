@@ -335,7 +335,12 @@
                     <button class="stats-tab-btn" data-period="week">สัปดาห์นี้</button>
                     <button class="stats-tab-btn" data-period="all">ทั้งหมด</button>
                 </div>
-                <div id="focus-stats-display"></div>
+                <div id="focus-stats-chart-container">
+                    <!-- กราฟแท่งจะถูกสร้างโดย JS ที่นี่ -->
+                </div>
+                <div id="focus-stats-legend">
+                    <!-- คำอธิบายสีและไอคอนจะถูกสร้างโดย JS ที่นี่ -->
+                </div>
             </section>
         </div>
         <!-- Mood Page -->
@@ -595,6 +600,19 @@
                     <input type="color" id="custom-subject-color" value="#4A90E2" title="เลือกสีประจำวิชา">
                     <button type="submit" class="small-btn"><i data-feather="plus"></i> เพิ่ม</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL สำหรับเลือกไอคอน -->
+    <div id="icon-selector-modal" class="modal-overlay hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>เลือกไอคอนสำหรับวิชา</h3>
+                <button class="close-btn">×</button>
+            </div>
+            <div id="icon-selector-grid" class="icon-selector-body">
+                <!-- ไอคอนทั้งหมดจะถูกสร้างโดย JS ที่นี่ -->
             </div>
         </div>
     </div>
