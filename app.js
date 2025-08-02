@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
         exp: 0,
         streak: 0,
         lastCheckIn: null,
+        streakFreezesAvailable: 5,
+        lastFreezeReset: null,
+        isStreakFrozen: false,
         todos: [],
         planner: {},
         revisitTopics: {},
@@ -144,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             areListenersSetup = true;
         }
         applySettings();
+        checkStreakStatusOnLoad();
         updateUIForLoginStatus();
         checkDailyReset();
         checkForIdleCoins();
@@ -151,6 +155,44 @@ document.addEventListener('DOMContentLoaded', () => {
         showPage(hash || 'home');
         document.getElementById('loading-overlay').style.opacity = '0';
         setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 500);
+    }
+
+    function checkStreakStatusOnLoad() {
+        if (!currentUser) return;
+
+        // 1. ตรวจสอบเพื่อรีเซ็ตโควต้า "ไฟเย็น" ทุกเดือน
+        const currentMonthStr = dayjs().format('YYYY-MM');
+        if (state.lastFreezeReset !== currentMonthStr) {
+            state.streakFreezesAvailable = 5; // รีเซ็ตโควต้าเป็น 5
+            state.lastFreezeReset = currentMonthStr;
+            showToast("คุณได้รับโควต้ากู้สตรีคประจำเดือนแล้ว!");
+        }
+
+        // 2. ตรวจสอบสถานะสตรีคที่ขาดไป
+        const today = dayjs();
+        const lastCheckInDate = state.lastCheckIn ? dayjs(state.lastCheckIn) : null;
+
+        // ถ้าไม่เคยเช็คอิน หรือเช็คอินไปแล้ววันนี้ ไม่ต้องทำอะไร
+        if (!lastCheckInDate || lastCheckInDate.isSame(today, 'day')) {
+            state.isStreakFrozen = false; // ทำให้แน่ใจว่าสถานะ frozen ถูกปิด
+            return;
+        }
+
+        const daysMissed = today.diff(lastCheckInDate, 'day');
+
+        if (daysMissed > 1) { // ขาดการเช็คอินไปมากกว่า 1 วัน
+            if (state.streak > 0 && state.streakFreezesAvailable > 0) {
+                // ถ้ามีสตรีคอยู่และมี "ไฟเย็น" เหลือ -> เข้าสู่สถานะ Frozen
+                state.isStreakFrozen = true;
+            } else {
+                // ถ้าไม่มีสตรีค หรือ "ไฟเย็น" หมด -> รีเซ็ตสตรีค
+                state.streak = 0;
+                state.isStreakFrozen = false;
+            }
+        } else {
+            // ถ้าขาดไปแค่วันเดียว หรือไม่ขาดเลย
+            state.isStreakFrozen = false;
+        }
     }
 
     // =============================
@@ -387,29 +429,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHeaderUI() {
-    if (!currentUser) return;
+        if (!currentUser) return;
 
-    const streakCountEl = document.getElementById('streak-count');
-    if (streakCountEl) streakCountEl.textContent = state.streak || 0;
-    
-    const checkInBtn = document.getElementById('check-in-btn');
-    if (checkInBtn) {
+        const streakCountEl = document.getElementById('streak-count');
+        if (streakCountEl) streakCountEl.textContent = state.streak || 0;
+
+        const checkInBtn = document.getElementById('check-in-btn');
+        if (!checkInBtn) return;
+
         const checkInText = checkInBtn.querySelector('.check-in-text');
         const checkInIcon = checkInBtn.querySelector('.check-in-icon');
-        if (state.lastCheckIn === dayjs().format('YYYY-MM-DD')) {
+        const todayStr = dayjs().format('YYYY-MM-DD');
+
+        // ลบคลาสสถานะเก่าออกทั้งหมดก่อน
+        checkInBtn.classList.remove('checked', 'restore-streak');
+        checkInText.innerHTML = ''; // เคลียร์ข้อความเก่า
+
+        if (state.lastCheckIn === todayStr) {
+            // --- สถานะที่ 1: เช็คอินไปแล้ววันนี้ ---
             checkInBtn.disabled = true;
             checkInBtn.classList.add('checked');
-            if(checkInText) checkInText.classList.add('hidden');
-            if(checkInIcon) checkInIcon.classList.remove('hidden');
-        } else {
+            checkInText.classList.add('hidden');
+            checkInIcon.classList.remove('hidden');
+
+        } else if (state.isStreakFrozen === true) {
+            // --- สถานะที่ 2: สตรีคแข็งอยู่ (ไฟเย็น) ---
             checkInBtn.disabled = false;
-            checkInBtn.classList.remove('checked');
-            if(checkInText) checkInText.classList.remove('hidden');
-            if(checkInIcon) checkInIcon.classList.add('hidden');
+            checkInBtn.classList.add('restore-streak');
+            checkInText.classList.remove('hidden');
+            checkInIcon.classList.add('hidden');
+            // สร้าง HTML สำหรับปุ่มกู้ไฟ
+            checkInText.innerHTML = `กู้ไฟ 🧊 <span class="check-in-subtext">(เหลือ ${state.streakFreezesAvailable} ครั้ง)</span>`;
+
+        } else {
+            // --- สถานะที่ 3: เช็คอินได้ตามปกติ ---
+            checkInBtn.disabled = false;
+            checkInText.classList.remove('hidden');
+            checkInIcon.classList.add('hidden');
+            checkInText.textContent = 'เช็คอิน';
         }
+
+        feather.replace();
     }
-    feather.replace();
-}
 
 
     function updateHomePageUI() {
@@ -2510,19 +2571,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     // ===== 7. EVENT LISTENERS & HANDLERS =====
     // =========================================
-    function handleCheckIn() { 
-        if (document.getElementById('check-in-btn').disabled) return; 
-        const todayStr = dayjs().format('YYYY-MM-DD'); 
-        if (state.lastCheckIn !== todayStr) { 
-            const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD'); 
-            state.streak = state.lastCheckIn === yesterdayStr ? (state.streak || 0) + 1 : 1; 
-            state.lastCheckIn = todayStr; 
-            addExp(40); 
-            updateCoins(5, "เช็คอินรายวัน"); 
-            saveState(); 
-            updateHeaderUI(); 
-            checkForDailyBonus(); 
-        } 
+    function handleCheckIn() {
+        if (document.getElementById('check-in-btn').disabled) return;
+        const todayStr = dayjs().format('YYYY-MM-DD');
+
+        // กรณีที่ 1: กำลังกู้สตรีค (กดปุ่มไฟเย็น)
+        if (state.isStreakFrozen === true) {
+            if (state.streakFreezesAvailable <= 0) {
+                showToast("โควต้ากู้สตรีคของคุณหมดแล้ว");
+                return;
+            }
+            state.streakFreezesAvailable--;
+            state.isStreakFrozen = false;
+            // ไม่บวกสตรีคตอนกู้ แต่จะบวกตอนเช็คอินจริง
+            state.lastCheckIn = todayStr; // ตั้งค่าการเช็คอินเป็นวันนี้
+            state.streak++; // เพิ่มสตรีคสำหรับวันนี้
+
+            addExp(20); // อาจจะให้รางวัลน้อยกว่าปกติ
+            saveState();
+            updateHeaderUI();
+            showToast(`กู้สตรีคสำเร็จ! สตรีคของคุณคือ ${state.streak} วัน`);
+            checkForDailyBonus();
+
+        } else {
+            // กรณีที่ 2: เช็คอินตามปกติ
+            const yesterdayStr = dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+            const isContinuing = state.lastCheckIn === yesterdayStr;
+            
+            // รีเซ็ตสตรีคถ้าไม่ได้มาจากเมื่อวาน
+            if (!isContinuing) {
+                state.streak = 0;
+            }
+            
+            state.streak++; // เพิ่มสตรีคสำหรับวันนี้
+            state.lastCheckIn = todayStr;
+            
+            addExp(40);
+            updateCoins(5, "เช็คอินรายวัน");
+            saveState();
+            updateHeaderUI();
+            checkForDailyBonus();
+            showToast(`เช็คอินสำเร็จ! สตรีคต่อเนื่อง ${state.streak} วัน`);
+        }
     }
 
     function handleProfileFormSubmit(e) { 
