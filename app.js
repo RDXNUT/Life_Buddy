@@ -535,10 +535,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (todoList) {
             const todos = state.todos || [];
             if (todos.length > 0) {
-                todoList.innerHTML = todos.map(todo => `<li class="${todo.completed ? 'completed' : ''}"><input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}><span>${todo.text}</span></li>`).join('');
+                todoList.innerHTML = todos.map(todo => `
+                    <li class="${todo.completed ? 'completed' : ''}">
+                        <input type="checkbox" data-id="${todo.id}" ${todo.completed ? 'checked' : ''}>
+                        <span>${todo.text}</span>
+                        <button class="delete-todo-btn" data-id="${todo.id}" title="ลบเป้าหมายนี้">
+                            <i data-feather="trash-2"></i>
+                        </button>
+                    </li>
+                `).join('');
             } else {
                 todoList.innerHTML = '<p class="subtle-text" style="text-align: center; padding: 15px;">ยังไม่มีเป้าหมายสำหรับวันนี้</p>';
             }
+            feather.replace();
         }
         
         renderWishList();
@@ -3091,7 +3100,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (areListenersSetup) return;
 
         document.body.addEventListener('click', (e) => {
-            const closest = (selector) => e.target.closest(selector);
+         const closest = (selector) => e.target.closest(selector);
+
+        const deleteTodoBtn = closest('.delete-todo-btn');
+        if (deleteTodoBtn) {
+            const todoId = parseInt(deleteTodoBtn.dataset.id);
+            Swal.fire({
+                title: 'แน่ใจหรือไม่?',
+                text: "คุณต้องการลบเป้าหมายนี้ใช่ไหม?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--danger-color)',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // กรอง to-do ที่มี id ตรงกับที่ต้องการลบออกไป
+                    state.todos = state.todos.filter(t => t.id !== todoId);
+                    saveState(); // บันทึก state ใหม่
+                    updateHomePageUI(); // วาด UI ใหม่อีกครั้ง
+                    showToast('ลบเป้าหมายแล้ว');
+                }
+            });
+            return; 
+        }
 
             // Revisit & Quiz UI
             if (closest('#revisit-subject-display')) { 
@@ -3360,7 +3393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'logout-btn': auth.signOut(); break;
                 case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
                 case 'close-menu': case 'overlay': closeSidebar(); break;
-                case 'check-in-btn': handleCheckIn(); break;
+                case 'check-in-btn': showStreakModal(); break;
                 case 'add-custom-subject-icon-btn':
                     openIconSelectorModal(); // เรียกโดยไม่ส่งค่าอะไรไป = เลือกให้วิชาใหม่
                     break;

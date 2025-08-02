@@ -63,7 +63,35 @@ button:active { transform: scale(0.98); }
 #todo-form { display: flex; gap: 10px; }
 #todo-form button { flex-shrink: 0; width: 50px; }
 #todo-list { list-style: none; margin-top: 15px; }
-#todo-list li { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+#todo-list li { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px;
+    padding: 12px 5px; 
+    border-bottom: 1px solid var(--border-color); 
+}
+/* ทำให้ข้อความยืดเต็มพื้นที่ที่เหลือ */
+#todo-list li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+/* สไตล์สำหรับปุ่มลบที่เพิ่มเข้ามาใหม่ */
+.delete-todo-btn {
+    background: none;
+    border: none;
+    color: var(--subtle-text-color);
+    cursor: pointer;
+    padding: 5px;
+    width: auto;
+    margin: 0;
+    flex-shrink: 0; /* ไม่ให้ปุ่มถูกบีบ */
+    transition: color 0.2s;
+}
+
+.delete-todo-btn:hover {
+    color: var(--danger-color); /* เปลี่ยนเป็นสีแดงเมื่อเอาเมาส์ไปวาง */
+}
 #todo-list li.completed span { text-decoration: line-through; color: var(--subtle-text-color); }
 #todo-list input[type="checkbox"] { margin-right: 15px; width: 20px; height: 20px; flex-shrink: 0; }
 .suggestion-text { margin-top: 15px; font-style: italic; text-align: center; font-size: 1.1rem; color: var(--accent-color); min-height: 40px; }
