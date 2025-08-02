@@ -1161,6 +1161,8 @@ body[data-theme="dark"] .timer-controls .icon-button {
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 12px;
+    text-align: center;
+    color: var(--text-color)
 }
 
 /* สไตล์ข้อความหลัก */
