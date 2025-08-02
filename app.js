@@ -431,6 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             guestHeader.classList.remove('hidden');
             userHeader.classList.add('hidden');
+             // ซ่อนจำนวนเหรียญเมื่อไม่ได้ล็อกอิน
+            const sidebarCoinCountEl = document.getElementById('sidebar-coin-count');
+            if (sidebarCoinCountEl) {
+                sidebarCoinCountEl.textContent = '0';
+            }
         }
         closeAuthModal();
     }
@@ -440,6 +445,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const streakCountEl = document.getElementById('streak-count');
         if (streakCountEl) streakCountEl.textContent = state.streak || 0;
+
+        const sidebarCoinCountEl = document.getElementById('sidebar-coin-count');
+        if (sidebarCoinCountEl) {
+            sidebarCoinCountEl.textContent = state.coins || 0;
+        }
 
         const checkInBtn = document.getElementById('check-in-btn');
         if (!checkInBtn) return;
@@ -3105,7 +3115,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (areListenersSetup) return;
 
         document.body.addEventListener('click', (e) => {
-         const closest = (selector) => e.target.closest(selector);
+        const closest = (selector) => e.target.closest(selector);
+
+        const deleteActivityBtn = closest('.delete-activity-btn');
+        if (deleteActivityBtn) {
+            // ดึง index ของ activity ที่ต้องการลบจาก data-attribute
+            const activityIndex = parseInt(deleteActivityBtn.dataset.index, 10);
+            
+            // ใช้ SweetAlert เพื่อยืนยันการลบ
+            Swal.fire({
+                title: 'แน่ใจหรือไม่?',
+                text: "คุณต้องการลบกิจกรรมนี้ออกจากรายการใช่ไหม?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--danger-color)',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                // ถ้าผู้ใช้กดยืนยัน
+                if (result.isConfirmed) {
+                    // ตรวจสอบว่ามี array และ index ที่ถูกต้องหรือไม่
+                    if (state.userActivities && state.userActivities[activityIndex] !== undefined) {
+                        // ใช้ splice เพื่อลบ item ออกจาก array ตาม index
+                        state.userActivities.splice(activityIndex, 1);
+                        
+                        saveState(); // บันทึก state ใหม่ลง Firestore
+                        renderActivityList(); // วาดรายการกิจกรรมใน modal ใหม่
+                        showToast('ลบกิจกรรมแล้ว');
+                    }
+                }
+            });
+            return; // หยุดการทำงานของ listener ทันที
+        }
 
         const deleteTodoBtn = closest('.delete-todo-btn');
         if (deleteTodoBtn) {

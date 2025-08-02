@@ -1256,3 +1256,29 @@ body[data-theme="dark"] .timer-controls .icon-button {
     margin-top: 10px;     /* ระยะห่างระหว่างไอคอนกับข้อความ */
     margin-bottom: 0;     /* เอา margin ด้านล่างออก */
 }
+/* ======================================= */
+/* ======   Sidebar Coin Display   ======= */
+/* ======================================= */
+
+.sidebar-stat-display {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 1.1rem;
+    font-weight: 700; /* ทำให้ตัวอักษรหนา */
+    color: var(--text-color);
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--border-color); /* เพิ่มเส้นคั่น */
+}
+
+/* ทำให้ไอคอนเหรียญเป็นสีทอง/เหลือง */
+#sidebar-coin-display .feather-dollar-sign {
+    color: #FFC700;
+    stroke-width: 2.5;
+}
+
+/* ทำให้ตัวเลขเหรียญมีสีที่เด่นขึ้น */
+#sidebar-coin-count {
+    color: var(--primary-color);
+}
