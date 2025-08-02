@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let state = {};
     const availableIcons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
     let currentlyEditingSubjectValue = null;
+    let newSubjectIconNumber = '14';
     const defaultActivities = ["เขียนสิ่งที่ขอบคุณวันนี้ 3 อย่าง", "ยืดเส้น 3 นาที", "โทรหาเพื่อนคนหนึ่ง", "จดไอเดียเรื่องที่สนใจ", "จัดโต๊ะทำงาน"];
     const defaultAdvices = ["เหนื่อยได้ แต่อย่าลืมหายใจให้ลึก ๆ", "เก่งแล้วนะ ที่ยังอยู่ตรงนี้ได้", "ต้นไม้ไม่ได้โตในวันเดียว คนเราก็เช่นกัน", "ดื่มน้ำบ้างนะ วันนี้เธอทำดีแล้วล่ะ", "ใจล้า อย่าฝืน แต่ใจสู้ อย่าถอย"];
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
@@ -1043,12 +1044,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // เปิดหน้าต่างเลือกไอคอน
-    function openIconSelectorModal(subjectValue) {
-        currentlyEditingSubjectValue = subjectValue; // บอกระบบว่าเรากำลังจะเปลี่ยนไอคอนของวิชานี้
-        renderIconSelectorGrid(); // เรียกฟังก์ชันวาดตารางไอคอน
+    function openIconSelectorModal(subjectValue = null) { // ทำให้ subjectValue เป็น optional
+        currentlyEditingSubjectValue = subjectValue; // ถ้าเป็น null หมายถึงกำลังเลือกให้วิชาใหม่
+        renderIconSelectorGrid();
         document.getElementById('icon-selector-modal').classList.remove('hidden');
     }
-
     // วาดตารางไอคอนทั้งหมด
     function renderIconSelectorGrid() {
         const gridContainer = document.getElementById('icon-selector-grid');
@@ -1150,23 +1150,44 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleAddCustomSubject(e) {
         e.preventDefault();
         const input = document.getElementById('custom-subject-input');
-        const colorInput = document.getElementById('custom-subject-color'); // <-- ดึงช่องเลือกสี
+        const colorInput = document.getElementById('custom-subject-color');
         
         const newName = input.value.trim();
-        const newColor = colorInput.value; // <-- ดึงค่าสี
-        if (!newName) return;
-        const newValue = `custom_${newName.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
-        if (!state.subjects) state.subjects = [];
+        const newColor = colorInput.value;
+        const newIcon = newSubjectIconNumber; // ใช้ค่าจาก Global Variable
+
+        if (!newName) {
+            showToast("กรุณาใส่ชื่อวิชา");
+            return;
+        }
         if (state.subjects.some(s => s.name.toLowerCase() === newName.toLowerCase())) {
             showToast("มีวิชานี้อยู่แล้ว");
             return;
         }
 
-        state.subjects.push({ value: newValue, name: newName, removable: true, color: newColor });
+        const newValue = `custom_${newName.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
+        if (!state.subjects) state.subjects = [];
+
+        state.subjects.push({ value: newValue, name: newName, removable: true, color: newColor, icon: newIcon });
         saveState();
         renderSubjectOptions();
+        
+        // รีเซ็ตฟอร์ม
         input.value = '';
+        newSubjectIconNumber = '14'; // รีเซ็ตไอคอนกลับเป็นค่าเริ่มต้น
+        updateNewSubjectIconPreview(); // อัปเดตรูปไอคอนที่ปุ่ม
     }
+
+    function updateNewSubjectIconPreview() {
+        const previewImg = document.getElementById('add-custom-subject-icon-preview');
+        if (!previewImg) return;
+        const currentTheme = document.body.dataset.theme || 'light';
+        const iconSrc = newSubjectIconNumber === '14'
+            ? `assets/subject-icons/general-${currentTheme}${newSubjectIconNumber}.png`
+            : `assets/subject-icons/${currentTheme}${newSubjectIconNumber}.png`;
+        previewImg.src = iconSrc;
+    }
+
 
     // --- Revisit & Quiz System ---
     let currentQuizState = { subject: null, topicId: null, quizzes: [], currentQuizIndex: 0, correctAnswers: 0 };
@@ -2920,24 +2941,27 @@ document.addEventListener('DOMContentLoaded', () => {
             if (iconOption) {
                 const selectedIconNumber = iconOption.dataset.iconNumber;
 
-                // อัปเดต state
-                const subjectIndex = state.subjects.findIndex(s => s.value === currentlyEditingSubjectValue);
-                if (subjectIndex > -1) {
-                    state.subjects[subjectIndex].icon = selectedIconNumber;
+                if (currentlyEditingSubjectValue) { // --- กรณีแก้ไขวิชาเก่า ---
+                    const subjectIndex = state.subjects.findIndex(s => s.value === currentlyEditingSubjectValue);
+                    if (subjectIndex > -1) {
+                        state.subjects[subjectIndex].icon = selectedIconNumber;
+                    }
+                } else { // --- กรณีเลือกให้วิชาใหม่ ---
+                    newSubjectIconNumber = selectedIconNumber;
+                    updateNewSubjectIconPreview(); // อัปเดตรูปที่ปุ่มทันที
                 }
                 
-                saveState(); // บันทึกข้อมูล
-                
-                // ปิด Modal
+                saveState();
                 document.getElementById('icon-selector-modal').classList.add('hidden');
                 
-                // อัปเดต UI ทันที
-                showToast('เปลี่ยนไอคอนสำเร็จ!');
-                renderSubjectOptions();
-                const activePeriod = document.querySelector('.stats-tab-btn.active')?.dataset.period || 'day';
-                renderFocusStats(activePeriod);
+                if (currentlyEditingSubjectValue) {
+                    showToast('เปลี่ยนไอคอนสำเร็จ!');
+                    renderSubjectOptions();
+                    const activePeriod = document.querySelector('.stats-tab-btn.active')?.dataset.period || 'day';
+                    renderFocusStats(activePeriod);
+                }
                 
-                return; // จบการทำงาน
+                return;
             }
             
             const subjectOption = closest('.subject-option');
@@ -3173,6 +3197,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
                 case 'close-menu': case 'overlay': closeSidebar(); break;
                 case 'check-in-btn': handleCheckIn(); break;
+                case 'add-custom-subject-icon-btn':
+                    openIconSelectorModal(); // เรียกโดยไม่ส่งค่าอะไรไป = เลือกให้วิชาใหม่
+                    break;
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); timerInterval = null; } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
                 // แก้ไขบรรทัดนี้: ให้เปิด Modal ใหม่แทน
