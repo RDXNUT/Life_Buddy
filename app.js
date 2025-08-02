@@ -1862,16 +1862,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const currentTheme = document.body.dataset.theme || 'light';
             
-            // ดึง iconNumber มาจาก `subject.icon` โดยตรง
-            const iconNumberForThisSubject = subject.icon || '14'; 
+            // [จุดแก้ไขสำคัญ] เราจะดึง 'icon' มาจาก object 'subject' ที่เราหาเจอในแต่ละรอบ
+            const iconForThisSubject = subject.icon || '14'; 
             
             let iconSrc = '';
             if (topicKey === 'general') {
-                // ใช้ iconNumberForThisSubject ที่เราเพิ่งสร้าง
-                iconSrc = `assets/subject-icons/general-${currentTheme}${iconNumberForThisSubject}.png`;
+                iconSrc = `assets/subject-icons/general-${currentTheme}${iconForThisSubject}.png`;
             } else {
-                // ใช้ iconNumberForThisSubject ที่เราเพิ่งสร้าง
-                iconSrc = `assets/subject-icons/${currentTheme}${iconNumberForThisSubject}.png`;
+                iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
             }
 
             const barWrapper = document.createElement('div');
