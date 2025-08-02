@@ -1823,6 +1823,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const legendContainer = document.getElementById('focus-stats-legend');
         if (!chartContainer || !legendContainer) return;
 
+        // --- ส่วนที่ 1: กรองข้อมูล (ไม่มีการเปลี่ยนแปลง) ---
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
@@ -1834,12 +1835,15 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredHistory = allFocusHistory;
         }
 
+        // --- ส่วนที่ 2: จัดการ UI และข้อมูลเบื้องต้น ---
         chartContainer.innerHTML = '';
         legendContainer.innerHTML = '';
+
         if (filteredHistory.length === 0) {
-            chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 20px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
+            chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
+        
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
             if (!acc[topicKey]) { acc[topicKey] = 0; }
@@ -1847,6 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
         
+        // หาค่า maxMinutes จาก Object ที่รวมผลแล้ว ไม่ใช่จาก filteredHistory
         const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
         const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
             
@@ -1856,13 +1861,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
+        // --- ส่วนที่ 3: วนลูปสร้างกราฟ (มีการแก้ไขตรรกะ) ---
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
-            const barHeight = (totalMinutes / maxMinutes) * 100;
+            
+            // ตรวจสอบให้แน่ใจว่า totalMinutes เป็นตัวเลขและคำนวณ barHeight
+            const currentTotalMinutes = Number(totalMinutes) || 0;
+            const barHeight = (currentTotalMinutes / maxMinutes) * 100;
             
             const currentTheme = document.body.dataset.theme || 'light';
-            
-            // [จุดแก้ไขสำคัญ] เราจะดึง 'icon' มาจาก object 'subject' ที่เราหาเจอในแต่ละรอบ
             const iconForThisSubject = subject.icon || '14'; 
             
             let iconSrc = '';
@@ -1874,9 +1881,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const barWrapper = document.createElement('div');
             barWrapper.className = 'chart-bar-wrapper';
+            // ตรวจสอบว่า .chart-bar ถูกสร้างขึ้นมาด้วย
             barWrapper.innerHTML = `
                 <div class="chart-bar" style="height: ${barHeight}%; background-color: ${subject.color};">
-                    <div class="chart-tooltip">${totalMinutes} นาที</div>
+                    <div class="chart-tooltip">${currentTotalMinutes} นาที</div>
                 </div>
                 <div class="chart-icon">
                     <img src="${iconSrc}" alt="${subject.name}">
@@ -1893,7 +1901,7 @@ document.addEventListener('DOMContentLoaded', () => {
             legendContainer.appendChild(legendItem);
         });
     }
-    
+        
     function startTimer() {
         const startBtn = document.getElementById('start-timer-btn');
         if (!startBtn) return;
