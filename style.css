@@ -1264,21 +1264,27 @@ body[data-theme="dark"] .timer-controls .icon-button {
     padding: 12px 20px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 0; /* เอา gap เดิมออกเพื่อควบคุมระยะห่างเอง */
     font-size: 1.1rem;
-    font-weight: 700; /* ทำให้ตัวอักษรหนา */
+    font-weight: 700;
     color: var(--text-color);
     margin-bottom: 5px;
-    border-bottom: 1px solid var(--border-color); /* เพิ่มเส้นคั่น */
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* ทำให้ไอคอนเหรียญเป็นสีทอง/เหลือง */
-#sidebar-coin-display .feather-dollar-sign {
-    color: #FFC700;
-    stroke-width: 2.5;
+/* [ใหม่] สไตล์สำหรับอิโมจิเหรียญ */
+.coin-icon {
+    font-size: 1.5rem; /* ปรับขนาดอิโมจิให้ใหญ่ขึ้นเล็กน้อย */
+    line-height: 1;
+    margin-right: 12px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
 }
 
-/* ทำให้ตัวเลขเหรียญมีสีที่เด่นขึ้น */
+/* [ใหม่] สไตล์สำหรับป้าย "Coins:" */
+.coin-label {
+    margin-right: 8px; /* ระยะห่างระหว่าง "Coins:" กับตัวเลข */
+}
+
+/* ทำให้ตัวเลขเหรียญมีสีที่เด่นขึ้น (เหมือนเดิม) */
 #sidebar-coin-count {
     color: var(--primary-color);
 }
