@@ -2639,7 +2639,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const todayStr = dayjs().format('YYYY-MM-DD');
 
-        // --- [จุดที่แก้ไข] กรณีที่ 3: เช็คอินไปแล้ววันนี้ ---
+        // --- กรณีที่ 3: เช็คอินไปแล้ววันนี้ ---
         if (state.lastCheckIn === todayStr) {
             Swal.fire({
                 html: `
