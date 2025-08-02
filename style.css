@@ -1191,12 +1191,13 @@ body[data-theme="dark"] .timer-controls .icon-button {
     background: var(--accent-color); /* สีส้ม */
     border: none;
     border-radius: 12px;
-    padding: 12px 30px;
-    margin: 25px auto 10px;
+    padding: 14px 30px; /* เพิ่มความสูงของปุ่มเล็กน้อย */
+    margin: 25px 20px 20px; /* [จุดสำคัญ] เพิ่มระยะห่างซ้าย-ขวา-ล่าง */
     cursor: pointer;
     transition: all 0.2s ease-out;
-    box-shadow: 0 5px 15px -5px var(--accent-color);
+    box-shadow: 0 5px 20px -5px var(--accent-color); /* เพิ่มความฟุ้งของเงา */
     display: block;
+    width: calc(100% - 40px); /* ทำให้ปุ่มมีความกว้างเกือบเต็ม แต่มีขอบ */
 }
 
 .swal-checkin-button:hover {

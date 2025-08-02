@@ -2899,8 +2899,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- กรณีที่ 1: เช็คอินได้ตามปกติ ---
         Swal.fire({
             html: `
-                <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(255, 159, 10, 0.5);">🔥</div>
-                <h2 class="swal-streak-title">เช็คอินรายวัน</h2>
+                <div class="swal-streak-header">
+                    <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(255, 159, 10, 0.5);">🔥</div>
+                    <h2 class="swal-streak-title">เช็คอินรายวัน</h2>
+                </div>
                 <p class="swal-streak-text">
                     มาเริ่มต้นวันดีๆ ด้วยการเช็คอินกันเถอะ!
                     การเช็คอินต่อเนื่องจะช่วยเพิ่ม EXP และ Coins ให้กับคุณ
