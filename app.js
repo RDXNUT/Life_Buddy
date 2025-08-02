@@ -1820,11 +1820,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFocusStats(period = 'day') {
+        // ใช้แค่ chartContainer เพราะเราไม่มี legend แล้ว
         const chartContainer = document.getElementById('focus-stats-chart-container');
-        const legendContainer = document.getElementById('focus-stats-legend');
-        if (!chartContainer || !legendContainer) return;
+        if (!chartContainer) return;
 
-        // --- ส่วนที่ 1: กรองข้อมูล (ไม่มีการเปลี่ยนแปลง) ---
+        // ... (ส่วนของการกรองข้อมูล filteredHistory และรวมข้อมูล statsByTopic เหมือนเดิม) ...
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
@@ -1836,14 +1836,12 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredHistory = allFocusHistory;
         }
 
-        // --- ส่วนที่ 2: จัดการ UI และข้อมูลเบื้องต้น ---
-        chartContainer.innerHTML = '';
-        legendContainer.innerHTML = '';
+        chartContainer.innerHTML = ''; // ล้างข้อมูลเก่า
+        
         if (filteredHistory.length === 0) {
             chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
-        
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
             if (!acc[topicKey]) { acc[topicKey] = 0; }
@@ -1851,8 +1849,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return acc;
         }, {});
         
-        // หาค่า maxMinutes จาก Object ที่รวมผลแล้ว ไม่ใช่จาก filteredHistory
+        // [สำคัญ] หาเวลาที่มากที่สุด เพื่อให้ Progress Bar ของวิชานั้นยาวเต็ม 100%
         const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
+        
         const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
             
         const subjectMap = (state.subjects || []).reduce((acc, subject) => {
@@ -1861,34 +1860,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
-        // วนลูปสร้างกราฟ
+        // วนลูปสร้างรายการ Progress Bar
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
-            const barHeight = (totalMinutes / maxMinutes) * 100;
+            
+            // คำนวณ % ความยาวของ Progress Bar
+            const barPercentage = (totalMinutes / maxMinutes) * 100;
+            
             const currentTheme = document.body.dataset.theme || 'light';
             const iconForThisSubject = subject.icon || '14'; 
-            
             const iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
 
-            const barWrapper = document.createElement('div');
-            barWrapper.className = 'chart-bar-wrapper';
-            barWrapper.innerHTML = `
-                <div class="chart-bar" style="height: ${barHeight}%; background-color: ${subject.color};">
-                    <div class="chart-tooltip">${totalMinutes} นาที</div>
-                </div>
-                <div class="chart-icon">
+            // สร้าง String สำหรับแสดงผลเวลา (เช่น 1h 22m หรือ 48m)
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            let timeString = '';
+            if (hours > 0) {
+                timeString += `${hours}h `;
+            }
+            if (minutes > 0 || totalMinutes === 0) {
+                timeString += `${minutes}m`;
+            }
+            timeString = timeString.trim();
+
+            // สร้าง HTML สำหรับ 1 แถว
+            const rowElement = document.createElement('div');
+            rowElement.className = 'stat-item-row';
+            rowElement.innerHTML = `
+                <div class="stat-icon">
                     <img src="${iconSrc}" alt="${subject.name}">
                 </div>
+                <div class="stat-details">
+                    <span class="stat-name">${subject.name}</span>
+                    <div class="stat-progress-bar-wrapper">
+                        <div class="stat-progress-bar" style="width: ${barPercentage}%; background-color: ${subject.color};"></div>
+                    </div>
+                </div>
+                <span class="stat-time">${timeString}</span>
             `;
-            chartContainer.appendChild(barWrapper);
-            
-            const legendItem = document.createElement('div');
-            legendItem.className = 'legend-item';
-            legendItem.innerHTML = `
-                <div class="legend-color-dot" style="background-color: ${subject.color};"></div>
-                <span>${subject.name}</span>
-            `;
-            legendContainer.appendChild(legendItem);
+            chartContainer.appendChild(rowElement);
         });
     }
         
