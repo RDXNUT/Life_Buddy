@@ -209,93 +209,52 @@
         </div>
 
         <!-- Student Hub Page -->
-        <div id="student-hub-page" class="page">
-            <!-- [VIEW 1] Main Menu View -->
-            <div id="student-hub-main-view">
-                <h1><i data-feather="briefcase"></i> สำหรับนักศึกษา</h1>
-                <p class="subtle-text" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">เครื่องมือที่จะช่วยให้ชีวิตในรั้วมหาวิทยาลัยของคุณง่ายขึ้น</p>
-                
-                <div class="student-hub-grid">
-                    <!-- Card 1: GPA Calculator - [สำคัญ] เพิ่ม ID ให้การ์ดนี้ -->
-                    <section id="gpa-feature-card" class="card student-feature-card">
-                        <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
-                        <p class="subtle-text">เครื่องมือช่วยคำนวณและวางแผนเกรดเฉลี่ยของคุณ</p>
-                    </section>
-                    
-                    <!-- Card 2: TCAS Calculator -->
-                    <section class="card student-feature-card">
-                        <h2><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
-                        <p class="subtle-text">ประเมินคะแนนและโอกาสในการเข้าศึกษาต่อในมหาวิทยาลัย</p>
-                        <div class="feature-status">เร็วๆ นี้</div>
-                    </section>
-
-                    <!-- Card 3: Portfolio Planner -->
-                    <section class="card student-feature-card">
-                        <h2><i data-feather="archive"></i> วางแผน Portfolio</h2>
-                        <p class="subtle-text">รวบรวมและจัดการผลงานเพื่อสร้างแฟ้มสะสมผลงานที่โดดเด่น</p>
-                    </section>
-
-                    <!-- Card 4: Goal Tracker -->
-                    <section class="card student-feature-card">
-                        <h2><i data-feather="target"></i> วางแผนเป้าหมายอนาคต</h2>
-                        <p class="subtle-text">ตั้งเป้าหมายระยะสั้นและยาวสำหรับเส้นทางอาชีพของคุณ</p>
-                    </section>
-                </div>
-                </div>
-                <!-- [VIEW 2] GPA Calculator View (ซ่อนไว้ตอนแรก) -->
-        <div id="gpa-calculator-view" class="page-view hidden">
-    <!-- [ส่วนที่แก้ไข] สร้าง Div ครอบปุ่มและหัวข้อ -->
-    <div class="gpa-view-header">
-        <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
-        <div class="header-actions">
-            <button id="gpa-save-btn" class="small-btn btn-secondary with-icon">
-                <i data-feather="save"></i> บันทึกผลการเรียน
-            </button>
-            <button id="gpa-back-btn" class="small-btn with-icon">
-                <i data-feather="arrow-left"></i> กลับไปหน้าหลัก
-            </button>
-        </div>
-    </div>
+    <div id="student-hub-page" class="page">
+        
+        <!-- ============================ -->
+        <!-- VIEW 1: Main Student Hub Menu -->
+        <!-- ============================ -->
+        <div id="student-hub-main-view">
+            <h1><i data-feather="briefcase"></i> สำหรับนักศึกษา</h1>
+            <p class="subtle-text" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">เครื่องมือที่จะช่วยให้ชีวิตในรั้วมหาวิทยาลัยของคุณง่ายขึ้น</p>
             
-            <div id="gpa-table-container">
-                <!-- ส่วนหัวตาราง -->
-                <div class="gpa-table-header">
-                    <span>#</span>
-                    <span>รายวิชา</span>
-                    <span>หน่วยกิต</span>
-                    <span>เกรด</span>
-                </div>
-                <!-- เนื้อหาตาราง (จะถูกสร้างโดย JS) -->
-                <div id="gpa-table-body"></div>
-            </div>
+            <div class="student-hub-grid">
+                <!-- Card 1: GPA Calculator -->
+                <section id="gpa-feature-card" class="card student-feature-card" style="cursor: pointer;">
+                    <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
+                    <p class="subtle-text">เครื่องมือช่วยคำนวณและวางแผนเกรดเฉลี่ยของคุณ</p>
+                </section>
 
-            <!-- ส่วนของผลลัพธ์ (จะทำในอนาคต) -->
-            <div id="gpa-result-container"></div>
+                <!-- Card 2: TCAS Calculator -->
+                <section class="card student-feature-card">
+                    <h2><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
+                    <p class="subtle-text">ประเมินคะแนนและโอกาสในการเข้าศึกษาต่อในมหาวิทยาลัย</p>
+                    <div class="feature-status">เร็วๆ นี้</div>
+                </section>
 
-            <!-- ปุ่มควบคุม -->
-            <div class="gpa-actions">
-                <button id="gpa-clear-btn" class="btn-danger-secondary">ล้างข้อมูล</button>
-                <button id="gpa-calculate-btn">คำนวณ</button>
+                <!-- Card 3: Portfolio Planner -->
+                <section class="card student-feature-card">
+                    <h2><i data-feather="archive"></i> วางแผน Portfolio</h2>
+                    <p class="subtle-text">รวบรวมและจัดการผลงานเพื่อสร้างแฟ้มสะสมผลงานที่โดดเด่น</p>
+                    <div class="feature-status">เร็วๆ นี้</div>
+                </section>
+
+                <!-- Card 4: Goal Tracker -->
+                <section class="card student-feature-card">
+                    <h2><i data-feather="target"></i> วางแผนเป้าหมายอนาคต</h2>
+                    <p class="subtle-text">ตั้งเป้าหมายระยะสั้นและยาวสำหรับเส้นทางอาชีพของคุณ</p>
+                    <div class="feature-status">เร็วๆ นี้</div>
+                </section>
             </div>
         </div>
-    </div>
 
-    <!-- [สำคัญ] เพิ่มโครงสร้างสำหรับ Pop-up เลือกเกรด (วางไว้นอก main ก็ได้) -->
-    <div id="grade-popup" class="hidden">
-        <div class="grade-option" data-value="4">4.00 (A)</div>
-        <div class="grade-option" data-value="3.5">3.50 (B+)</div>
-        <div class="grade-option" data-value="3">3.00 (B)</div>
-        <div class="grade-option" data-value="2.5">2.50 (C+)</div>
-        <div class="grade-option" data-value="2">2.00 (C)</div>
-        <div class="grade-option" data-value="1.5">1.50 (D+)</div>
-        <div class="grade-option" data-value="1">1.00 (D)</div>
-        <div class="grade-option" data-value="0">0.00 (F)</div>
-    </div>
-    <!-- [ส่วนที่แก้ไขทั้งหมด] ห่อหุ้มฟีเจอร์ GPA ไว้ใน div เดียว -->
+        <!-- ============================================= -->
+        <!-- Wrapper for All GPA Feature Sub-Views -->
+        <!-- ============================================= -->
         <div id="gpa-feature-wrapper" class="page-view hidden">
 
-            <!-- [GPA VIEW 1] หน้าหลักสำหรับแสดงประวัติและปุ่มเพิ่ม -->
-            <div id="gpa-history-view">
+            <!-- [GPA VIEW 1] History View: แสดงประวัติและปุ่มเพิ่ม -->
+            <div id="gpa-history-view" class="page-view">
                 <button id="gpa-back-to-hub-btn" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปหน้าหลัก</button>
                 <h2 style="margin-top: 20px;"><i data-feather="bar-chart-2"></i> ผลการเรียนของฉัน</h2>
                 
@@ -309,7 +268,7 @@
                 </div>
             </div>
 
-            <!-- [GPA VIEW 2] หน้าสำหรับกรอกข้อมูลเทอมเบื้องต้น -->
+            <!-- [GPA VIEW 2] Add Term Info View: กรอกข้อมูลเทอม -->
             <div id="gpa-add-term-info-view" class="page-view hidden">
                 <button class="gpa-back-to-history-btn small-btn with-icon"><i data-feather="arrow-left"></i> กลับ</button>
                 <h2 style="margin-top: 20px;"><i data-feather="edit-3"></i> ระบุข้อมูลผลการเรียน</h2>
@@ -334,13 +293,17 @@
                 </form>
             </div>
 
-            <!-- [GPA VIEW 3] หน้าคำนวณเกรด (เดิม) -->
+            <!-- [GPA VIEW 3] Calculator View: หน้าคำนวณและบันทึกเกรด -->
             <div id="gpa-calculator-view" class="page-view hidden">
                 <div class="gpa-view-header">
-                    <!-- เราจะย้ายหัวข้อมาสร้างด้วย JS แทน -->
-                    <h2></h2> 
+                    <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
                     <div class="header-actions">
-                        <button class="gpa-back-to-history-btn small-btn with-icon"><i data-feather="arrow-left"></i> กลับ</button>
+                        <button id="gpa-go-to-history-btn" class="small-btn btn-secondary with-icon">
+                            <i data-feather="archive"></i> ดูประวัติที่บันทึก
+                        </button>
+                        <button id="gpa-back-to-hub-btn" class="small-btn with-icon">
+                            <i data-feather="arrow-left"></i> กลับไปหน้าหลัก
+                        </button>
                     </div>
                 </div>
                 
@@ -348,18 +311,36 @@
                     <div class="gpa-table-header">
                         <span>#</span><span>รายวิชา</span><span>หน่วยกิต</span><span>เกรด</span>
                     </div>
-                    <div id="gpa-table-body"></div>
+                    <div id="gpa-table-body">
+                        <!-- ตารางจะถูกสร้างโดย JS ที่นี่ -->
+                    </div>
                 </div>
 
-                <div id="gpa-result-container"></div>
+                <div id="gpa-result-container">
+                    <!-- ผลลัพธ์จะแสดงที่นี่ (ถ้ามี) -->
+                </div>
 
                 <div class="gpa-actions">
                     <button id="gpa-clear-btn" class="btn-danger-secondary">ล้างข้อมูล</button>
-                    <button id="gpa-save-record-btn">บันทึก</button>
+                    <!-- ปุ่มนี้จะสลับระหว่าง "คำนวณ" กับ "บันทึก" โดย JS -->
+                    <button id="gpa-calculate-btn">คำนวณ</button>
+                    <button id="gpa-save-record-btn" class="hidden">บันทึก</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Grade Selection Popup (วางไว้นอก main ก็ได้) -->
+    <div id="grade-popup" class="hidden">
+        <div class="grade-option" data-value="4">4.00 (A)</div>
+        <div class="grade-option" data-value="3.5">3.50 (B+)</div>
+        <div class="grade-option" data-value="3">3.00 (B)</div>
+        <div class="grade-option" data-value="2.5">2.50 (C+)</div>
+        <div class="grade-option" data-value="2">2.00 (C)</div>
+        <div class="grade-option" data-value="1.5">1.50 (D+)</div>
+        <div class="grade-option" data-value="1">1.00 (D)</div>
+        <div class="grade-option" data-value="0">0.00 (F)</div>
+    </div>```
 
         <!-- Shop Page -->
         <div id="shop-page" class="page">

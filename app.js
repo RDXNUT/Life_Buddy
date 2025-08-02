@@ -3312,147 +3312,145 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupAllEventListeners() {
         if (areListenersSetup) return;
 
+        // ===========================================
+        // ====== 1. CLICK EVENT LISTENER (MAIN) ======
+        // ===========================================
         document.body.addEventListener('click', (e) => {
-        const closest = (selector) => e.target.closest(selector);
-        const gradePopup = document.getElementById('grade-popup');
+            const closest = (selector) => e.target.closest(selector);
 
-        // --- 1. จัดการ Navigation หลักของ Student Hub ---
-        if (closest('#gpa-feature-card')) {
-            document.getElementById('student-hub-main-view').classList.add('hidden');
-            document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
-            const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
-            header.innerHTML = `<i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)`;
-            renderGpaTable([]);
-            showGpaView('gpa-calculator-view');
-            return;
-        }
-        if (closest('#gpa-save-btn')) { // ปุ่ม "บันทึกผลการเรียน"
-            renderGpaHistoryList();
-            showGpaView('gpa-history-view');
-            return;
-        }
-        if (closest('#gpa-back-btn') || closest('#gpa-back-to-hub-btn')) { // ปุ่ม "กลับไปหน้าหลัก" (Student Hub)
-            document.getElementById('gpa-feature-wrapper').classList.add('hidden');
-            document.getElementById('student-hub-main-view').classList.remove('hidden');
-            return;
-        }
-
-
-        // --- 2. จัดการ Navigation ภายใน GPA Feature ---
-        if (closest('.gpa-back-to-history-btn')) {
-            showGpaView('gpa-history-view');
-            return;
-        }
-        if (closest('#gpa-add-new-record-btn')) {
-            document.getElementById('gpa-term-info-form').reset();
-            showGpaView('gpa-add-term-info-view');
-            return;
-        }
-
-        // --- 3. จัดการตาราง GPA และ Pop-up ---
-        const creditBtn = closest('.credit-stepper-btn');
-        if (creditBtn) {
-            const action = creditBtn.dataset.action;
-            const valueSpan = creditBtn.parentElement.querySelector('.credit-value');
-            let currentValue = parseFloat(valueSpan.textContent);
-            if (action === 'increase' && currentValue < 15) currentValue += 0.5;
-            else if (action === 'decrease' && currentValue > 0.5) currentValue -= 0.5;
-            valueSpan.textContent = currentValue.toFixed(1);
-            return;
-        }
-        const gradeSelector = closest('.grade-selector');
-        if (gradeSelector) {
-            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
-            gradeSelector.classList.add('active');
-            const rect = gradeSelector.getBoundingClientRect();
-            gradePopup.style.top = `${rect.bottom + window.scrollY + 5}px`;
-            gradePopup.style.left = `${rect.left + window.scrollX}px`;
-            gradePopup.classList.remove('hidden');
-            gradePopup.currentTargetSelector = gradeSelector;
-            return;
-        }
-        const gradeOption = closest('.grade-option');
-        if (gradeOption) {
-            const targetSelector = gradePopup.currentTargetSelector;
-            if (targetSelector) {
-                targetSelector.textContent = getGradeText(gradeOption.dataset.value);
-                targetSelector.dataset.value = gradeOption.dataset.value;
-            }
-            gradePopup.classList.add('hidden');
-            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
-            return;
-        }
-        if (!gradePopup.classList.contains('hidden') && !closest('.grade-selector')) {
-            gradePopup.classList.add('hidden');
-            document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
-        }
-
-        // --- 4. จัดการปุ่มควบคุม GPA และประวัติ ---
-        if (closest('#gpa-clear-btn')) { resetGpaTable(); return; }
-        if (closest('#gpa-save-record-btn')) { saveGpaRecord(); return; }
-        const historyItem = closest('.gpa-history-item');
-        if (historyItem && !closest('.delete-gpa-record-btn')) {
-            const recordId = parseInt(historyItem.dataset.id);
-            currentGpaRecord = state.gpaHistory.find(rec => rec.id === recordId);
-            if (currentGpaRecord) {
+            // --- Group 1: Student Hub & GPA Calculator ---
+            const gpaFeatureCard = closest('#gpa-feature-card');
+            if (gpaFeatureCard) {
+                document.getElementById('student-hub-main-view').classList.add('hidden');
+                document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
                 const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
-                header.innerHTML = `<i data-feather="edit"></i> ${currentGpaRecord.level} - เทอม ${currentGpaRecord.term}`;
-                renderGpaTable(currentGpaRecord.courses);
+                header.innerHTML = `<i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)`;
+                renderGpaTable([]);
                 showGpaView('gpa-calculator-view');
+                return;
             }
-            return;
-        }
-        const deleteGpaBtn = closest('.delete-gpa-record-btn');
-        if (deleteGpaBtn) {
-            const recordId = parseInt(deleteGpaBtn.dataset.id);
-            Swal.fire({
-                title: 'ยืนยันการลบ', text: "คุณต้องการลบผลการเรียนนี้ใช่ไหม?",
-                icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
-                confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก'
-            }).then(result => {
-                if(result.isConfirmed) {
-                    state.gpaHistory = state.gpaHistory.filter(rec => rec.id !== recordId);
-                    saveState();
-                    renderGpaHistoryList();
-                    showToast('ลบผลการเรียนแล้ว');
-                }
-            });
-            return;
-        }
+            const gpaGoToHistoryBtn = closest('#gpa-go-to-history-btn');
+            if (gpaGoToHistoryBtn) {
+                renderGpaHistoryList();
+                showGpaView('gpa-history-view');
+                return;
+            }
+            const gpaBackToHubBtn = closest('#gpa-back-to-hub-btn');
+            if (gpaBackToHubBtn) {
+                document.getElementById('gpa-feature-wrapper').classList.add('hidden');
+                document.getElementById('student-hub-main-view').classList.remove('hidden');
+                return;
+            }
+            const gpaBackToHistoryBtn = closest('.gpa-back-to-history-btn');
+            if (gpaBackToHistoryBtn) {
+                showGpaView('gpa-history-view');
+                return;
+            }
+            const gpaAddNewRecordBtn = closest('#gpa-add-new-record-btn');
+            if (gpaAddNewRecordBtn) {
+                document.getElementById('gpa-term-info-form').reset();
+                showGpaView('gpa-add-term-info-view');
+                return;
+            }
+            const gpaCalculateBtn = closest('#gpa-calculate-btn');
+            if (gpaCalculateBtn) {
+                calculateAndDisplayGpa();
+                return;
+            }
 
-        const deleteActivityBtn = closest('.delete-activity-btn');
-        if (deleteActivityBtn) {
-            // ดึง index ของ activity ที่ต้องการลบจาก data-attribute
-            const activityIndex = parseInt(deleteActivityBtn.dataset.index, 10);
-            
-            // ใช้ SweetAlert เพื่อยืนยันการลบ
-            Swal.fire({
-                title: 'แน่ใจหรือไม่?',
-                text: "คุณต้องการลบกิจกรรมนี้ออกจากรายการใช่ไหม?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: 'var(--danger-color)',
-                cancelButtonColor: '#6e7881',
-                confirmButtonText: 'ใช่, ลบเลย!',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                // ถ้าผู้ใช้กดยืนยัน
-                if (result.isConfirmed) {
-                    // ตรวจสอบว่ามี array และ index ที่ถูกต้องหรือไม่
-                    if (state.userActivities && state.userActivities[activityIndex] !== undefined) {
-                        // ใช้ splice เพื่อลบ item ออกจาก array ตาม index
-                        state.userActivities.splice(activityIndex, 1);
-                        
-                        saveState(); // บันทึก state ใหม่ลง Firestore
-                        renderActivityList(); // วาดรายการกิจกรรมใน modal ใหม่
-                        showToast('ลบกิจกรรมแล้ว');
+            // --- Sub-Group: GPA Table Interactions ---
+            const gradePopup = document.getElementById('grade-popup');
+            const creditBtn = closest('.credit-stepper-btn');
+            if (creditBtn) {
+                const action = creditBtn.dataset.action;
+                const valueSpan = creditBtn.parentElement.querySelector('.credit-value');
+                let currentValue = parseFloat(valueSpan.textContent);
+                if (action === 'increase' && currentValue < 15) currentValue += 0.5;
+                else if (action === 'decrease' && currentValue > 0.5) currentValue -= 0.5;
+                valueSpan.textContent = currentValue.toFixed(1);
+                return;
+            }
+            const gradeSelector = closest('.grade-selector');
+            if (gradeSelector) {
+                document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+                gradeSelector.classList.add('active');
+                const rect = gradeSelector.getBoundingClientRect();
+                gradePopup.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                gradePopup.style.left = `${rect.left + window.scrollX}px`;
+                gradePopup.classList.remove('hidden');
+                gradePopup.currentTargetSelector = gradeSelector;
+                return;
+            }
+            const gradeOption = closest('.grade-option');
+            if (gradeOption) {
+                const targetSelector = gradePopup.currentTargetSelector;
+                if (targetSelector) {
+                    targetSelector.textContent = getGradeText(gradeOption.dataset.value);
+                    targetSelector.dataset.value = gradeOption.dataset.value;
+                }
+                gradePopup.classList.add('hidden');
+                document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+                return;
+            }
+            if (!gradePopup.classList.contains('hidden') && !closest('.grade-selector')) {
+                gradePopup.classList.add('hidden');
+                document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
+            }
+            const gpaClearBtn = closest('#gpa-clear-btn');
+            if (gpaClearBtn) { resetGpaTable(); return; }
+            const gpaSaveRecordBtn = closest('#gpa-save-record-btn');
+            if (gpaSaveRecordBtn) { saveGpaRecord(); return; }
+            const historyItem = closest('.gpa-history-item');
+            if (historyItem && !closest('.delete-gpa-record-btn')) {
+                const recordId = parseInt(historyItem.dataset.id);
+                currentGpaRecord = state.gpaHistory.find(rec => rec.id === recordId);
+                if (currentGpaRecord) {
+                    const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
+                    header.innerHTML = `<i data-feather="edit"></i> ${currentGpaRecord.level} - เทอม ${currentGpaRecord.term}`;
+                    // สลับปุ่มให้ถูกต้อง
+                    document.getElementById('gpa-calculate-btn').classList.add('hidden');
+                    document.getElementById('gpa-save-record-btn').classList.remove('hidden');
+                    renderGpaTable(currentGpaRecord.courses);
+                    showGpaView('gpa-calculator-view');
+                }
+                return;
+            }
+            const deleteGpaBtn = closest('.delete-gpa-record-btn');
+            if (deleteGpaBtn) {
+                const recordId = parseInt(deleteGpaBtn.dataset.id);
+                Swal.fire({
+                    title: 'ยืนยันการลบ', text: "คุณต้องการลบผลการเรียนนี้ใช่ไหม?",
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
+                    confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก'
+                }).then(result => {
+                    if(result.isConfirmed) {
+                        state.gpaHistory = state.gpaHistory.filter(rec => rec.id !== recordId);
+                        saveState();
+                        renderGpaHistoryList();
+                        showToast('ลบผลการเรียนแล้ว');
                     }
-                }
-            });
-            return; // หยุดการทำงานของ listener ทันที
-        }
-
-        // --- จัดการการติ๊ก To-Do List ---
+                });
+                return;
+            }
+            
+            // --- Group 2: Home Page Items (To-Do & Activities) ---
+            const deleteTodoBtn = closest('.delete-todo-btn');
+            if (deleteTodoBtn) {
+                const todoId = parseInt(deleteTodoBtn.dataset.id);
+                Swal.fire({
+                    title: 'แน่ใจหรือไม่?', text: "คุณต้องการลบเป้าหมายนี้ใช่ไหม?",
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
+                    cancelButtonColor: '#6e7881', confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        state.todos = state.todos.filter(t => t.id !== todoId);
+                        saveState();
+                        updateHomePageUI();
+                        showToast('ลบเป้าหมายแล้ว');
+                    }
+                });
+                return;
+            }
             if (e.target.matches('#todo-list input[type="checkbox"]')) {
                 const todoId = parseInt(e.target.dataset.id);
                 const todo = state.todos.find(t => t.id === todoId);
@@ -3469,71 +3467,54 @@ document.addEventListener('DOMContentLoaded', () => {
                             state.todos = state.todos.filter(t => t.id !== todoId);
                             saveState();
                             updateHomePageUI(); 
-                        }, 300000); // ลบออกจากลิสต์หลังจาก 5 นาที
+                        }, 300000);
                     }
                     saveState();
                 }
                 return;
             }
-
-        const deleteTodoBtn = closest('.delete-todo-btn');
-        if (deleteTodoBtn) {
-            const todoId = parseInt(deleteTodoBtn.dataset.id);
-            Swal.fire({
-                title: 'แน่ใจหรือไม่?',
-                text: "คุณต้องการลบเป้าหมายนี้ใช่ไหม?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: 'var(--danger-color)',
-                cancelButtonColor: '#6e7881',
-                confirmButtonText: 'ใช่, ลบเลย!',
-                cancelButtonText: 'ยกเลิก'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // กรอง to-do ที่มี id ตรงกับที่ต้องการลบออกไป
-                    state.todos = state.todos.filter(t => t.id !== todoId);
-                    saveState(); // บันทึก state ใหม่
-                    updateHomePageUI(); // วาด UI ใหม่อีกครั้ง
-                    showToast('ลบเป้าหมายแล้ว');
-                }
-            });
-            return; 
-        }
-
-            // Revisit & Quiz UI
-            if (closest('#revisit-subject-display')) { 
-                // ส่งฟังก์ชัน selectSubject เข้าไปเป็น callback
-                openSubjectSelector(selectSubject); 
-                return; 
+            const deleteActivityBtn = closest('.delete-activity-btn');
+            if (deleteActivityBtn) {
+                const activityIndex = parseInt(deleteActivityBtn.dataset.index, 10);
+                Swal.fire({
+                    title: 'แน่ใจหรือไม่?', text: "คุณต้องการลบกิจกรรมนี้ออกจากรายการใช่ไหม?",
+                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
+                    cancelButtonColor: '#6e7881', confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (state.userActivities && state.userActivities[activityIndex] !== undefined) {
+                            state.userActivities.splice(activityIndex, 1);
+                            saveState();
+                            renderActivityList();
+                            showToast('ลบกิจกรรมแล้ว');
+                        }
+                    }
+                });
+                return;
             }
 
+            // --- Group 3: Revisit & Quiz System ---
+            if (closest('#revisit-subject-display')) { openSubjectSelector(selectSubject); return; }
             const iconOption = closest('.icon-option');
             if (iconOption) {
                 const selectedIconNumber = iconOption.dataset.iconNumber;
-
-                if (currentlyEditingSubjectValue) { // --- กรณีแก้ไขวิชาเก่า ---
+                if (currentlyEditingSubjectValue) {
                     const subjectIndex = state.subjects.findIndex(s => s.value === currentlyEditingSubjectValue);
-                    if (subjectIndex > -1) {
-                        state.subjects[subjectIndex].icon = selectedIconNumber;
-                    }
-                } else { // --- กรณีเลือกให้วิชาใหม่ ---
+                    if (subjectIndex > -1) state.subjects[subjectIndex].icon = selectedIconNumber;
+                } else {
                     newSubjectIconNumber = selectedIconNumber;
-                    updateNewSubjectIconPreview(); // อัปเดตรูปที่ปุ่มทันที
+                    updateNewSubjectIconPreview();
                 }
-                
                 saveState();
                 document.getElementById('icon-selector-modal').classList.add('hidden');
-                
                 if (currentlyEditingSubjectValue) {
                     showToast('เปลี่ยนไอคอนสำเร็จ!');
                     renderSubjectOptions();
                     const activePeriod = document.querySelector('.stats-tab-btn.active')?.dataset.period || 'day';
                     renderFocusStats(activePeriod);
                 }
-                
                 return;
             }
-            
             const subjectOption = closest('.subject-option');
             if (subjectOption) {
                 if (e.target.closest('.edit-subject-btn')) {
@@ -3551,7 +3532,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     document.getElementById('subject-selector-modal').classList.add('hidden');
                 }
-                return; // หยุดการทำงานทันที
+                return;
             }
             const categoryOption = closest('.category-option');
             if (categoryOption) {
@@ -3569,315 +3550,140 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     document.getElementById('event-category-modal').classList.add('hidden');
                 }
-                return; // หยุดการทำงานทันที
+                return;
             }
             const quizChoiceBtn = closest('.quiz-choice-btn');
-            if (quizChoiceBtn && !quizChoiceBtn.disabled) {
-                handleAnswer(quizChoiceBtn.dataset.index);
-                return;
-            }
-            
-            // จัดการปุ่มลบตัวเลือก/คำตอบ
+            if (quizChoiceBtn && !quizChoiceBtn.disabled) { handleAnswer(quizChoiceBtn.dataset.index); return; }
             const removeBtn = closest('.remove-btn');
-            if (removeBtn) {
-                removeBtn.parentElement.remove();
-                return;
-            }
+            if (removeBtn) { removeBtn.parentElement.remove(); return; }
 
-            // ===== [จัดการปุ่มดูรหัสผ่านเป็นอันดับแรก] =====
+            // --- Group 4: General UI & Modals ---
             const toggleBtn = closest('.password-toggle-btn');
             if (toggleBtn) {
-                const targetId = toggleBtn.dataset.target;
-                const oldInput = document.getElementById(targetId);
-                if (!oldInput) return;
-                
-                // ใช้ wrapper ที่ครอบ input อยู่เป็นตัวอ้างอิง
-                const wrapper = oldInput.closest('.input-with-icon-wrapper');
-                if (!wrapper) return;
-
-                const newInput = document.createElement('input');
-                for (const attr of oldInput.attributes) {
-                    newInput.setAttribute(attr.name, attr.value);
-                }
-
-                if (oldInput.type === 'password') {
-                    newInput.type = 'text';
-                } else {
-                    newInput.type = 'password';
-                }
-                newInput.value = oldInput.value;
-
-                // *** [ส่วนสำคัญ] แทนที่ input เก่าภายใน wrapper ***
-                wrapper.replaceChild(newInput, oldInput);
-
-                // *** [ส่วนสำคัญ] ผูก Event Listener ให้กับ input ใหม่ ***
-                addPasswordInputListeners(targetId);
-
-                const icon = toggleBtn.querySelector('i');
-                if (icon) {
-                    icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
-                    feather.replace();
-                }
-                
-                newInput.focus();
                 return;
             }
-            // --- จัดการ Chat List Item ---
-            const chatListItem = closest('.chat-list-item');
-            if (chatListItem) {
-                const friendId = chatListItem.dataset.friendId;
-                if (!friendId) return;
-
-                // ตรวจสอบว่าคลิกที่รูปหรือชื่อ (เพื่อไปดูโปรไฟล์) หรือคลิกที่พื้นที่อื่น (เพื่อเปิดแชท)
-                if (closest('.chat-list-avatar') || closest('.chat-list-name')) {
-                    e.stopPropagation(); // หยุดไม่ให้ event bubble ไปเปิดแชท
-                    showFriendProfile(friendId);
-                } else {
-                    // ถ้าคลิกที่พื้นที่ว่างๆ ของรายการ ให้เปิดแชท
-                 window.startChat(friendId);
-                }
-                return; // จบการทำงานในส่วนนี้
-            }
-        // --- จัดการปุ่มปฏิทิน ---
             const calendarNavBtn = closest('.calendar-nav-btn');
             if (calendarNavBtn) {
                 const btnId = calendarNavBtn.id;
                 switch(btnId) {
-                    case 'planner-prev-month':
-                        currentPlannerDate = currentPlannerDate.subtract(1, 'month');
-                        renderPlannerCalendar(currentPlannerDate);
-                        break;
-                    case 'planner-next-month':
-                        currentPlannerDate = currentPlannerDate.add(1, 'month');
-                        renderPlannerCalendar(currentPlannerDate);
-                        break;
-                    case 'mood-prev-month':
-                        currentMoodDate = currentMoodDate.subtract(1, 'month');
-                        renderMoodCalendar(currentMoodDate);
-                        break;
-                    case 'mood-next-month':
-                        currentMoodDate = currentMoodDate.add(1, 'month');
-                        renderMoodCalendar(currentMoodDate);
-                        break;
+                    case 'planner-prev-month': currentPlannerDate = currentPlannerDate.subtract(1, 'month'); renderPlannerCalendar(currentPlannerDate); break;
+                    case 'planner-next-month': currentPlannerDate = currentPlannerDate.add(1, 'month'); renderPlannerCalendar(currentPlannerDate); break;
+                    case 'mood-prev-month': currentMoodDate = currentMoodDate.subtract(1, 'month'); renderMoodCalendar(currentMoodDate); break;
+                    case 'mood-next-month': currentMoodDate = currentMoodDate.add(1, 'month'); renderMoodCalendar(currentMoodDate); break;
                 }
                 return; 
             }
-         // --- จัดการปุ่มคำขอติดตาม ---    
-            const acceptButton = closest('.btn-accept-request');
-            if (acceptButton) {
-                const senderId = acceptButton.dataset.senderId;
-                if (senderId) handleAcceptFollowRequest(senderId);
-                return;
-            }
-            const declineButton = closest('.btn-decline-request');
-            if (declineButton) {
-                const senderId = declineButton.dataset.senderId;
-                if (senderId) handleDeclineFollowRequest(senderId);
-                return;
-            }
-            
-            // --- จัดการ Navigation Link หลัก ---
             const navLink = closest('.nav-link'); 
-            if (navLink) { 
-                e.preventDefault(); 
-                showPage(navLink.dataset.page); 
-                return; 
-            }
-
-            // --- จัดการปุ่มปิด Modal ---
-            if (closest('.close-btn')) { 
-                const modal = closest('.modal-overlay'); 
-                if (modal) modal.classList.add('hidden'); 
-                return; 
-            }
-            // Other delegated clicks...
+            if (navLink) { e.preventDefault(); showPage(navLink.dataset.page); return; }
+            if (closest('.close-btn')) { const modal = closest('.modal-overlay'); if (modal) modal.classList.add('hidden'); return; }
             const emojiOption = closest('.emoji-option');
             if (emojiOption) {
                 document.querySelectorAll('.emoji-option').forEach(opt => opt.classList.remove('selected'));
                 emojiOption.classList.add('selected');
-                const selectedMoodValue = emojiOption.dataset.mood;
-                const selectedMoodInput = document.getElementById('selected-mood');
-                if (selectedMoodInput) {
-                    selectedMoodInput.value = selectedMoodValue;
-                }
+                document.getElementById('selected-mood').value = emojiOption.dataset.mood;
                 return; 
             }
-
-            // --- จัดการการเลือกรูปโปรไฟล์ใน Modal ---
             const profileOption = closest('.profile-option');
             if (profileOption) {
                 document.querySelectorAll('.profile-option.selected').forEach(opt => opt.classList.remove('selected'));
                 profileOption.classList.add('selected');
-                const newPhotoURL = profileOption.dataset.url;
-                state.profile.photoURL = newPhotoURL;
-                renderProfilePicture(newPhotoURL, document.getElementById('profile-edit-photo'));
+                state.profile.photoURL = profileOption.dataset.url;
+                renderProfilePicture(state.profile.photoURL, document.getElementById('profile-edit-photo'));
                 saveState();
                 document.getElementById('profile-selector-modal').classList.add('hidden');
                 showToast('เปลี่ยนรูปโปรไฟล์เรียบร้อย!');
                 return; 
             }
-
-            // --- จัดการแท็บสถิติในหน้า Focus ---
             const statsTabBtn = closest('.stats-tab-btn');
             if (statsTabBtn) {
                 document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
                 statsTabBtn.classList.add('active');
-                const period = statsTabBtn.dataset.period;
-                renderFocusStats(period);
+                renderFocusStats(statsTabBtn.dataset.period);
                 return;
             }
-
             const tabBtn = closest('.tab-btn');
-            if (tabBtn) {
-                // เรียกใช้ฟังก์ชันสลับแท็บ โดยส่งชื่อแท็บ (เช่น 'followers') เข้าไป
-                showCommunityTab(tabBtn.dataset.tab); 
-                return; // หยุดการทำงานของ Listener ทันทีเมื่อเจอการคลิกที่แท็บ
-            }
+            if (tabBtn) { showCommunityTab(tabBtn.dataset.tab); return; }
 
+            // --- Group 5: Fallback Switch for remaining IDs ---
             const targetId = e.target.id || closest('[id]')?.id;
-            switch(targetId) { //==== click =====
-                case 'streak-display': showStreakModal(); break;
+            switch(targetId) {
+                case 'streak-display': case 'check-in-btn': showStreakModal(); break;
                 case 'login-btn': openAuthModal(); break;
                 case 'show-signup-link': e.preventDefault(); document.getElementById('login-view').classList.add('hidden'); document.getElementById('signup-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;
                 case 'show-login-link': e.preventDefault(); document.getElementById('signup-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;
                 case 'logout-btn': auth.signOut(); break;
                 case 'open-menu': document.getElementById('sidebar').classList.add('show'); document.getElementById('overlay').classList.add('show'); break;
                 case 'close-menu': case 'overlay': closeSidebar(); break;
-                case 'check-in-btn': showStreakModal(); break;
-                case 'gpa-save-btn':
-                    // ในอนาคตจะเพิ่ม Logic การบันทึกข้อมูลลง state
-                    Swal.fire('เร็วๆ นี้!', 'ฟังก์ชันบันทึกผลการเรียนกำลังจะมาในเร็วๆ นี้ครับ', 'info');
-                    break;
-                case 'add-custom-subject-icon-btn':
-                    openIconSelectorModal(); // เรียกโดยไม่ส่งค่าอะไรไป = เลือกให้วิชาใหม่
-                    break;
-                case 'add-custom-subject-icon-btn':
-                    // เพื่อบอกระบบว่าเรากำลังจะเลือกไอคอนสำหรับ "วิชาใหม่"
-                    openIconSelectorModal(); 
-                    break;
+                case 'add-custom-subject-icon-btn': openIconSelectorModal(); break;
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); timerInterval = null; } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
-                // แก้ไขบรรทัดนี้: ให้เปิด Modal ใหม่แทน
                 case 'settings-timer-btn': 
-                    // ตรวจสอบให้แน่ใจว่า state.settings มีอยู่จริง
-                    if (!state.settings) {
-                        state.settings = { focusDuration: 25, breakDuration: 5 };
-                    }
-                    // นำค่าปัจจุบันจาก state มาใส่ในฟอร์มก่อนเปิด Modal
+                    if (!state.settings) state.settings = { focusDuration: 25, breakDuration: 5 };
                     document.getElementById('focus-duration').value = state.settings.focusDuration || 25;
                     document.getElementById('break-duration').value = state.settings.breakDuration || 5;
-                    
-                    // เปิด Modal
                     document.getElementById('timer-settings-modal').classList.remove('hidden'); 
-                    
-                    // สั่งให้ Feather Icons ทำงานใหม่ (สำคัญมากหาก Modal มี icon)
                     feather.replace(); 
                     break;
                 case 'save-timer-settings-btn': handleSaveTimerSettings(); break; 
                 case 'change-banner-btn': openBannerSelector(); break;
                 case 'focus-topic-selector-btn':
-                    // สร้าง callback สำหรับหน้า Focus
                     const focusPageCallback = (value, name) => {
                         const btn = document.getElementById('focus-topic-selector-btn');
                         btn.querySelector('span').textContent = name;
                         btn.dataset.value = value;
                     };
-                    // เรียก modal พร้อมกับส่ง callback ของหน้า focus เข้าไป
                     openSubjectSelector(focusPageCallback);
                     break;
-                case 'event-category-selector-btn':
-                    openCategorySelectorModal();
-                    break;
-                
-                case 'add-custom-category-form':
-                    handleAddCustomCategory(e);
-                    break;
+                case 'event-category-selector-btn': openCategorySelectorModal(); break;
                 case 'main-edit-profile-btn': document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden'); break;
                 case 'cancel-edit-profile-btn': document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden'); renderProfilePage(); break;
                 case 'edit-profile-picture-btn': populateProfileSelector(); document.getElementById('profile-selector-modal').classList.remove('hidden'); break;
                 case 'random-activity-btn':
                     const activities = state.userActivities && state.userActivities.length > 0 ? state.userActivities : defaultActivities;
-                    const randomIndex = Math.floor(Math.random() * activities.length);
-                    const suggestionEl = document.getElementById('activity-suggestion');
-                    if (suggestionEl) suggestionEl.textContent = activities[randomIndex];
+                    document.getElementById('activity-suggestion').textContent = activities[Math.floor(Math.random() * activities.length)];
                     break;
                 case 'random-advice-btn':
                     const advices = state.userAdvice && state.userAdvice.length > 0 ? state.userAdvice : defaultAdvices;
-                    const randomAdviceIndex = Math.floor(Math.random() * advices.length);
-                    const adviceEl = document.getElementById('daily-advice');
-                    if (adviceEl) adviceEl.textContent = advices[randomAdviceIndex];
+                    document.getElementById('daily-advice').textContent = advices[Math.floor(Math.random() * advices.length)];
                     break;
                 case 'manage-activities-btn': openActivityManager(); break;
                 case 'manage-advice-btn': openAdviceManager(); break;
                 case 'theme-light-btn': if (state.settings.theme !== 'light') { state.settings.theme = 'light'; applySettings(); saveState(); } break;
                 case 'theme-dark-btn': if (state.settings.theme !== 'dark') { state.settings.theme = 'dark'; applySettings(); saveState(); } break;
                 case 'search-friends-btn': document.getElementById('search-friends-modal').classList.remove('hidden'); break;
-                case 'community-btn': showPage('community'); break;
                 case 'edit-wishlist-btn': handleEditWishList(); break;
                 case 'copy-id-btn':
                     if (state.profile && state.profile.lifebuddyId) {
-                        navigator.clipboard.writeText(state.profile.lifebuddyId)
-                            .then(() => {
-                                showToast('คัดลอก ID สำเร็จ!');
-                            })
-                            .catch(err => {
-                                console.error('ไม่สามารถคัดลอก ID ได้: ', err);
-                                showToast('เกิดข้อผิดพลาดในการคัดลอก');
-                            });
+                        navigator.clipboard.writeText(state.profile.lifebuddyId).then(() => showToast('คัดลอก ID สำเร็จ!')).catch(() => showToast('เกิดข้อผิดพลาดในการคัดลอก'));
                     }
                     break;
                 case 'google-signin-btn':
                     const provider = new firebase.auth.GoogleAuthProvider();
-                    auth.signInWithPopup(provider)
-                        .catch(error => {
-                            const errorMessage = getFriendlyAuthError(error);
-                            const authErrorEl = document.getElementById('auth-error');
-                            if(authErrorEl) authErrorEl.textContent = errorMessage;
-                        });
+                    auth.signInWithPopup(provider).catch(error => { document.getElementById('auth-error').textContent = getFriendlyAuthError(error); });
                     break;
-                // Quiz Creation Buttons
                 case 'back-to-revisit-list-from-creation': document.getElementById('quiz-creation-view').classList.add('hidden'); document.getElementById('revisit-list-view').classList.remove('hidden'); renderRevisitList(); break;
                 case 'add-choice-btn': addChoiceInput(); feather.replace(); break;
                 case 'add-typed-answer-btn': addTypedAnswerInput(); feather.replace(); break;
                 case 'start-quiz-btn': startQuiz(); break;
                 case 'cancel-edit-quiz-btn': resetQuizCreationForm(); break;
-                // Quiz Taking Buttons
                 case 'continue-quiz-btn': continueQuiz(); break;
-                case 'exit-quiz-btn': Swal.fire({ title: 'แน่ใจหรือไม่?', text: "คุณต้องการออกจากการทำควิซ? ความคืบหน้าจะไม่ถูกบันทึก", icon: 'warning', showCancelButton: true, confirmButtonText: 'ใช่, ออกเลย', cancelButtonText: 'ทำต่อ' }).then(r => { if(r.isConfirmed) { document.getElementById('quiz-taking-view').classList.add('hidden'); document.getElementById('revisit-list-view').classList.remove('hidden'); renderRevisitList(); }}); break;
+                case 'exit-quiz-btn': Swal.fire({ title: 'แน่ใจหรือไม่?', text: "คุณต้องการออกจากการทำควิซ?", icon: 'warning', showCancelButton: true, confirmButtonText: 'ใช่, ออกเลย', cancelButtonText: 'ทำต่อ' }).then(r => { if(r.isConfirmed) { document.getElementById('quiz-taking-view').classList.add('hidden'); document.getElementById('revisit-list-view').classList.remove('hidden'); renderRevisitList(); }}); break;
                 case 'submit-typed-answer-btn': handleAnswer(document.getElementById('typed-answer-input').value); break;
-            default: break;
             }
         });
 
-        document.getElementById('gpa-term-info-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const level = document.getElementById('gpa-level-input').value;
-            const term = document.getElementById('gpa-term-select').value;
-            const year = document.getElementById('gpa-year-input').value;
-            currentGpaRecord = { id: Date.now(), level, term, year, courses: [], gpa: 0 };
-            const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
-            header.innerHTML = `<i data-feather="edit-3"></i> ${level} - เทอม ${term}`;
-            renderGpaTable([]);
-            showGpaView('gpa-calculator-view');
-        });
-
+        // ===========================================
+        // ====== 2. CHANGE & SUBMIT LISTENERS ======
+        // ===========================================
         document.body.addEventListener('change', (e) => {
             if (e.target.name === 'quiz-type') {
                 const mcContainer = document.getElementById('mc-options-container');
                 const typedContainer = document.getElementById('typed-answer-container');
-                const mcInputs = mcContainer.querySelectorAll('input');
-                const typedInputs = typedContainer.querySelectorAll('input');
-                if (e.target.value === 'multiple-choice') {
-                    mcContainer.classList.remove('hidden');
-                    typedContainer.classList.add('hidden');
-                    mcInputs.forEach(input => input.disabled = false);
-                    typedInputs.forEach(input => input.disabled = true);
-                } else {
-                    mcContainer.classList.add('hidden');
-                    typedContainer.classList.remove('hidden');
-                    mcInputs.forEach(input => input.disabled = true);
-                    typedInputs.forEach(input => input.disabled = false);
-                }
+                const isMc = e.target.value === 'multiple-choice';
+                mcContainer.classList.toggle('hidden', !isMc);
+                typedContainer.classList.toggle('hidden', isMc);
+                mcContainer.querySelectorAll('input').forEach(input => input.disabled = !isMc);
+                typedContainer.querySelectorAll('input').forEach(input => input.disabled = isMc);
             }
         });
 
@@ -3891,18 +3697,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'profile-form': handleProfileFormSubmit(e); break;
                 case 'add-activity-form': handleAddActivityForm(e); break;
                 case 'add-advice-form': handleAddAdviceForm(e); break;
-
                 case 'signup-form': handleSignupFormSubmit(e); break;
                 case 'login-form': handleLoginFormSubmit(e); break;
-
                 case 'search-friends-form': handleFriendSearch(e); break;
                 case 'quiz-creation-form': handleQuizCreationForm(e); break;
                 case 'add-custom-subject-form': handleAddCustomSubject(e); break;
+                case 'gpa-term-info-form':
+                    const level = document.getElementById('gpa-level-input').value;
+                    const term = document.getElementById('gpa-term-select').value;
+                    const year = document.getElementById('gpa-year-input').value;
+                    currentGpaRecord = { id: Date.now(), level, term, year, courses: [], gpa: 0 };
+                    const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
+                    header.innerHTML = `<i data-feather="edit-3"></i> ${level} - เทอม ${term}`;
+                    // สลับปุ่มให้ถูกต้อง
+                    document.getElementById('gpa-calculate-btn').classList.add('hidden');
+                    document.getElementById('gpa-save-record-btn').classList.remove('hidden');
+                    renderGpaTable([]);
+                    showGpaView('gpa-calculator-view');
+                    break;
             }
         });
-
-
-        
+            
         areListenersSetup = true;
     }
 
