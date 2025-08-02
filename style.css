@@ -1239,3 +1239,20 @@ body[data-theme="dark"] .timer-controls .icon-button {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px -5px var(--primary-color);
 }
+/* ===== สำหรับจัดกลุ่มหัวข้อ Pop-up ===== */
+.swal-streak-header {
+    display: flex;
+    flex-direction: column; /* เรียงจากบนลงล่าง */
+    align-items: center;   /* จัดให้อยู่กึ่งกลางแนวนอน */
+    margin-bottom: 20px;   /* เพิ่มระยะห่างด้านล่าง */
+}
+
+/* ===== สไตล์หัวข้อ ===== */
+.swal-streak-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #000000;      /* เปลี่ยนฟอนต์เป็นสีดำ */
+    text-align: center;
+    margin-top: 10px;     /* ระยะห่างระหว่างไอคอนกับข้อความ */
+    margin-bottom: 0;     /* เอา margin ด้านล่างออก */
+}

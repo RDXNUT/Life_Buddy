@@ -2643,8 +2643,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.lastCheckIn === todayStr) {
             Swal.fire({
                 html: `
-                    <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(255, 193, 7, 0.5);">🎉</div>
-                    <h2 class="swal-streak-title">เช็คอินแล้ว!</h2>
+                    <div class="swal-streak-header">
+                        <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(255, 193, 7, 0.5);">🎉</div>
+                        <h2 class="swal-streak-title">เช็คอินแล้ว!</h2>
+                    </div>
                     <p class="swal-streak-text">
                         ยอดเยี่ยม! คุณเช็คอินสำหรับวันนี้เรียบร้อยแล้ว<br>
                         สตรีคปัจจุบันของคุณคือ <strong>${state.streak} วัน</strong>
@@ -2654,7 +2656,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonText: 'รับทราบ',
                 width: '380px',
                 showConfirmButton: true,
-                //customClass เพื่อให้ CSS จัดการปุ่มได้ง่ายขึ้น
                 customClass: {
                     confirmButton: 'swal-acknowledge-button'
                 }
