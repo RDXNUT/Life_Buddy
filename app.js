@@ -3187,6 +3187,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'add-custom-subject-icon-btn':
                     openIconSelectorModal(); // เรียกโดยไม่ส่งค่าอะไรไป = เลือกให้วิชาใหม่
                     break;
+                case 'add-custom-subject-icon-btn':
+                    // เพื่อบอกระบบว่าเรากำลังจะเลือกไอคอนสำหรับ "วิชาใหม่"
+                    openIconSelectorModal(); 
+                    break;
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); timerInterval = null; } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
                 // แก้ไขบรรทัดนี้: ให้เปิด Modal ใหม่แทน
