@@ -2654,7 +2654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonText: 'รับทราบ',
                 width: '380px',
                 showConfirmButton: true,
-                // เพิ่ม customClass เพื่อให้ CSS จัดการปุ่มได้ง่ายขึ้น
+                //customClass เพื่อให้ CSS จัดการปุ่มได้ง่ายขึ้น
                 customClass: {
                     confirmButton: 'swal-acknowledge-button'
                 }
