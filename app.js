@@ -168,6 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("คุณได้รับโควต้ากู้สตรีคประจำเดือนแล้ว!");
         }
 
+        const todayStr = dayjs().format('YYYY-MM-DD');
+        if (!sessionStorage.getItem('streakModalShownToday') && state.lastCheckIn !== todayStr) {
+            // หน่วงเวลาเล็กน้อยเพื่อให้ผู้ใช้เห็นหน้าจอหลักก่อน
+            setTimeout(showStreakModal, 1500); // แสดงผลหลังจากโหลดเสร็จ 1.5 วินาที
+            sessionStorage.setItem('streakModalShownToday', 'true');
+        }
+
         // 2. ตรวจสอบสถานะสตรีคที่ขาดไป
         const today = dayjs();
         const lastCheckInDate = state.lastCheckIn ? dayjs(state.lastCheckIn) : null;
@@ -2615,6 +2622,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showStreakModal() {
+        if (!currentUser) { // ถ้ายังไม่ล็อกอิน ให้ไปหน้าล็อกอินแทน
+            openAuthModal();
+            return;
+        }
+
+        const todayStr = dayjs().format('YYYY-MM-DD');
+
+        // --- กรณีที่ 3: เช็คอินไปแล้ววันนี้ ---
+        if (state.lastCheckIn === todayStr) {
+            Swal.fire({
+                html: `
+                    <div class="swal-streak-icon">✅</div>
+                    <h2 class="swal-streak-title">เช็คอินแล้ว!</h2>
+                    <p class="swal-streak-text">
+                        คุณเช็คอินสำหรับวันนี้เรียบร้อยแล้ว<br>
+                        สตรีคปัจจุบันของคุณคือ <strong>${state.streak} วัน</strong>
+                    </p>
+                    <p class="swal-streak-subtext">กลับมาเช็คอินอีกครั้งในวันพรุ่งนี้นะ!</p>
+                `,
+                confirmButtonText: 'รับทราบ',
+                width: '380px',
+                showConfirmButton: true,
+            });
+            return; // จบการทำงาน
+        }
+
+        // --- กรณีที่ 2: สตรีคแข็งอยู่ (ไฟเย็น) ---
+        if (state.isStreakFrozen === true) {
+            Swal.fire({
+                html: `
+                    <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(10, 132, 255, 0.5);">🧊</div>
+                    <h2 class="swal-streak-title">สตรีคกำลังตกอยู่ในอันตราย!</h2>
+                    <p class="swal-streak-text">
+                        ดูเหมือนว่าคุณจะลืมเช็คอินเมื่อวานนี้ แต่ไม่เป็นไร!
+                        คุณสามารถใช้ "ไฟเย็น" เพื่อกู้สตรีคของคุณกลับมาได้
+                    </p>
+                    <p class="swal-streak-subtext">
+                        คุณมีโควต้ากู้สตรีคเหลือ <strong>${state.streakFreezesAvailable} ครั้ง</strong> ในเดือนนี้
+                    </p>
+                    <button id="swal-restore-btn" class="swal-checkin-button swal-restore-button">กู้สตรีคของฉัน</button>
+                `,
+                showConfirmButton: false, // ซ่อนปุ่ม OK เริ่มต้น
+                width: '380px',
+                didOpen: () => {
+                    // ผูก event ให้กับปุ่มที่สร้างขึ้นเอง
+                    document.getElementById('swal-restore-btn').addEventListener('click', () => {
+                        handleCheckIn(); // เรียกฟังก์ชันเช็คอินเดิม
+                        Swal.close();
+                    });
+                }
+            });
+            return; // จบการทำงาน
+        }
+
+        // --- กรณีที่ 1: เช็คอินได้ตามปกติ ---
+        Swal.fire({
+            html: `
+                <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(255, 159, 10, 0.5);">🔥</div>
+                <h2 class="swal-streak-title">เช็คอินรายวัน</h2>
+                <p class="swal-streak-text">
+                    มาเริ่มต้นวันดีๆ ด้วยการเช็คอินกันเถอะ!
+                    การเช็คอินต่อเนื่องจะช่วยเพิ่ม EXP และ Coins ให้กับคุณ
+                </p>
+                <button id="swal-checkin-now-btn" class="swal-checkin-button">เช็คอินเลย!</button>
+            `,
+            showConfirmButton: false,
+            width: '380px',
+            didOpen: () => {
+                document.getElementById('swal-checkin-now-btn').addEventListener('click', () => {
+                    handleCheckIn();
+                    Swal.close();
+                });
+            }
+        });
+    }
+
     function handleProfileFormSubmit(e) { 
         e.preventDefault(); 
         if (!currentUser) return; 
@@ -3269,6 +3353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const targetId = e.target.id || closest('[id]')?.id;
             switch(targetId) { //==== click =====
+                case 'streak-display': showStreakModal(); break;
                 case 'login-btn': openAuthModal(); break;
                 case 'show-signup-link': e.preventDefault(); document.getElementById('login-view').classList.add('hidden'); document.getElementById('signup-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;
                 case 'show-login-link': e.preventDefault(); document.getElementById('signup-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); document.getElementById('auth-error').textContent = ''; break;

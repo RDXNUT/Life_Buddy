@@ -1101,3 +1101,97 @@ body[data-theme="dark"] .timer-controls .icon-button {
     opacity: 0.8;
     margin-top: 2px;
 }
+/* ======================================= */
+/* ======   Streak Modal Pop-up   ====== */
+/* ======================================= */
+
+/* ทำให้ส่วนแสดงสตรีคใน Header กดได้ */
+#streak-display {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+#streak-display:hover {
+    transform: scale(1.1);
+}
+
+/* ปรับแต่งเนื้อหาภายใน SweetAlert */
+.swal2-html-container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* สไตล์ไอคอนอิโมจิอันใหญ่ */
+.swal-streak-icon {
+    font-size: 5rem; /* ขนาดใหญ่เด่น */
+    margin: 10px 0 15px;
+    line-height: 1;
+    animation: bounce-in 0.6s ease;
+}
+
+/* สไตล์หัวข้อ */
+.swal-streak-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+/* สไตล์ข้อความหลัก */
+.swal-streak-text {
+    font-size: 1rem;
+    color: var(--subtle-text-color);
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: 90%;
+}
+
+/* สไตล์ข้อความย่อย (เช่น จำนวนไฟเย็น) */
+.swal-streak-subtext {
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+    margin-top: 15px;
+    opacity: 0.8;
+}
+
+/* สไตล์ปุ่มเช็คอินแบบ "ปุ๊กปิ๊ก" */
+.swal-checkin-button {
+    font-family: var(--font-family);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: white;
+    background: var(--accent-color); /* สีส้ม */
+    border: none;
+    border-radius: 12px;
+    padding: 12px 30px;
+    margin: 25px auto 10px;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    box-shadow: 0 5px 15px -5px var(--accent-color);
+    display: block;
+}
+
+.swal-checkin-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px -5px var(--accent-color);
+}
+
+.swal-checkin-button:active {
+    transform: scale(0.95); /* เอฟเฟกต์กดแล้วยุบ */
+    box-shadow: 0 2px 10px -5px var(--accent-color);
+}
+
+/* สไตล์สำหรับปุ่ม "กู้ไฟ" โดยเฉพาะ */
+.swal-checkin-button.swal-restore-button {
+    background: #0A84FF; /* สีฟ้า */
+    box-shadow: 0 5px 15px -5px #0A84FF;
+}
+
+.swal-checkin-button.swal-restore-button:hover {
+    box-shadow: 0 8px 20px -5px #0A84FF;
+}
+
+/* อนิเมชันสำหรับไอคอน */
+@keyframes bounce-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); }
+}
