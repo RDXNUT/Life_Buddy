@@ -460,30 +460,29 @@ body[data-theme="dark"] .timer-controls .icon-button {
 /* ===== Focus Stats Section Revamp ====== */
 /* ======================================= */
 
-/* ปรับปรุงส่วนควบคุม Tabs */
 .stats-controls {
     display: flex;
     gap: 10px;
     margin-bottom: 25px;
     padding: 6px;
-    background-color: var(--bg-color); /* ใช้สีพื้นหลังของ Body */
+    background-color: var(--bg-color);
     border-radius: 12px;
     border: 1px solid var(--border-color);
 }
 
 .stats-tab-btn {
     flex-grow: 1;
-    background-color: transparent; /* ทำให้ปุ่มปกติโปร่งใส */
+    background-color: transparent;
     color: var(--subtle-text-color);
-    border: none; /* เอาเส้นขอบออก */
+    border: none;
     font-weight: 500;
     padding: 10px 15px;
-    border-radius: 8px; /* ขอบมนเล็กน้อย */
+    border-radius: 8px;
     transition: all 0.3s ease;
 }
 
 .stats-tab-btn:hover:not(.active) {
-    background-color: var(--border-color); /* สีอ่อนๆ ตอน hover */
+    background-color: var(--border-color);
     color: var(--text-color);
 }
 
@@ -493,7 +492,14 @@ body[data-theme="dark"] .timer-controls .icon-button {
     box-shadow: 0 4px 12px -2px var(--primary-color);
 }
 
-
+/* สไตล์สำหรับรายการสถิติแบบ Progress Bar ===== */
+#focus-stats-chart-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* ระยะห่างระหว่างแต่ละรายการ */
+    width: 100%;
+    padding: 10px 0;
+}
 /* ปรับปรุงรายการสถิติแต่ละรายการ */
 #focus-stats-display {
     display: flex;
@@ -985,6 +991,7 @@ body[data-theme="dark"] .timer-controls .icon-button {
 #focus-stats-legend {
     display: none;
 }
+
 /* ===== Icon Selector Modal Styles ===== */
 .icon-selector-body {
     padding: 25px;

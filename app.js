@@ -1819,77 +1819,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderFocusStats(period = 'day') {
-        const chartContainer = document.getElementById('focus-stats-chart-container');
-        if (!chartContainer) return;
+        function renderFocusStats(period = 'day') {
+            const chartContainer = document.getElementById('focus-stats-chart-container');
+            if (!chartContainer) return;
 
-        const allFocusHistory = state.focusHistory || [];
-        let filteredHistory = [];
-        const now = dayjs();
-        if (period === 'day') {
-            filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'day'));
-        } else if (period === 'week') {
-            filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'week'));
-        } else {
-            filteredHistory = allFocusHistory;
-        }
+            const allFocusHistory = state.focusHistory || [];
+            let filteredHistory = [];
+            const now = dayjs();
+            if (period === 'day') {
+                filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'day'));
+            } else if (period === 'week') {
+                filteredHistory = allFocusHistory.filter(item => dayjs(item.date).isSame(now, 'week'));
+            } else {
+                filteredHistory = allFocusHistory;
+            }
 
-        chartContainer.innerHTML = '';
-        
-        if (filteredHistory.length === 0) {
-            chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
-            return;
-        }
-
-        const statsByTopic = filteredHistory.reduce((acc, item) => {
-            const topicKey = item.topic || 'general';
-            if (!acc[topicKey]) { acc[topicKey] = 0; }
-            acc[topicKey] += item.duration;
-            return acc;
-        }, {});
-        
-        const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
-        const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
+            chartContainer.innerHTML = '';
             
-        const subjectMap = (state.subjects || []).reduce((acc, subject) => {
-            acc[subject.value] = subject;
-            return acc;
-        }, {});
-        subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
-        
-        sortedStats.forEach(([topicKey, totalMinutes]) => {
-            const subject = subjectMap[topicKey] || subjectMap['general'];
-            const barPercentage = (totalMinutes / maxMinutes) * 100;
-            const currentTheme = document.body.dataset.theme || 'light';
-            const iconForThisSubject = subject.icon || '14'; 
-            const iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
+            if (filteredHistory.length === 0) {
+                chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
+                return;
+            }
 
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            let timeString = '';
-            if (hours > 0) timeString += `${hours}h `;
-            if (minutes > 0 || totalMinutes === 0) timeString += `${minutes}m`;
-            timeString = timeString.trim();
-
-            const rowElement = document.createElement('div');
-            rowElement.className = 'stat-item-row';
+            const statsByTopic = filteredHistory.reduce((acc, item) => {
+                const topicKey = item.topic || 'general';
+                if (!acc[topicKey]) { acc[topicKey] = 0; }
+                acc[topicKey] += item.duration;
+                return acc;
+            }, {});
             
-            // [จุดที่แก้ไข Typo สำคัญ]
-            rowElement.innerHTML = `
-                <div class="stat-icon">
-                    <img src="${iconSrc}" alt="${subject.name}">
-                </div>
-                <div class="stat-details">
-                    <span class="stat-name">${subject.name}</span>
-                    <div class="stat-progress-bar-wrapper">
-                        <div class="stat-progress-bar" style="width: ${barPercentage}%; background-color: ${subject.color};"></div>
+            const maxMinutes = Math.max(...Object.values(statsByTopic), 1);
+            const sortedStats = Object.entries(statsByTopic).sort((a, b) => b[1] - a[1]);
+                
+            const subjectMap = (state.subjects || []).reduce((acc, subject) => {
+                acc[subject.value] = subject;
+                return acc;
+            }, {});
+            subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
+            
+            sortedStats.forEach(([topicKey, totalMinutes]) => {
+                const subject = subjectMap[topicKey] || subjectMap['general'];
+                const barPercentage = (totalMinutes / maxMinutes) * 100;
+                const currentTheme = document.body.dataset.theme || 'light';
+                
+                // ตรวจสอบและสร้าง Path ของไอคอนให้ถูกต้อง (รองรับกรณี general)
+                const iconNumber = subject.icon || '14';
+                const iconSrc = iconNumber === '14'
+                    ? `assets/subject-icons/general-${currentTheme}${iconNumber}.png`
+                    : `assets/subject-icons/${currentTheme}${iconNumber}.png`;
+
+                // แปลงนาทีเป็นรูปแบบ "Xh Ym"
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                let timeString = '';
+                if (hours > 0) timeString += `${hours}h `;
+                if (minutes > 0 || totalMinutes === 0) timeString += `${minutes}m`;
+                timeString = timeString.trim();
+
+                const rowElement = document.createElement('div');
+                rowElement.className = 'stat-item-row';
+                
+                // สร้าง HTML สำหรับแถวข้อมูล 1 แถว
+                rowElement.innerHTML = `
+                    <div class="stat-icon">
+                        <img src="${iconSrc}" alt="${subject.name}">
                     </div>
-                </div>
-                <span class="stat-time">${timeString}</span>
-            `;
-            chartContainer.appendChild(rowElement);
-        });
-    }
+                    <div class="stat-details">
+                        <span class="stat-name">${subject.name}</span>
+                        <div class="stat-progress-bar-wrapper">
+                            <div class="stat-progress-bar" style="width: ${barPercentage}%; background-color: ${subject.color};"></div>
+                        </div>
+                    </div>
+                    <span class="stat-time">${timeString}</span>
+                `;
+                chartContainer.appendChild(rowElement);
+            });
+        }
         
     function startTimer() {
         const startBtn = document.getElementById('start-timer-btn');
