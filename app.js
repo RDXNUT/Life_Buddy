@@ -1820,11 +1820,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFocusStats(period = 'day') {
-        // ใช้แค่ chartContainer เพราะเราไม่มี legend แล้ว
         const chartContainer = document.getElementById('focus-stats-chart-container');
         if (!chartContainer) return;
 
-        // --- ส่วนที่ 1: กรองข้อมูล  ---
         const allFocusHistory = state.focusHistory || [];
         let filteredHistory = [];
         const now = dayjs();
@@ -1836,14 +1834,13 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredHistory = allFocusHistory;
         }
 
-        chartContainer.innerHTML = ''; // ล้างข้อมูลเก่า
+        chartContainer.innerHTML = '';
         
         if (filteredHistory.length === 0) {
             chartContainer.innerHTML = '<p style="text-align:center; color:var(--subtle-text-color); padding: 90px 0;"><i>ไม่มีข้อมูลการโฟกัส</i></p>';
             return;
         }
 
-        // --- ส่วนที่ 2: รวมผลและคำนวณค่าสูงสุด ---
         const statsByTopic = filteredHistory.reduce((acc, item) => {
             const topicKey = item.topic || 'general';
             if (!acc[topicKey]) { acc[topicKey] = 0; }
@@ -1860,32 +1857,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {});
         subjectMap['general'] = { name: 'เรื่องทั่วไป', color: '#8E8E93', icon: '14' };
         
-        // --- ส่วนที่ 3: วนลูปสร้างรายการ Progress Bar ---
         sortedStats.forEach(([topicKey, totalMinutes]) => {
             const subject = subjectMap[topicKey] || subjectMap['general'];
             const barPercentage = (totalMinutes / maxMinutes) * 100;
-            
             const currentTheme = document.body.dataset.theme || 'light';
             const iconForThisSubject = subject.icon || '14'; 
             const iconSrc = `assets/subject-icons/${currentTheme}${iconForThisSubject}.png`;
 
-            // สร้าง String สำหรับแสดงผลเวลา (เช่น 1h 22m หรือ 48m)
             const hours = Math.floor(totalMinutes / 60);
             const minutes = totalMinutes % 60;
             let timeString = '';
-            if (hours > 0) {
-                timeString += `${hours}h `;
-            }
-            if (minutes > 0 || totalMinutes === 0) {
-                timeString += `${minutes}m`;
-            }
+            if (hours > 0) timeString += `${hours}h `;
+            if (minutes > 0 || totalMinutes === 0) timeString += `${minutes}m`;
             timeString = timeString.trim();
 
-            // สร้าง HTML สำหรับ 1 แถว
             const rowElement = document.createElement('div');
             rowElement.className = 'stat-item-row';
+            
+            // [จุดที่แก้ไข Typo สำคัญ]
             rowElement.innerHTML = `
-                <div class.stat-icon">
+                <div class="stat-icon">
                     <img src="${iconSrc}" alt="${subject.name}">
                 </div>
                 <div class="stat-details">

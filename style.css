@@ -914,43 +914,36 @@ body[data-theme="dark"] .timer-controls .icon-button {
 }
 /* ===== [แบบใหม่] Focus Stats Progress Bars ===== */
 #focus-stats-chart-container {
-    /* เปลี่ยนจาก Flexbox แนวนอนเป็นแนวตั้ง */
     display: flex;
     flex-direction: column;
-    gap: 20px; /* ระยะห่างระหว่างแต่ละรายการ */
+    gap: 20px;
     width: 100%;
     padding: 10px 0;
 }
-
 .stat-item-row {
     display: grid;
-    /* แบ่งเป็น 3 คอลัมน์: ไอคอน, ชื่อ+บาร์, เวลา */
     grid-template-columns: 56px 1fr auto; 
     align-items: center;
     gap: 15px;
 }
-
 .stat-item-row .stat-icon {
     width: 56px;
     height: 56px;
-    border-radius: 12px; /* ทำให้ไอคอนเป็นสี่เหลี่ยมขอบมน */
+    border-radius: 12px;
     overflow: hidden;
     background-color: var(--border-color);
 }
-
 .stat-item-row .stat-icon img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-
 .stat-item-row .stat-details {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow: hidden; /* ป้องกันข้อความยาวเกิน */
+    overflow: hidden;
 }
-
 .stat-item-row .stat-name {
     font-weight: 500;
     color: var(--text-color);
@@ -958,7 +951,6 @@ body[data-theme="dark"] .timer-controls .icon-button {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 .stat-item-row .stat-progress-bar-wrapper {
     width: 100%;
     height: 8px;
@@ -966,22 +958,18 @@ body[data-theme="dark"] .timer-controls .icon-button {
     border-radius: 10px;
     overflow: hidden;
 }
-
 .stat-item-row .stat-progress-bar {
     height: 100%;
-    width: 0%; /* จะถูกกำหนดค่าโดย JS */
+    width: 0%;
     border-radius: 10px;
     background: var(--primary-color);
     transition: width 0.5s ease-in-out;
 }
-
 .stat-item-row .stat-time {
     font-weight: 500;
     color: var(--subtle-text-color);
     font-size: 0.95em;
 }
-
-/* ซ่อน Legend ที่ไม่ได้ใช้แล้ว */
 #focus-stats-legend {
     display: none;
 }
