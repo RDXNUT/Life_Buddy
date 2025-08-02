@@ -1223,3 +1223,17 @@ body[data-theme="dark"] .timer-controls .icon-button {
     70% { transform: scale(1.05); opacity: 1; }
     100% { transform: scale(1); }
 }
+/* สไตล์สำหรับปุ่ม "รับทราบ" ที่ปรับปรุงใหม่ */
+.swal-acknowledge-button {
+    border-radius: 50px !important; /* ทำให้โค้งมนเป็นทรงแคปซูล */
+    padding: 10px 30px !important;
+    font-weight: 500 !important;
+    background-color: var(--primary-color) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 15px -5px var(--primary-color);
+}
+
+.swal-acknowledge-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -5px var(--primary-color);
+}
