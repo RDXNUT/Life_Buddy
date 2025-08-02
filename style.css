@@ -1058,7 +1058,6 @@ body[data-theme="dark"] .timer-controls .icon-button {
 #add-custom-subject-icon-btn {
     width: 40px;
     height: 40px;
-    padding: 4px;
     border-radius: 50%;
     border: 2px solid var(--border-color);
     background-color: var(--bg-color);
@@ -1075,4 +1074,30 @@ body[data-theme="dark"] .timer-controls .icon-button {
     height: 100%;
     border-radius: 50%;
     object-fit: cover; /* บังคับให้รูปเต็มพื้นที่โดยไม่เสียสัดส่วน */
+}
+/* ===== New Styles for Streak Freeze ===== */
+
+/* สไตล์สำหรับปุ่ม "กู้ไฟ" (ไฟเย็น) */
+#check-in-btn.restore-streak {
+    background-color: #0A84FF; /* สีฟ้า/น้ำเงิน */
+    padding: 8px 12px; /* ปรับ padding ให้พอดีกับข้อความที่ยาวขึ้น */
+}
+#check-in-btn.restore-streak:hover {
+    background-color: #3b9dff;
+}
+
+/* ทำให้ข้อความหลัก (เช่น กู้ไฟ) และข้อความย่อย (เช่น เหลือ x ครั้ง) เรียงกันสวยงาม */
+#check-in-btn .check-in-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+}
+
+/* สไตล์สำหรับข้อความย่อย */
+.check-in-subtext {
+    font-size: 0.7em;
+    font-weight: 300;
+    opacity: 0.8;
+    margin-top: 2px;
 }
