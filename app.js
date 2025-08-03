@@ -3320,15 +3320,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- Group 1: Student Hub & GPA Calculator ---
             const gpaFeatureCard = closest('#gpa-feature-card');
-            if (gpaFeatureCard) {
+            
+            // 1.1. User Flow: Quick Calculation
+            if (closest('#gpa-feature-card')) {
                 document.getElementById('student-hub-main-view').classList.add('hidden');
                 document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
+                
                 const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
                 header.innerHTML = `<i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)`;
+                
+                // [จุดสำคัญ] สลับปุ่มให้เป็น "คำนวณ"
+                document.getElementById('gpa-calculate-btn').classList.remove('hidden');
+                document.getElementById('gpa-save-record-btn').classList.add('hidden');
+
                 renderGpaTable([]);
                 showGpaView('gpa-calculator-view');
                 return;
             }
+            
             const gpaGoToHistoryBtn = closest('#gpa-go-to-history-btn');
             if (gpaGoToHistoryBtn) {
                 renderGpaHistoryList();

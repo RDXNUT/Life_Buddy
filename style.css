@@ -1646,3 +1646,55 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
     background-color: var(--primary-color);
     color: white;
 }
+/* ======================================= */
+/* ======   Responsive GPA Table    ====== */
+/* ======================================= */
+
+/* ใช้กฎนี้เมื่อความกว้างหน้าจอน้อยกว่าหรือเท่ากับ 768px */
+@media (max-width: 768px) {
+
+    /* เปลี่ยน Grid Layout ของตารางให้เหมาะสมกับมือถือ */
+    .gpa-table-header, .gpa-table-row {
+        /* ปรับขนาดคอลัมน์ใหม่ */
+        grid-template-columns: 35px 1fr 120px 100px; 
+        gap: 8px; /* ลดระยะห่าง */
+        padding: 0 10px;
+    }
+
+    .gpa-table-header {
+        padding: 10px;
+        font-size: 0.85em; /* ลดขนาดฟอนต์หัวตาราง */
+    }
+
+    /* ปรับขนาดฟอนต์และ Padding ของ Input ให้น้อยลง */
+    .gpa-table-row input[type="text"],
+    .gpa-table-row .credit-stepper,
+    .gpa-table-row .grade-selector {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    /* ย่อขนาดปุ่ม +/- หน่วยกิต */
+    .credit-stepper-btn {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* ปรับ Layout ของ Header ด้านบนสุด (ปุ่มและหัวข้อ) */
+    .gpa-view-header {
+        flex-direction: column; /* เรียงเป็นแนวตั้ง */
+        align-items: flex-start; /* จัดชิดซ้าย */
+        gap: 15px;
+    }
+
+    .header-actions {
+        width: 100%; /* ทำให้กลุ่มปุ่มกว้างเต็ม */
+        justify-content: space-between; /* จัดให้ปุ่มอยู่คนละฝั่ง */
+    }
+
+    .header-actions .small-btn {
+        flex-grow: 1; /* ทำให้ปุ่มขยายเต็มพื้นที่ */
+        text-align: center;
+        justify-content: center;
+    }
+}
