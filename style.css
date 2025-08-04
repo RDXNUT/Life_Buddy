@@ -1359,6 +1359,11 @@ body[data-theme="dark"] .timer-controls .icon-button {
 
 .gpa-table-row {
     border-bottom: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: 50px 1fr 150px 120px;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 15px; /* [เพิ่ม/แก้ไข] เพิ่ม padding บนล่าง */
 }
 .gpa-table-row:last-child {
     border-bottom: none;
@@ -1384,16 +1389,26 @@ body[data-theme="dark"] .timer-controls .icon-button {
 /* สไตล์สำหรับช่อง "หน่วยกิต" แบบกำหนดเอง */
 .credit-stepper {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* จัดให้ตัวเลขและปุ่มอยู่คนละฝั่ง */
     align-items: center;
+    gap: 8px;
+    padding: 6px 8px; /* ปรับ padding ด้านข้างเล็กน้อย */
+}
+/* กลุ่มปุ่มแนวตั้ง */
+.stepper-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 3px; /* ลดระยะห่างระหว่างปุ่ม */
+    height: 100%; /* ทำให้กลุ่มปุ่มสูงเต็ม container */
+    justify-content: center; /* จัดให้อยู่กลางแนวตั้ง */
 }
 .credit-stepper-btn {
-    background: none;
-    border: 1px solid var(--border-color);
-    color: var(--text-color);
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    background-color: transparent; /* ทำให้โปร่งใส */
+    border: none; /* เอาเส้นขอบออก */
+    color: var(--subtle-text-color);
+    width: 20px;
+    height: 12px; /* [สำคัญ] ลดความสูงของปุ่มลงมาก */
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1401,15 +1416,21 @@ body[data-theme="dark"] .timer-controls .icon-button {
     padding: 0;
     margin: 0;
     transition: all 0.2s;
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1;
 }
+
 .credit-stepper-btn:hover {
     background-color: var(--border-color);
     color: var(--primary-color);
 }
 .credit-value {
-    font-weight: 500;
-    min-width: 30px;
+    font-weight: 700;
+    font-size: 1rem;
     text-align: center;
+    color: var(--text-color);
+    flex-grow: 1; /* ทำให้ตัวเลขกินพื้นที่ตรงกลาง */
 }
 
 /* สไตล์สำหรับช่อง "เกรด" แบบกำหนดเอง */
@@ -1652,12 +1673,10 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
 
 /* ใช้กฎนี้เมื่อความกว้างหน้าจอน้อยกว่าหรือเท่ากับ 768px */
 @media (max-width: 768px) {
-
-    /* เปลี่ยน Grid Layout ของตารางให้เหมาะสมกับมือถือ */
     .gpa-table-header, .gpa-table-row {
-        /* ปรับขนาดคอลัมน์ใหม่ */
-        grid-template-columns: 35px 1fr 120px 100px; 
-        gap: 8px; /* ลดระยะห่าง */
+        /* [จุดที่แก้ไข] ลดความกว้างคอลัมน์หน่วยกิตลงอีก */
+        grid-template-columns: 35px 1fr 60px 85px; 
+        gap: 8px;
         padding: 0 10px;
     }
 
@@ -1670,14 +1689,24 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
     .gpa-table-row input[type="text"],
     .gpa-table-row .credit-stepper,
     .gpa-table-row .grade-selector {
-        padding: 8px;
-        font-size: 0.9rem;
+        padding: 10px;
+        margin: 0; /* เอา margin เดิมออก */
+        background-color: var(--bg-color);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        height: 42px; /* [สำคัญ] กำหนดความสูงให้เท่ากันทุกช่อง */
+        box-sizing: border-box; /* ทำให้ padding และ border รวมอยู่ใน height */
     }
 
     /* ย่อขนาดปุ่ม +/- หน่วยกิต */
     .credit-stepper-btn {
-        width: 24px;
-        height: 24px;
+        width: 22px;  /* ลดความกว้างลงอีก */
+        height: 22px; /* ลดความสูงลงอีก */
+        border-radius: 6px; /* เปลี่ยนจากวงกลมเป็นสี่เหลี่ยมขอบมน */
+        font-weight: bold;  /* ทำให้ลูกศรหนาขึ้น */
+        padding: 0;         /* เอา padding ที่ไม่จำเป็นออก */
+        line-height: 1;     /* จัดกลางแนวตั้ง */
     }
 
     /* ปรับ Layout ของ Header ด้านบนสุด (ปุ่มและหัวข้อ) */

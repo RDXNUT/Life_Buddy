@@ -584,9 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>${i}</span>
                     <input type="text" placeholder="ชื่อวิชา (ไม่บังคับ)" value="${subjectName}">
                     <div class="credit-stepper">
-                        <button class="credit-stepper-btn" data-action="decrease" aria-label="ลดหน่วยกิต">-</button>
                         <span class="credit-value">${credit}</span>
-                        <button class="credit-stepper-btn" data-action="increase" aria-label="เพิ่มหน่วยกิต">+</button>
+                        <div class="stepper-buttons-vertical">
+                            <button class="credit-stepper-btn" data-action="increase" aria-label="เพิ่มหน่วยกิต">+</button>
+                            <button class="credit-stepper-btn" data-action="decrease" aria-label="ลดหน่วยกิต">-</button>
+                        </div>
                     </div>
                     <div class="grade-selector" data-value="${grade}">${gradeText}</div>
                 </div>
@@ -3337,7 +3339,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showGpaView('gpa-calculator-view');
                 return;
             }
-            
+
             const gpaGoToHistoryBtn = closest('#gpa-go-to-history-btn');
             if (gpaGoToHistoryBtn) {
                 renderGpaHistoryList();
@@ -3372,7 +3374,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const creditBtn = closest('.credit-stepper-btn');
             if (creditBtn) {
                 const action = creditBtn.dataset.action;
-                const valueSpan = creditBtn.parentElement.querySelector('.credit-value');
+
+                // ให้ค้นหาจาก .credit-stepper ที่เป็น parent ใหญ่สุด
+                const valueSpan = creditBtn.closest('.credit-stepper').querySelector('.credit-value');
                 let currentValue = parseFloat(valueSpan.textContent);
                 if (action === 'increase' && currentValue < 15) currentValue += 0.5;
                 else if (action === 'decrease' && currentValue > 0.5) currentValue -= 0.5;
