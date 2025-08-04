@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bio: '',
             lifebuddyId: '',
             photoURL: 'assets/profiles/startprofile.png',
+            savedScores: {},
             currentBanner: 'banner_default'
         },
         following: [],
@@ -89,6 +90,36 @@ document.addEventListener('DOMContentLoaded', () => {
         gpaHistory: [],
     };
 
+    // ---- [ข้อมูล TCAS ตัวอย่างสำหรับทดสอบ] ----
+    const tcasDatabase_SAMPLE = [
+        {
+            university: "จุฬาลงกรณ์มหาวิทยาลัย",
+            faculty: "วิศวกรรมศาสตร์",
+            major: "สาขาวิศวกรรมคอมพิวเตอร์",
+            round: "3 (Admission)",
+            weight: { "GPAX": 20, "GAT": 20, "PAT1": 20, "PAT3": 40 },
+            last_year: { "min": 78.50, "max": 92.75 }
+        },
+        {
+            university: "จุฬาลงกรณ์มหาวิทยาลัย",
+            faculty: "อักษรศาสตร์",
+            major: "สาขาวิชาอักษรศาสตร์",
+            round: "3 (Admission)",
+            weight: { "GPAX": 20, "GAT": 50, "วิชาสามัญ ภาษาไทย": 10, "วิชาสามัญ สังคมศึกษา": 10, "วิชาสามัญ ภาษาอังกฤษ": 10 },
+            last_year: { "min": 82.15, "max": 95.00 }
+        },
+        {
+            university: "มหาวิทยาลัยเกษตรศาสตร์",
+            faculty: "วิทยาศาสตร์",
+            major: "สาขาวิทยาการคอมพิวเตอร์",
+            round: "3 (Admission)",
+            weight: { "GPAX": 20, "GAT": 20, "PAT1": 20, "PAT2": 40 },
+            last_year: { "min": 65.70, "max": 78.90 }
+        }
+    ];
+    // ในตอนเริ่มต้น เราจะใช้ข้อมูลตัวอย่างนี้ไปก่อน
+    tcasDatabase = tcasDatabase_SAMPLE;
+
     let timerInterval, timeLeft, isFocusing = true;
     let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
     let currentMoodDate = dayjs(), selectedMoodDate = dayjs().format('YYYY-MM-DD');
@@ -96,6 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     friendListeners = [];
     let lastSearchResults = [];
     let currentGpaRecord = null;
+    let tcasDatabase = [];
+    let currentTcasSelection = {};
     let currentSubjectSelectionCallback = null;
     const allPages = document.querySelectorAll('.page');
     const allNavLinks = document.querySelectorAll('.nav-link');
@@ -669,6 +702,100 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmButtonText: 'ยอดเยี่ยม!',
             width: '400px',
         });
+    }
+
+    // ---- [ฟังก์ชันใหม่สำหรับ TCAS Calculator] ----
+    function showTcasView(viewId) {
+        document.querySelectorAll('#tcas-feature-wrapper .page-view').forEach(view => view.classList.add('hidden'));
+        document.getElementById(viewId).classList.remove('hidden');
+        feather.replace();
+    }
+
+    function populateTcasDropdowns(level, filter = '') {
+        const universitySelect = document.getElementById('tcas-university-select');
+        const facultySelect = document.getElementById('tcas-faculty-select');
+        const majorSelect = document.getElementById('tcas-major-select');
+
+        if (level === 1) { // Populate University
+            const universities = [...new Set(tcasDatabase.map(item => item.university))];
+            universitySelect.innerHTML = '<option value="">-- กรุณาเลือก --</option>' + universities.map(u => `<option value="${u}">${u}</option>`).join('');
+            facultySelect.disabled = true;
+            majorSelect.disabled = true;
+        } else if (level === 2) { // Populate Faculty
+            const faculties = [...new Set(tcasDatabase.filter(item => item.university === filter).map(item => item.faculty))];
+            facultySelect.innerHTML = '<option value="">-- กรุณาเลือก --</option>' + faculties.map(f => `<option value="${f}">${f}</option>`).join('');
+            facultySelect.disabled = false;
+            majorSelect.disabled = true;
+        } else if (level === 3) { // Populate Major
+            const majors = tcasDatabase.filter(item => item.faculty === filter).map(item => item.major);
+            majorSelect.innerHTML = '<option value="">-- กรุณาเลือก --</option>' + majors.map(m => `<option value="${m}">${m}</option>`).join('');
+            majorSelect.disabled = false;
+        }
+    }
+
+    function renderScoreInputs(formula) {
+        const container = document.getElementById('tcas-score-inputs');
+        const savedScores = state.profile.savedScores || {};
+        let inputsHTML = '';
+        for (const subject in formula.weight) {
+            const savedValue = savedScores[subject] || '';
+            inputsHTML += `
+                <div class="form-group">
+                    <label for="score-${subject}">${subject} (น้ำหนัก ${formula.weight[subject]}%)</label>
+                    <input type="number" id="score-${subject}" name="${subject}" placeholder="กรอกคะแนน" value="${savedValue}" required>
+                </div>
+            `;
+        }
+        container.innerHTML = `<div class="score-input-grid">${inputsHTML}</div>`;
+    }
+
+    function calculateAndDisplayTcasScore() {
+        const form = document.getElementById('tcas-score-input-form');
+        const inputs = form.querySelectorAll('input[type="number"]');
+        let userScores = {};
+        inputs.forEach(input => {
+            userScores[input.name] = parseFloat(input.value) || 0;
+        });
+
+        // บันทึกคะแนนที่กรอก
+        state.profile.savedScores = { ...state.profile.savedScores, ...userScores };
+        saveState();
+
+        // คำนวณ
+        let totalScore = 0;
+        for (const subject in currentTcasSelection.weight) {
+            totalScore += userScores[subject] * (currentTcasSelection.weight[subject] / 100);
+        }
+        totalScore = parseFloat(totalScore.toFixed(3));
+
+        // เปรียบเทียบและกำหนดสถานะ
+        let status = { text: 'ไม่ผ่าน', class: 'fail', advice: 'คะแนนของคุณยังไม่ถึงเกณฑ์ขั้นต่ำของปีที่แล้ว' };
+        const { min, max } = currentTcasSelection.last_year;
+        if (totalScore >= min) {
+            status = { text: 'ผ่านเกณฑ์', class: 'pass', advice: 'ยินดีด้วย! คะแนนของคุณผ่านเกณฑ์ขั้นต่ำของปีที่แล้ว' };
+        } else if (totalScore >= min - 5) {
+            status = { text: 'มีความเสี่ยง', class: 'risky', advice: `พยายามทำคะแนนเพิ่มอีก ${ (min - totalScore).toFixed(2) } คะแนนเพื่อให้ผ่านเกณฑ์ขั้นต่ำ` };
+        }
+
+        // แสดงผล
+        const resultContainer = document.getElementById('tcas-result-container');
+        resultContainer.innerHTML = `
+            <div class="card tcas-result-card">
+                <div class="result-header">
+                    <h3>ผลการประเมินคะแนน</h3>
+                </div>
+                <p>คะแนนรวมของคุณคือ</p>
+                <div class="result-score">${totalScore}</div>
+                <div class="last-year-scores">
+                    <p>คะแนนปีล่าสุด: <strong>${min} (ต่ำสุด) - ${max} (สูงสุด)</strong></p>
+                </div>
+                <div class="status-badge ${status.class}">${status.text}</div>
+                <p class="subtle-text"><i><strong>คำแนะนำ:</strong> ${status.advice}</i></p>
+                <div class="result-actions">
+                    <button class="tcas-back-to-selection-btn small-btn btn-secondary">ลองคณะอื่น</button>
+                </div>
+            </div>
+        `;
     }
 
     function showGpaView(viewId) {
@@ -3445,6 +3572,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 return;
             }
+
+            // --- Group: TCAS Calculator ---
+            const tcasFeatureCard = closest('#tcas-feature-card');
+            if (tcasFeatureCard) {
+                document.getElementById('student-hub-main-view').classList.add('hidden');
+                document.getElementById('tcas-feature-wrapper').classList.remove('hidden');
+                populateTcasDropdowns(1); // เริ่มต้นโหลดรายชื่อมหาวิทยาลัย
+                showTcasView('tcas-selection-view');
+                return;
+            }
+            const tcasBackToHub = closest('#tcas-back-to-hub-btn');
+            if (tcasBackToHub) {
+                document.getElementById('tcas-feature-wrapper').classList.add('hidden');
+                document.getElementById('student-hub-main-view').classList.remove('hidden');
+                return;
+            }
+            const tcasBackToSelection = closest('.tcas-back-to-selection-btn');
+            if (tcasBackToSelection) {
+                document.getElementById('tcas-result-container').innerHTML = ''; // ล้างผลลัพธ์เก่า
+                showTcasView('tcas-selection-view');
+                return;
+            }
             
             // --- Group 2: Home Page Items (To-Do & Activities) ---
             const deleteTodoBtn = closest('.delete-todo-btn');
@@ -3698,6 +3847,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 mcContainer.querySelectorAll('input').forEach(input => input.disabled = !isMc);
                 typedContainer.querySelectorAll('input').forEach(input => input.disabled = isMc);
             }
+            const tcasUniversitySelect = e.target.closest('#tcas-university-select');
+            if (tcasUniversitySelect) {
+                populateTcasDropdowns(2, tcasUniversitySelect.value);
+                return;
+            }
+            const tcasFacultySelect = e.target.closest('#tcas-faculty-select');
+            if (tcasFacultySelect) {
+                populateTcasDropdowns(3, tcasFacultySelect.value);
+                return;
+            }
         });
 
         document.body.addEventListener('submit', (e) => {
@@ -3727,6 +3886,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('gpa-save-record-btn').classList.remove('hidden');
                     renderGpaTable([]);
                     showGpaView('gpa-calculator-view');
+                    break;
+                case 'tcas-selection-form':
+                    const major = document.getElementById('tcas-major-select').value;
+                    currentTcasSelection = tcasDatabase.find(item => item.major === major);
+                    if (currentTcasSelection) {
+                        document.getElementById('tcas-selection-summary').innerHTML = `
+                            <h3>${currentTcasSelection.faculty}</h3>
+                            <p>${currentTcasSelection.university} (${currentTcasSelection.round})</p>
+                        `;
+                        renderScoreInputs(currentTcasSelection);
+                        showTcasView('tcas-calculator-view');
+                    }
+                    break;
+                case 'tcas-score-input-form':
+                    calculateAndDisplayTcasScore();
                     break;
             }
         });

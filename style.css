@@ -1727,3 +1727,66 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
         justify-content: center;
     }
 }
+/* ======================================= */
+/* ======    TCAS Calculator Styles   ====== */
+/* ======================================= */
+#tcas-selection-form select:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+}
+#tcas-selection-summary {
+    text-align: center;
+}
+#tcas-selection-summary h3 {
+    margin-bottom: 5px;
+}
+#tcas-selection-summary p {
+    margin: 0;
+}
+.score-input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.tcas-result-card {
+    margin-top: 25px;
+    padding: 25px;
+    text-align: center;
+}
+.tcas-result-card .result-header {
+    margin-bottom: 20px;
+}
+.tcas-result-card .result-score {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+.last-year-scores {
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 20px 0;
+}
+.status-badge {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: 700;
+    color: white;
+    margin: 15px 0;
+}
+.status-badge.pass { background-color: var(--success-color); }
+.status-badge.risky { background-color: var(--accent-color); }
+.status-badge.fail { background-color: var(--danger-color); }
+
+.result-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+.result-actions button {
+    width: auto;
+}

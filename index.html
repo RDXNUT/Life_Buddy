@@ -229,8 +229,48 @@
                 <section class="card student-feature-card">
                     <h2><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
                     <p class="subtle-text">ประเมินคะแนนและโอกาสในการเข้าศึกษาต่อในมหาวิทยาลัย</p>
-                    <div class="feature-status">เร็วๆ นี้</div>
                 </section>
+                <!-- Wrapper for All TCAS Feature Sub-Views -->
+                <div id="tcas-feature-wrapper" class="page-view hidden">
+
+                    <!-- [TCAS VIEW 1] Selection View -->
+                    <div id="tcas-selection-view" class="page-view">
+                        <button id="tcas-back-to-hub-btn" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปหน้าหลัก</button>
+                        <h2 style="margin-top: 20px;"><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
+                        <form id="tcas-selection-form" class="card">
+                            <div class="form-group">
+                                <label for="tcas-university-select">เลือกมหาวิทยาลัย</label>
+                                <select id="tcas-university-select" required><option value="">-- กรุณาเลือก --</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tcas-faculty-select">เลือกคณะ</label>
+                                <select id="tcas-faculty-select" disabled required><option value="">-- กรุณาเลือก --</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tcas-major-select">เลือกสาขา</label>
+                                <select id="tcas-major-select" disabled required><option value="">-- กรุณาเลือก --</option></select>
+                            </div>
+                            <button type="submit">ต่อไป <i data-feather="arrow-right"></i></button>
+                        </form>
+                    </div>
+
+                    <!-- [TCAS VIEW 2] Score Input & Result View -->
+                    <div id="tcas-calculator-view" class="page-view hidden">
+                        <button class="tcas-back-to-selection-btn small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปเลือกใหม่</button>
+                        <div id="tcas-score-input-container" class="card" style="margin-top:20px;">
+                            <!-- ส่วนหัวแสดงข้อมูลคณะที่เลือก -->
+                            <div id="tcas-selection-summary"></div>
+                            <hr class="section-divider">
+                            <!-- ช่องกรอกคะแนน (สร้างโดย JS) -->
+                            <form id="tcas-score-input-form">
+                                <div id="tcas-score-inputs"></div>
+                                <button type="submit">คำนวณคะแนน</button>
+                            </form>
+                        </div>
+                        <!-- ส่วนแสดงผลลัพธ์ (สร้างโดย JS) -->
+                        <div id="tcas-result-container"></div>
+                    </div>
+                </div>
 
                 <!-- Card 3: Portfolio Planner -->
                 <section class="card student-feature-card">
