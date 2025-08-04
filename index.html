@@ -209,82 +209,165 @@
         </div>
 
         <!-- Student Hub Page -->
-    <div id="student-hub-page" class="page">
-        
-        <!-- ============================ -->
-        <!-- VIEW 1: Main Student Hub Menu -->
-        <!-- ============================ -->
-        <div id="student-hub-main-view">
-            <h1><i data-feather="briefcase"></i> สำหรับนักศึกษา</h1>
-            <p class="subtle-text" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">เครื่องมือที่จะช่วยให้ชีวิตในรั้วมหาวิทยาลัยของคุณง่ายขึ้น</p>
+        <div id="student-hub-page" class="page">
             
-            <div class="student-hub-grid">
-                <!-- Card 1: GPA Calculator -->
-                <section id="gpa-feature-card" class="card student-feature-card" style="cursor: pointer;">
-                    <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
-                    <p class="subtle-text">เครื่องมือช่วยคำนวณเกรดเฉลี่ยของคุณ</p>
-                </section>
+            <!-- ============================ -->
+            <!-- VIEW 1: Main Student Hub Menu -->
+            <!-- ============================ -->
+            <div id="student-hub-main-view">
+                <h1><i data-feather="briefcase"></i> สำหรับนักศึกษา</h1>
+                <p class="subtle-text" style="text-align: left; margin-top: -1.5rem; margin-bottom: 2rem;">เครื่องมือที่จะช่วยให้ชีวิตในรั้วมหาวิทยาลัยของคุณง่ายขึ้น</p>
+                
+                <div class="student-hub-grid">
+                    <!-- Card 1: GPA Calculator -->
+                    <section id="gpa-feature-card" class="card student-feature-card" style="cursor: pointer;">
+                        <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
+                        <p class="subtle-text">เครื่องมือช่วยคำนวณและวางแผนเกรดเฉลี่ยของคุณ</p>
+                    </section>
 
-                <!-- Card 2: TCAS Calculator -->
-                <section class="card student-feature-card">
-                    <h2><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
-                    <p class="subtle-text">ประเมินคะแนนและโอกาสในการเข้าศึกษาต่อในมหาวิทยาลัย</p>
-                </section>
-                <!-- Wrapper for All TCAS Feature Sub-Views -->
-                <div id="tcas-feature-wrapper" class="page-view hidden">
+                    <!-- Card 2: TCAS Calculator -->
+                    <section id="tcas-feature-card" class="card student-feature-card" style="cursor: pointer;">
+                        <h2><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
+                        <p class="subtle-text">ประเมินคะแนนและโอกาสในการเข้าศึกษาต่อในมหาวิทยาลัย</p>
+                    </section>
 
-                    <!-- [TCAS VIEW 1] Selection View -->
-                    <div id="tcas-selection-view" class="page-view">
-                        <button id="tcas-back-to-hub-btn" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปหน้าหลัก</button>
-                        <h2 style="margin-top: 20px;"><i data-feather="award"></i> คำนวณคะแนน TCAS</h2>
-                        <form id="tcas-selection-form" class="card">
-                            <div class="form-group">
-                                <label for="tcas-university-select">เลือกมหาวิทยาลัย</label>
-                                <select id="tcas-university-select" required><option value="">-- กรุณาเลือก --</option></select>
-                            </div>
-                            <div class="form-group">
-                                <label for="tcas-faculty-select">เลือกคณะ</label>
-                                <select id="tcas-faculty-select" disabled required><option value="">-- กรุณาเลือก --</option></select>
-                            </div>
-                            <div class="form-group">
-                                <label for="tcas-major-select">เลือกสาขา</label>
-                                <select id="tcas-major-select" disabled required><option value="">-- กรุณาเลือก --</option></select>
-                            </div>
-                            <button type="submit">ต่อไป <i data-feather="arrow-right"></i></button>
-                        </form>
-                    </div>
+                    <!-- Card 3: Portfolio Planner -->
+                    <section class="card student-feature-card">
+                        <h2><i data-feather="archive"></i> วางแผน Portfolio</h2>
+                        <p class="subtle-text">รวบรวมและจัดการผลงานเพื่อสร้างแฟ้มสะสมผลงานที่โดดเด่น</p>
+                        <div class="feature-status">เร็วๆ นี้</div>
+                    </section>
 
-                    <!-- [TCAS VIEW 2] Score Input & Result View -->
-                    <div id="tcas-calculator-view" class="page-view hidden">
-                        <button class="tcas-back-to-selection-btn small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปเลือกใหม่</button>
-                        <div id="tcas-score-input-container" class="card" style="margin-top:20px;">
-                            <!-- ส่วนหัวแสดงข้อมูลคณะที่เลือก -->
-                            <div id="tcas-selection-summary"></div>
-                            <hr class="section-divider">
-                            <!-- ช่องกรอกคะแนน (สร้างโดย JS) -->
-                            <form id="tcas-score-input-form">
-                                <div id="tcas-score-inputs"></div>
-                                <button type="submit">คำนวณคะแนน</button>
-                            </form>
+                    <!-- Card 4: Goal Tracker -->
+                    <section class="card student-feature-card">
+                        <h2><i data-feather="target"></i> วางแผนเป้าหมายอนาคต</h2>
+                        <p class="subtle-text">ตั้งเป้าหมายระยะสั้นและยาวสำหรับเส้นทางอาชีพของคุณ</p>
+                        <div class="feature-status">เร็วๆ นี้</div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ============================================= -->
+            <!-- Wrapper for All GPA Feature Sub-Views -->
+            <!-- ============================================= -->
+            <div id="gpa-feature-wrapper" class="page-view hidden">
+                <!-- [GPA VIEW 1] History View -->
+                <div id="gpa-history-view" class="page-view">
+                    <button id="gpa-back-to-hub-btn" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปหน้าหลัก</button>
+                    <h2 style="margin-top: 20px;"><i data-feather="bar-chart-2"></i> ผลการเรียนของฉัน</h2>
+                    <button id="gpa-add-new-record-btn" class="add-new-record-btn">
+                        <i data-feather="plus"></i>
+                        <span>เพิ่มผลการเรียนใหม่</span>
+                    </button>
+                    <div id="gpa-history-list"></div>
+                </div>
+                <!-- [GPA VIEW 2] Add Term Info View -->
+                <div id="gpa-add-term-info-view" class="page-view hidden">
+                    <button class="gpa-back-to-history-btn small-btn with-icon"><i data-feather="arrow-left"></i> กลับ</button>
+                    <h2 style="margin-top: 20px;"><i data-feather="edit-3"></i> ระบุข้อมูลผลการเรียน</h2>
+                    <form id="gpa-term-info-form" class="card" style="max-width: 500px; margin: 20px auto;">
+                        <div class="form-group">
+                            <label for="gpa-level-input">ระดับชั้น</label>
+                            <input type="text" id="gpa-level-input" placeholder="เช่น มัธยมศึกษาปีที่ 5, ปี 1" required>
                         </div>
-                        <!-- ส่วนแสดงผลลัพธ์ (สร้างโดย JS) -->
-                        <div id="tcas-result-container"></div>
+                        <div class="form-group">
+                            <label for="gpa-term-select">ภาคการศึกษา (เทอม)</label>
+                            <select id="gpa-term-select">
+                                <option value="1">เทอม 1</option>
+                                <option value="2">เทอม 2</option>
+                                <option value="3">ภาคฤดูร้อน</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="gpa-year-input">ปีการศึกษา</label>
+                            <input type="text" id="gpa-year-input" placeholder="เช่น 2568" required>
+                        </div>
+                        <button type="submit">ไปต่อ <i data-feather="arrow-right"></i></button>
+                    </form>
+                </div>
+                <!-- [GPA VIEW 3] Calculator View -->
+                <div id="gpa-calculator-view" class="page-view hidden">
+                    <div class="gpa-view-header">
+                        <h2><i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)</h2>
+                        <div class="header-actions">
+                            <button id="gpa-go-to-history-btn" class="small-btn btn-secondary with-icon">
+                                <i data-feather="archive"></i> ดูประวัติที่บันทึก
+                            </button>
+                            <button id="gpa-back-to-hub-btn" class="small-btn with-icon">
+                                <i data-feather="arrow-left"></i> กลับไปหน้าหลัก
+                            </button>
+                        </div>
+                    </div>
+                    <div id="gpa-table-container">
+                        <div class="gpa-table-header">
+                            <span>#</span><span>รายวิชา</span><span>หน่วยกิต</span><span>เกรด</span>
+                        </div>
+                        <div id="gpa-table-body"></div>
+                    </div>
+                    <div class="gpa-actions">
+                        <button id="gpa-clear-btn" class="btn-danger-secondary">ล้างข้อมูล</button>
+                        <button id="gpa-calculate-btn">คำนวณ</button>
+                        <button id="gpa-save-record-btn" class="hidden">บันทึก</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Card 3: Portfolio Planner -->
-                <section class="card student-feature-card">
-                    <h2><i data-feather="archive"></i> วางแผน Portfolio</h2>
-                    <p class="subtle-text">รวบรวมและจัดการผลงานเพื่อสร้างแฟ้มสะสมผลงานที่โดดเด่น</p>
-                    <div class="feature-status">เร็วๆ นี้</div>
-                </section>
-
-                <!-- Card 4: Goal Tracker -->
-                <section class="card student-feature-card">
-                    <h2><i data-feather="target"></i> วางแผนเป้าหมายอนาคต</h2>
-                    <p class="subtle-text">ตั้งเป้าหมายระยะสั้นและยาวสำหรับเส้นทางอาชีพของคุณ</p>
-                    <div class="feature-status">เร็วๆ นี้</div>
-                </section>
+            <!-- ============================================= -->
+            <!-- Wrapper for All TCAS Feature Sub-Views -->
+            <!-- ============================================= -->
+            <div id="tcas-feature-wrapper" class="page-view hidden">
+                <button id="tcas-back-to-hub-btn" class="small-btn with-icon"><i data-feather="arrow-left"></i> กลับไปหน้าหลัก</button>
+                <h2 style="margin-top: 20px;"><i data-feather="edit"></i> กรอกคะแนน TCAS ของฉัน</h2>
+                <div id="tcas-score-form-container">
+                    <div class="score-section card">
+                        <h3>GPAX</h3>
+                        <p class="subtle-text">สูงสุด 4.00 *อย่าลืมอัปเดตคะแนนให้เป็นปัจจุบันเสมอ</p>
+                        <div class="score-input-item">
+                            <input type="number" name="GPAX6_SCORE" placeholder=" " min="0" max="4" step="0.01">
+                        </div>
+                    </div>
+                    <div class="score-section card">
+                        <h3>TGAT ความถนัดทั่วไป</h3>
+                        <p class="subtle-text">คะแนนเต็ม 100 คะแนน/พาร์ท</p>
+                        <div class="score-input-grid tgat-grid">
+                            <div class="score-input-item">
+                                <label>TGAT1 อังกฤษ</label>
+                                <input type="number" name="TGAT1" placeholder="100.00" min="0" max="100" step="0.01">
+                            </div>
+                            <div class="score-input-item">
+                                <label>TGAT2 คิดเหตุผล</label>
+                                <input type="number" name="TGAT2" placeholder="100.00" min="0" max="100" step="0.01">
+                            </div>
+                            <div class="score-input-item">
+                                <label>TGAT3 สมรรถนะ</label>
+                                <input type="number" name="TGAT3" placeholder="100.00" min="0" max="100" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="score-section card">
+                        <h3>TPAT 1-5 ความถนัดเฉพาะทาง</h3>
+                        <div class="score-input-grid tpat-grid"></div>
+                    </div>
+                    <div class="score-section card">
+                        <h3>A-Level</h3>
+                        <p class="subtle-text">คะแนนเต็ม 100 คะแนน/วิชา</p>
+                        <div class="score-input-grid alevel-grid"></div>
+                    </div>
+                    <div class="score-section card">
+                        <h3>วิชาเฉพาะมหาวิทยาลัย และ GPA</h3>
+                        <p class="subtle-text">เลือกวิชาเฉพาะฯ เพื่อกรอกคะแนน</p>
+                        <div class="form-group">
+                            <select id="specific-subject-select">
+                                <option value="">-- เลือกวิชาเฉพาะ และ GPA --</option>
+                            </select>
+                        </div>
+                        <div id="specific-subject-inputs"></div>
+                    </div>
+                </div>
+                <div class="gpa-actions" style="margin-top: 10px;">
+                    <button id="tcas-clear-btn" class="btn-danger-secondary">ล้างข้อมูล</button>
+                    <button id="tcas-select-formula-btn">เลือกรูปแบบคำนวณ</button>
+                </div>
             </div>
         </div>
 
@@ -356,15 +439,9 @@
                     </div>
                 </div>
 
-                <div id="gpa-result-container">
-                    <!-- ผลลัพธ์จะแสดงที่นี่ (ถ้ามี) -->
-                </div>
-
                 <div class="gpa-actions">
                     <button id="gpa-clear-btn" class="btn-danger-secondary">ล้างข้อมูล</button>
-                    <!-- ปุ่ม "คำนวณ" สำหรับการคำนวณด่วน -->
                     <button id="gpa-calculate-btn">คำนวณ</button>
-                    <!-- ปุ่ม "บันทึก" สำหรับการสร้าง/แก้ไขประวัติ (ซ่อนไว้ก่อน) -->
                     <button id="gpa-save-record-btn" class="hidden">บันทึก</button>
                 </div>
             </div>

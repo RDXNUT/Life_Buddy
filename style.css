@@ -1727,66 +1727,131 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
         justify-content: center;
     }
 }
-/* ======================================= */
-/* ======    TCAS Calculator Styles   ====== */
-/* ======================================= */
-#tcas-selection-form select:disabled {
-    background-color: var(--border-color);
-    cursor: not-allowed;
+/* ======================================================= */
+/* ====== TCAS Score Input Form Styles   ====== */
+/* ======================================================= */
+
+.score-section {
+    margin-bottom: 20px;
 }
-#tcas-selection-summary {
-    text-align: center;
-}
-#tcas-selection-summary h3 {
+.score-section h3 {
     margin-bottom: 5px;
+    color: var(--accent-color); /* เปลี่ยนสีหัวข้อให้เด่นขึ้น */
 }
-#tcas-selection-summary p {
-    margin: 0;
+.score-section .subtle-text {
+    margin-top: 0;
+    margin-bottom: 20px;
 }
+
 .score-input-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 20px 15px;
 }
-.tcas-result-card {
-    margin-top: 25px;
-    padding: 25px;
-    text-align: center;
-}
-.tcas-result-card .result-header {
-    margin-bottom: 20px;
-}
-.tcas-result-card .result-score {
-    font-size: 3.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin: 10px 0;
-}
-.last-year-scores {
-    background: var(--bg-color);
-    border-radius: 8px;
-    padding: 15px;
-    margin: 20px 0;
-}
-.status-badge {
-    display: inline-block;
-    padding: 10px 25px;
-    border-radius: 50px;
-    font-weight: 700;
-    color: white;
-    margin: 15px 0;
-}
-.status-badge.pass { background-color: var(--success-color); }
-.status-badge.risky { background-color: var(--accent-color); }
-.status-badge.fail { background-color: var(--danger-color); }
 
-.result-actions {
+.score-input-item {
+    position: relative;
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 25px;
+    flex-direction: column; /* [ใหม่] เรียง Label และ Input เป็นแนวตั้ง */
+    align-items: stretch;   /* [ใหม่] ทำให้องค์ประกอบยืดเต็มความกว้าง */
+    gap: 8px; /* ระยะห่างระหว่าง Label กับ Input */
 }
-.result-actions button {
-    width: auto;
+
+.score-input-item input {
+    width: 100%; /* ทำให้ input กว้างเต็ม */
+    padding: 12px; /* กลับไปใช้ Padding ปกติ */
+    text-align: left;
+    font-weight: 500;
+    font-size: 1rem;
+    box-sizing: border-box;
+    margin: 0; /* เอา margin ที่ไม่จำเป็นออก */
+}
+.score-input-item label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-color); /* ใช้สีข้อความปกติ */
+    text-align: left; /* จัดชิดซ้าย */
+    /* ไม่ต้องใช้ position: absolute อีกต่อไป */
+}
+.score-input-item input:focus + label,
+.score-input-item input:not(:placeholder-shown) + label {
+    top: 8px; /* ตำแหน่งเดิม */
+    font-size: 0.75em; /* ขนาดเดิม */
+}
+.score-section .score-input-item input[name="GPAX6_SCORE"],
+#specific-subject-inputs .score-input-item input {
+    text-align: left; /* ทำให้ตัวเลขชิดซ้าย */
+}
+
+#specific-subject-inputs .score-input-item input {
+    height: 42px;
+    box-sizing: border-box;
+}
+
+.remove-specific-subject-btn {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--danger-color);
+    border: 1px solid var(--border-color); /* [แก้ไข] กลับไปใช้สีกรอบปกติ */
+    transition: all 0.2s;
+    margin-left: 10px; /* [ใหม่] เพิ่มระยะห่างด้านซ้าย */
+}
+.remove-specific-subject-btn:hover {
+    background-color: rgba(255, 59, 48, 0.1);
+}
+.remove-specific-subject-btn .feather {
+    width: 20px;
+    height: 20px;
+}
+#specific-subject-inputs .score-input-item {
+    margin-bottom: 15px;
+    flex-direction: row; /* จัดเรียงแนวนอน */
+    align-items: flex-end; /* [สำคัญ] จัดให้ชิดด้านล่างของ flex container */
+    gap: 10px; /* เพิ่มระยะห่างระหว่าง input กับปุ่ม */
+}
+#specific-subject-inputs .score-input-item .input-wrapper {
+    flex-grow: 1; /* ทำให้ส่วนของ Input ยืดเต็มที่ */
+}
+/* ปรับ input ให้มีที่สำหรับ label */
+.score-input-item input {
+    flex-grow: 1;
+    height: 58px; /* เพิ่มความสูงของช่องกรอก */
+    padding: 22px 12px 6px; /* ปรับ padding ใหม่: บน กลาง ล่าง */
+    text-align: left; /* [แก้ไข] จัดชิดซ้ายเป็นค่าเริ่มต้น */
+    font-weight: 500;
+    font-size: 1.1rem; /* เพิ่มขนาดฟอนต์ตัวเลข */
+    box-sizing: border-box;
+}
+.tgat-grid input, .tpat-grid input, .alevel-grid input {
+    text-align: right;
+}
+
+/* จัดการ Layout ของ Section วิชาเฉพาะ */
+#specific-subject-inputs .score-input-item {
+    margin-bottom: 15px;
+}
+/* ======================================= */
+/* ======   Swal Info Text Styles   ====== */
+/* ======================================= */
+
+.swal-info-text {
+    text-align: center; /* จัดให้อยู่กึ่งกลาง */
+    margin: 10px auto 0;
+    display: inline-block; /* ทำให้ block พอดีกับเนื้อหา */
+}
+
+.swal-info-text p {
+    text-align: left; /* จัด bullet ให้อยู่ชิดซ้าย */
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 8px;
+    color: var(--subtle-text-color);
+}
+/* จัดตำแหน่งช่องกรอก GPAX */
+.score-section .score-input-item input,
+#specific-subject-inputs .score-input-item input {
+    text-align: left; /* ทำให้ตัวเลขชิดซ้ายเป็นค่าเริ่มต้น */
 }

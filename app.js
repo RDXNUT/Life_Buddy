@@ -90,35 +90,97 @@ document.addEventListener('DOMContentLoaded', () => {
         gpaHistory: [],
     };
 
-    // ---- [ข้อมูล TCAS ตัวอย่างสำหรับทดสอบ] ----
-    const tcasDatabase_SAMPLE = [
-        {
-            university: "จุฬาลงกรณ์มหาวิทยาลัย",
-            faculty: "วิศวกรรมศาสตร์",
-            major: "สาขาวิศวกรรมคอมพิวเตอร์",
-            round: "3 (Admission)",
-            weight: { "GPAX": 20, "GAT": 20, "PAT1": 20, "PAT3": 40 },
-            last_year: { "min": 78.50, "max": 92.75 }
-        },
-        {
-            university: "จุฬาลงกรณ์มหาวิทยาลัย",
-            faculty: "อักษรศาสตร์",
-            major: "สาขาวิชาอักษรศาสตร์",
-            round: "3 (Admission)",
-            weight: { "GPAX": 20, "GAT": 50, "วิชาสามัญ ภาษาไทย": 10, "วิชาสามัญ สังคมศึกษา": 10, "วิชาสามัญ ภาษาอังกฤษ": 10 },
-            last_year: { "min": 82.15, "max": 95.00 }
-        },
-        {
-            university: "มหาวิทยาลัยเกษตรศาสตร์",
-            faculty: "วิทยาศาสตร์",
-            major: "สาขาวิทยาการคอมพิวเตอร์",
-            round: "3 (Admission)",
-            weight: { "GPAX": 20, "GAT": 20, "PAT1": 20, "PAT2": 40 },
-            last_year: { "min": 65.70, "max": 78.90 }
-        }
-    ];
-    // ในตอนเริ่มต้น เราจะใช้ข้อมูลตัวอย่างนี้ไปก่อน
-    tcasDatabase = tcasDatabase_SAMPLE;
+    const tpatSubjects = {
+        'TPAT11': 'TPAT1.1 เชาว์', 'TPAT12': 'TPAT1.2 จริยธรรม', 'TPAT13': 'TPAT1.3 เชื่อมโยง',
+        'TPAT21': 'TPAT2.1 ทัศนศิลป์', 'TPAT22': 'TPAT2.2 ดนตรี', 'TPAT23': 'TPAT2.3 นาฏศิลป์',
+        'TPAT3': 'TPAT3 วิทย์-วิศวฯ', 'TPAT4': 'TPAT4 สถาปัตย์', 'TPAT5': 'TPAT5 ครู'
+    };
+
+    const alevelSubjects = {
+        'A-Level คณิต1': 'คณิต1', 'A-Level คณิต2': 'คณิต2', 'A-Level วิทย์ทั่วไป': 'วิทย์ฯ',
+        'A-Level ฟิสิกส์': 'ฟิสิกส์', 'A-Level เคมี': 'เคมี', 'A-Level ชีววิทยา': 'ชีวะ',
+        'A-Level สังคมศึกษา': 'สังคม', 'A-Level ไทย': 'ไทย', 'A-Level อังกฤษ': 'อังกฤษ',
+        'A-Level เยอรมัน': 'เยอรมัน', 'A-Level ฝรั่งเศส': 'ฝรั่งเศส', 'A-Level ญี่ปุ่น': 'ญี่ปุ่น',
+        'A-Level เกาหลี': 'เกาหลี', 'A-Level จีน': 'จีน', 'A-Level บาลี': 'บาลี', 'A-Level สเปน': 'สเปน'
+    };
+
+    const specificSubjects = {
+        'CEFR': { label: 'CEFR', placeholder: '1000.00' },
+        'CMUETEGS': { label: 'CMU-eTEGS', placeholder: '100.00' },
+        'CUTEP': { label: 'CU-TEP', placeholder: '120.00' },
+        'DET': { label: 'DET', placeholder: '120.00' },
+        'GED_SCORE': { label: 'GED', placeholder: '800.00' },
+        'GPA21': { label: 'GPA ภาษาไทย', placeholder: '4.00' },
+        'GPA22': { label: 'GPA คณิตศาสตร์', placeholder: '4.00' },
+        'GPA22_23': { label: 'GPA คณิต วิทย์', placeholder: '4.00' },
+        'GPA22_23_28': { label: 'GPA คณิต วิทย์ อังกฤษ', placeholder: '4.00' },
+        'GPA23': { label: 'GPA วิทยาศาสตร์', placeholder: '4.00' },
+        'GPA24': { label: 'GPA สังคม', placeholder: '4.00' },
+        'GPA25': { label: 'GPA สุขศึกษาและพลศึกษา', placeholder: '4.00' },
+        'GPA26': { label: 'GPA ศิลปะ', placeholder: '4.00' },
+        'GPA27': { label: 'GPA การงานอาชีพ', placeholder: '4.00' },
+        'GPA28': { label: 'GPA ภาษาต่างประเทศ', placeholder: '4.00' },
+        'GPAX5_SCORE': { label: 'GPAX 5 เทอม', placeholder: '4.00' },
+        'GPAX6_SCORE': { label: 'GPAX 6 เทอม', placeholder: '4.00' },
+        'IELTS': { label: 'IELTS', placeholder: '9.0' },
+        'KEPT': { label: 'KKU-KEPT', placeholder: '100.00' },
+        'KUEPT': { label: 'KU-EPT', placeholder: '1000.00' },
+        'MU001': { label: 'MU001 วาดเส้น', placeholder: '100.00' },
+        'MU002': { label: 'MU002 ออกแบบ', placeholder: '100.00' },
+        'MU003': { label: 'MU003 ฉุกเฉินการแพทย์', placeholder: '100.00' },
+        'MU_ELT': { label: 'MU-ELT', placeholder: '150.00' },
+        'NETSAT_BIO': { label: 'NETSAT BIO', placeholder: '100.00' },
+        'NETSAT_CHEM': { label: 'NETSAT CHEM', placeholder: '100.00' },
+        'NETSAT_LANG': { label: 'NETSAT LANG', placeholder: '100.00' },
+        'NETSAT_MATH': { label: 'NETSAT MATH', placeholder: '100.00' },
+        'NETSAT_PHY': { label: 'NETSAT PHYSIC', placeholder: '100.00' },
+        'NETSAT_SCI': { label: 'NETSAT SCI', placeholder: '100.00' },
+        'PSUTEP': { label: 'PSU-TEP', placeholder: '400.00' },
+        'SAT': { label: 'SAT', placeholder: '1600.00' },
+        'SU001': { label: 'SU001 วาดเส้น', placeholder: '100.00' },
+        'SU002': { label: 'SU002 องค์ประกอบศิลป์', placeholder: '100.00' },
+        'SU003': { label: 'SU003 สร้างสรรค์', placeholder: '100.00' },
+        'SU004': { label: 'SU004 ทั่วไปศิลปะ', placeholder: '100.00' },
+        'SU005': { label: 'SU005 วาดเส้นมัณฑศิลป์', placeholder: '100.00' },
+        'SU006': { label: 'SU006 ออกแบบผลิตภัณฑ์', placeholder: '100.00' },
+        'SU007': { label: 'SU007 ประยุกตศิลป์ศึกษา', placeholder: '100.00' },
+        'SU008': { label: 'SU008 เครื่องเคลือบดินเผา', placeholder: '100.00' },
+        'SU009': { label: 'SU009 ออกแบบเครื่องประดับ', placeholder: '100.00' },
+        'SU010': { label: 'SU010 ออกแบบเครื่องแต่งกาย', placeholder: '100.00' },
+        'SU011': { label: 'SU011 วิเคราะห์สังคมศาสตร์', placeholder: '100.00' },
+        'SU012': { label: 'SU012 สังคีตศิลป์ไทย', placeholder: '100.00' },
+        'SU013': { label: 'SU013 ทักษะภาษาไทย', placeholder: '100.00' },
+        'SU014': { label: 'SU014 PSAT เภสัช', placeholder: '200.00' },
+        'SWU_SET': { label: 'SWU-SET', placeholder: '1000.00' },
+        'T_SCORE': { label: 'T-SCORE', placeholder: '100.00' },
+        'TOEFL_CBT': { label: 'TOEFL CBT', placeholder: '300.00' },
+        'TOEFL_IBT': { label: 'TOEFL IBT', placeholder: '120.00' },
+        'TOEFL_IPT': { label: 'TOEFL IPT', placeholder: '677.00' },
+        'TOEFL_ITP': { label: 'TOEFL ITP', placeholder: '677.00' },
+        'TOEFL_PBT': { label: 'TOEFL PBT', placeholder: '677.00' },
+        'TOEIC': { label: 'TOEIC', placeholder: '990.00' },
+        'TU001': { label: 'TU001 นิติศาสตร์', placeholder: '70.00' },
+        'TU002': { label: 'TU002 การเมืองการปกครอง', placeholder: '70.00' },
+        'TU003': { label: 'TU003 ระหว่างประเทศ', placeholder: '70.00' },
+        'TU004': { label: 'TU004 บริหารรัฐกิจ', placeholder: '70.00' },
+        'TU005': { label: 'TU005 สังคมสงเคราะห์', placeholder: '100.00' },
+        'TU006': { label: 'TU006 รัฐศาสตร์ นานาชาติ', placeholder: '100.00' },
+        'TU061': { label: 'TU061 วาดเส้นสิ่งทอ', placeholder: '35.00' },
+        'TU062': { label: 'TU062 ออกแบบสิ่งทอ', placeholder: '35.00' },
+        'TU071': { label: 'TU071 วาดเส้นแฟชั่น', placeholder: '35.00' },
+        'TU072': { label: 'TU072 ออกแบบแฟชั่น', placeholder: '35.00' },
+        'TU081': { label: 'TU081 ละคอน', placeholder: '35.00' },
+        'TU082': { label: 'TU082 AUDITION', placeholder: '35.00' },
+        'TU091': { label: 'TU091 วาดเส้นออกแบบ', placeholder: '50.00' },
+        'TU092': { label: 'TU092 หัตถอุตสาหกรรม', placeholder: '50.00' },
+        'TUGET': { label: 'TU-GET', placeholder: '120.00' },
+        'VNET_51': { label: 'VNET51 ปวช', placeholder: '100.00' },
+        'VNET_511': { label: 'VNET511 ภาษา', placeholder: '100.00' },
+        'VNET_512': { label: 'VNET512 การคิดแก้ปัญหา', placeholder: '100.00' },
+        'VNET_513': { label: 'VNET513 ทักษะสังคม', placeholder: '100.00' },
+        'VNET_514': { label: 'VNET514 ทักษะอาชีพ', placeholder: '100.00' },
+        'KMITL_TEP': { label: 'KMITL-TEP', placeholder: '120.00' }
+    };
 
     let timerInterval, timeLeft, isFocusing = true;
     let currentPlannerDate = dayjs(), selectedPlannerDate = dayjs().format('YYYY-MM-DD');
@@ -2919,6 +2981,101 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initializeTcasPage() {
+        // Generate TPAT inputs
+        const tpatContainer = document.querySelector('.tpat-grid');
+        tpatContainer.innerHTML = Object.entries(tpatSubjects).map(([key, label]) => `
+            <div class="score-input-item">
+                <label>${label}</label>
+                <input type="text" inputmode="decimal" name="${key}" placeholder="100.00">
+            </div>
+        `).join('');
+
+        // Generate A-Level inputs
+        const alevelContainer = document.querySelector('.alevel-grid');
+        alevelContainer.innerHTML = Object.entries(alevelSubjects).map(([fullName, shortName]) => `
+            <div class="score-input-item">
+                <label>${shortName}</label>
+                <input type="text" inputmode="decimal" name="${fullName.replace(/\s/g, '_')}" placeholder="100.00">
+            </div>
+        `).join('');
+
+
+        // Populate specific subjects dropdown
+        const specificSelect = document.getElementById('specific-subject-select');
+        // [จุดที่แก้ไข] เปลี่ยนจากการใช้ label ธรรมดา เป็น subjectData.label
+        specificSelect.innerHTML = '<option value="">-- เลือกวิชาเฉพาะ และ GPA --</option>' + 
+            Object.entries(specificSubjects).map(([key, subjectData]) => `<option value="${key}">${subjectData.label}</option>`).join('');
+        
+        // Load saved scores
+        loadSavedScores();
+    }
+
+    function addSpecificSubjectInput(subjectKey) {
+        if (!subjectKey || document.querySelector(`.specific-input-item[data-key="${subjectKey}"]`)) return;
+
+        const subjectData = specificSubjects[subjectKey];
+        if (!subjectData) return;
+
+        const container = document.getElementById('specific-subject-inputs');
+        
+        // [แก้ไข] เพิ่ม div.input-wrapper เข้ามา
+        const inputHTML = `
+            <div class="score-input-item specific-input-item" data-key="${subjectKey}">
+                <div class="input-wrapper">
+                    <label>${subjectData.label}</label>
+                    <input type="text" inputmode="decimal" name="${subjectKey}" placeholder="${subjectData.placeholder}">
+                </div>
+                <button type="button" class="remove-specific-subject-btn icon-button" title="ลบวิชานี้">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', inputHTML);
+        feather.replace();
+    }
+
+    function saveAllScores() {
+        const form = document.getElementById('tcas-score-form-container');
+        const inputs = form.querySelectorAll('input[type="number"]');
+        let scoresToSave = {};
+        inputs.forEach(input => {
+            if (input.value !== '') {
+                scoresToSave[input.name] = input.value;
+            }
+        });
+        state.profile.savedScores = scoresToSave;
+        saveState();
+        showToast("บันทึกคะแนนของคุณแล้ว!");
+    }
+
+    function loadSavedScores() {
+        const savedScores = state.profile.savedScores || {};
+        const form = document.getElementById('tcas-score-form-container');
+        const inputs = form.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            if (savedScores[input.name]) {
+                input.value = savedScores[input.name];
+            }
+        });
+    }
+
+    function clearAllTcasScores() {
+        Swal.fire({
+            title: 'ยืนยันการล้างข้อมูล', text: "คุณต้องการล้างคะแนนทั้งหมดที่กรอกไว้ใช่ไหม?",
+            icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
+            confirmButtonText: 'ใช่, ล้างข้อมูล', cancelButtonText: 'ยกเลิก'
+        }).then(result => {
+            if(result.isConfirmed) {
+                document.querySelectorAll('#tcas-score-form-container input[type="number"]').forEach(input => input.value = '');
+                document.getElementById('specific-subject-inputs').innerHTML = '';
+                state.profile.savedScores = {};
+                saveState();
+                showToast('ล้างข้อมูลคะแนนทั้งหมดแล้ว');
+            }
+        });
+    }
+
     // =========================================
     // ===== 7. EVENT LISTENERS & HANDLERS =====
     // =========================================
@@ -3438,6 +3595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ---- [นำโค้ดทั้งหมดนี้ไปวางทับฟังก์ชันเดิม] ----
     function setupAllEventListeners() {
         if (areListenersSetup) return;
 
@@ -3447,35 +3605,57 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.addEventListener('click', (e) => {
             const closest = (selector) => e.target.closest(selector);
 
-            // --- Group 1: Student Hub & GPA Calculator ---
+            // --- Group 1: Student Hub Navigation ---
             const gpaFeatureCard = closest('#gpa-feature-card');
-            
-            // 1.1. User Flow: Quick Calculation
-            if (closest('#gpa-feature-card')) {
+            const tcasFeatureCard = closest('#tcas-feature-card');
+
+            if (gpaFeatureCard) {
                 document.getElementById('student-hub-main-view').classList.add('hidden');
                 document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
                 
+                // ตั้งค่าหน้าเครื่องคิดเลขสำหรับ "การคำนวณด่วน"
                 const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
                 header.innerHTML = `<i data-feather="bar-chart-2"></i> คำนวณเกรดเฉลี่ย (GPA)`;
-                
-                // [จุดสำคัญ] สลับปุ่มให้เป็น "คำนวณ"
                 document.getElementById('gpa-calculate-btn').classList.remove('hidden');
                 document.getElementById('gpa-save-record-btn').classList.add('hidden');
-
-                renderGpaTable([]);
-                showGpaView('gpa-calculator-view');
+                
+                renderGpaTable([]); // สร้างตารางเปล่า
+                showGpaView('gpa-calculator-view'); // แสดงหน้าเครื่องคิดเลข
+                return;
+            } else if (tcasFeatureCard) {
+                document.getElementById('student-hub-main-view').classList.add('hidden');
+                document.getElementById('tcas-feature-wrapper').classList.remove('hidden');
+                initializeTcasPage();
+                Swal.fire({
+                    title: 'คำแนะนำการใช้งาน',
+                    html: `
+                        <div class="swal-info-text">
+                            <p>• กรอกคะแนนดิบที่ได้ ไม่ต้องกรอกคะแนน T-Score</p>
+                            <p>• หากมหาวิทยาลัยใช้ T-Score โปรแกรมจะแปลงให้เอง (ในอนาคต)</p>
+                            <p>• วิชาที่ไม่ได้สอบ ให้เว้นว่างไว้ ไม่ต้องกรอกคะแนน</p>
+                        </div>
+                    `,
+                    icon: 'info',
+                    confirmButtonText: 'รับทราบ',
+                    customClass: {
+                        confirmButton: 'swal-acknowledge-button'
+                    }
+                });
                 return;
             }
 
+            // --- Group 2: GPA & TCAS Feature Interactions ---
             const gpaGoToHistoryBtn = closest('#gpa-go-to-history-btn');
             if (gpaGoToHistoryBtn) {
                 renderGpaHistoryList();
                 showGpaView('gpa-history-view');
                 return;
             }
-            const gpaBackToHubBtn = closest('#gpa-back-to-hub-btn');
-            if (gpaBackToHubBtn) {
+            const backToHubBtn = closest('#gpa-back-to-hub-btn') || closest('#tcas-back-to-hub-btn');
+            if (backToHubBtn) {
+                if (closest('#tcas-back-to-hub-btn')) saveAllScores();
                 document.getElementById('gpa-feature-wrapper').classList.add('hidden');
+                document.getElementById('tcas-feature-wrapper').classList.add('hidden');
                 document.getElementById('student-hub-main-view').classList.remove('hidden');
                 return;
             }
@@ -3495,14 +3675,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 calculateAndDisplayGpa();
                 return;
             }
+            if (closest('#tcas-clear-btn')) {
+                clearAllTcasScores();
+                return;
+            }
+            if (closest('.remove-specific-subject-btn')) {
+                closest('.specific-input-item').remove();
+                return;
+            }
+            if (closest('#tcas-select-formula-btn')) {
+                saveAllScores();
+                showToast("บันทึกคะแนนแล้ว! ฟังก์ชันเลือกรูปแบบคำนวณจะมาในเร็วๆ นี้");
+                return;
+            }
 
             // --- Sub-Group: GPA Table Interactions ---
             const gradePopup = document.getElementById('grade-popup');
             const creditBtn = closest('.credit-stepper-btn');
             if (creditBtn) {
                 const action = creditBtn.dataset.action;
-
-                // ให้ค้นหาจาก .credit-stepper ที่เป็น parent ใหญ่สุด
                 const valueSpan = creditBtn.closest('.credit-stepper').querySelector('.credit-value');
                 let currentValue = parseFloat(valueSpan.textContent);
                 if (action === 'increase' && currentValue < 15) currentValue += 0.5;
@@ -3547,7 +3738,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentGpaRecord) {
                     const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
                     header.innerHTML = `<i data-feather="edit"></i> ${currentGpaRecord.level} - เทอม ${currentGpaRecord.term}`;
-                    // สลับปุ่มให้ถูกต้อง
                     document.getElementById('gpa-calculate-btn').classList.add('hidden');
                     document.getElementById('gpa-save-record-btn').classList.remove('hidden');
                     renderGpaTable(currentGpaRecord.courses);
@@ -3572,30 +3762,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 return;
             }
-
-            // --- Group: TCAS Calculator ---
-            const tcasFeatureCard = closest('#tcas-feature-card');
-            if (tcasFeatureCard) {
-                document.getElementById('student-hub-main-view').classList.add('hidden');
-                document.getElementById('tcas-feature-wrapper').classList.remove('hidden');
-                populateTcasDropdowns(1); // เริ่มต้นโหลดรายชื่อมหาวิทยาลัย
-                showTcasView('tcas-selection-view');
-                return;
-            }
-            const tcasBackToHub = closest('#tcas-back-to-hub-btn');
-            if (tcasBackToHub) {
-                document.getElementById('tcas-feature-wrapper').classList.add('hidden');
-                document.getElementById('student-hub-main-view').classList.remove('hidden');
-                return;
-            }
-            const tcasBackToSelection = closest('.tcas-back-to-selection-btn');
-            if (tcasBackToSelection) {
-                document.getElementById('tcas-result-container').innerHTML = ''; // ล้างผลลัพธ์เก่า
-                showTcasView('tcas-selection-view');
-                return;
-            }
             
-            // --- Group 2: Home Page Items (To-Do & Activities) ---
+            // --- Group 3: Home Page Items (To-Do & Activities) ---
             const deleteTodoBtn = closest('.delete-todo-btn');
             if (deleteTodoBtn) {
                 const todoId = parseInt(deleteTodoBtn.dataset.id);
@@ -3655,7 +3823,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- Group 3: Revisit & Quiz System ---
+            // --- Group 4: Revisit & Quiz System ---
             if (closest('#revisit-subject-display')) { openSubjectSelector(selectSubject); return; }
             const iconOption = closest('.icon-option');
             if (iconOption) {
@@ -3719,9 +3887,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const removeBtn = closest('.remove-btn');
             if (removeBtn) { removeBtn.parentElement.remove(); return; }
 
-            // --- Group 4: General UI & Modals ---
+            // --- Group 5: General UI & Modals ---
             const toggleBtn = closest('.password-toggle-btn');
             if (toggleBtn) {
+                const targetId = toggleBtn.dataset.target;
+                const oldInput = document.getElementById(targetId);
+                if (!oldInput) return;
+                const wrapper = oldInput.closest('.input-with-icon-wrapper');
+                if (!wrapper) return;
+                const newInput = document.createElement('input');
+                for (const attr of oldInput.attributes) {
+                    newInput.setAttribute(attr.name, attr.value);
+                }
+                newInput.type = (oldInput.type === 'password') ? 'text' : 'password';
+                newInput.value = oldInput.value;
+                wrapper.replaceChild(newInput, oldInput);
+                // Re-add listeners if you have a function like addPasswordInputListeners(targetId);
+                const icon = toggleBtn.querySelector('i');
+                if (icon) {
+                    icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
+                    feather.replace();
+                }
+                newInput.focus();
                 return;
             }
             const calendarNavBtn = closest('.calendar-nav-btn');
@@ -3766,7 +3953,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tabBtn = closest('.tab-btn');
             if (tabBtn) { showCommunityTab(tabBtn.dataset.tab); return; }
 
-            // --- Group 5: Fallback Switch for remaining IDs ---
+            // --- Group 6: Fallback Switch for remaining IDs ---
             const targetId = e.target.id || closest('[id]')?.id;
             switch(targetId) {
                 case 'streak-display': case 'check-in-btn': showStreakModal(); break;
@@ -3838,6 +4025,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ====== 2. CHANGE & SUBMIT LISTENERS ======
         // ===========================================
         document.body.addEventListener('change', (e) => {
+            // --- For Quiz Type Selection ---
             if (e.target.name === 'quiz-type') {
                 const mcContainer = document.getElementById('mc-options-container');
                 const typedContainer = document.getElementById('typed-answer-container');
@@ -3846,15 +4034,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 typedContainer.classList.toggle('hidden', isMc);
                 mcContainer.querySelectorAll('input').forEach(input => input.disabled = !isMc);
                 typedContainer.querySelectorAll('input').forEach(input => input.disabled = isMc);
-            }
-            const tcasUniversitySelect = e.target.closest('#tcas-university-select');
-            if (tcasUniversitySelect) {
-                populateTcasDropdowns(2, tcasUniversitySelect.value);
                 return;
             }
-            const tcasFacultySelect = e.target.closest('#tcas-faculty-select');
-            if (tcasFacultySelect) {
-                populateTcasDropdowns(3, tcasFacultySelect.value);
+            // --- For TCAS Specific Subject Selection ---
+            if (e.target.id === 'specific-subject-select') {
+                addSpecificSubjectInput(e.target.value);
+                e.target.value = ''; // Reset dropdown after selection
                 return;
             }
         });
@@ -3881,26 +4066,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentGpaRecord = { id: Date.now(), level, term, year, courses: [], gpa: 0 };
                     const header = document.querySelector('#gpa-calculator-view .gpa-view-header h2');
                     header.innerHTML = `<i data-feather="edit-3"></i> ${level} - เทอม ${term}`;
-                    // สลับปุ่มให้ถูกต้อง
                     document.getElementById('gpa-calculate-btn').classList.add('hidden');
                     document.getElementById('gpa-save-record-btn').classList.remove('hidden');
                     renderGpaTable([]);
                     showGpaView('gpa-calculator-view');
-                    break;
-                case 'tcas-selection-form':
-                    const major = document.getElementById('tcas-major-select').value;
-                    currentTcasSelection = tcasDatabase.find(item => item.major === major);
-                    if (currentTcasSelection) {
-                        document.getElementById('tcas-selection-summary').innerHTML = `
-                            <h3>${currentTcasSelection.faculty}</h3>
-                            <p>${currentTcasSelection.university} (${currentTcasSelection.round})</p>
-                        `;
-                        renderScoreInputs(currentTcasSelection);
-                        showTcasView('tcas-calculator-view');
-                    }
-                    break;
-                case 'tcas-score-input-form':
-                    calculateAndDisplayTcasScore();
                     break;
             }
         });
