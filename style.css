@@ -1855,3 +1855,42 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
 #specific-subject-inputs .score-input-item input {
     text-align: left; /* ทำให้ตัวเลขชิดซ้ายเป็นค่าเริ่มต้น */
 }
+/* ======================================================= */
+/* ====== [NEW] TCAS Major Selection Card Styles     ====== */
+/* ======================================================= */
+.major-list-container {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 คอลัมน์เป็นค่าเริ่มต้น */
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.major-card {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-left: 5px solid transparent; /* เตรียมพื้นที่สำหรับแถบสีด้านซ้าย */
+}
+
+.major-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-left-color: var(--primary-color); /* แสดงแถบสีเมื่อ hover */
+}
+
+.major-card h4 {
+    margin: 0 0 5px;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.major-card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+    line-height: 1.5;
+}

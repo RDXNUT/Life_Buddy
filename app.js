@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const defaultActivities = ["เขียนสิ่งที่ขอบคุณวันนี้ 3 อย่าง", "ยืดเส้น 3 นาที", "โทรหาเพื่อนคนหนึ่ง", "จดไอเดียเรื่องที่สนใจ", "จัดโต๊ะทำงาน"];
     const defaultAdvices = ["เหนื่อยได้ แต่อย่าลืมหายใจให้ลึก ๆ", "เก่งแล้วนะ ที่ยังอยู่ตรงนี้ได้", "ต้นไม้ไม่ได้โตในวันเดียว คนเราก็เช่นกัน", "ดื่มน้ำบ้างนะ วันนี้เธอทำดีแล้วล่ะ", "ใจล้า อย่าฝืน แต่ใจสู้ อย่าถอย"];
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
+    let tcasDatabase = [];
+    let selectedMajor = null;
 
     const initialState = {
         coins: 50,
@@ -88,6 +90,49 @@ document.addEventListener('DOMContentLoaded', () => {
         followRequests: [],
         sentFollowRequests: [],
         gpaHistory: [],
+    };
+
+        // ฐานข้อมูลคะแนนเต็มสำหรับ TCAS
+        const TCAS_SUBJECT_MAX_SCORES = {
+            'GPAX': 4.00,
+            'TGAT': 300.00,
+            'TGAT1': 100.00, 
+            'TGAT2': 100.00, 
+            'TGAT3': 100.00,
+            'TPAT1': 300.00,
+            'TPAT2': 100.00,
+            'TPAT3': 100.00, 
+            'TPAT4': 100.00, 
+            'TPAT5': 100.00,
+            'A-Level_คณิต1': 100.00, 
+            'A-Level_คณิต2': 100.00, 
+            'A-Level_วิทย์ทั่วไป': 100.00,
+            'A-Level_ฟิสิกส์': 100.00, 
+            'A-Level_เคมี': 100.00, 
+            'A-Level_ชีววิทยา': 100.00,
+            'A-Level_สังคมศึกษา': 100.00, 
+            'A-Level_ไทย': 100.00, 
+            'A-Level_อังกฤษ': 100.00,
+            'A-Level_ฝรั่งเศส': 100.00,
+            'A-Level_เยอรมัน': 100.00,
+            'A-Level_ญี่ปุ่น': 100.00,
+            'A-Level_เกาหลี': 100.00,
+            'A-Level_จีน': 100.00,
+            'A-Level_บาลี': 100.00,
+            'A-Level_สเปน': 100.00,
+        };
+
+    // สูตรคำนวณตัวอย่าง (ในอนาคตสามารถให้ผู้ใช้เลือกได้)
+    const sampleTcasFormulas = {
+        'sci_example': {
+            name: 'ตัวอย่าง: คณะวิทยาศาสตร์',
+            weights: {
+                'GPAX6_SCORE': 20,
+                'TGAT_TOTAL': 30, // ใช้คะแนน TGAT รวม (TGAT1+2+3)
+                'A-Level_คณิต1': 25,
+                'A-Level_ฟิสิกส์': 25,
+            }
+        }
     };
 
     const tpatSubjects = {
@@ -189,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
     friendListeners = [];
     let lastSearchResults = [];
     let currentGpaRecord = null;
-    let tcasDatabase = [];
     let currentTcasSelection = {};
     let currentSubjectSelectionCallback = null;
     const allPages = document.querySelectorAll('.page');
@@ -300,6 +344,436 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const criteria = {
+        // กลุ่ม กสพท
+        gpat: {
+            "TPAT1": 30, "A-Level_ฟิสิกส์": 9, "A-Level_เคมี": 9.5, "A-Level_ชีววิทยา": 9.5,
+            "A-Level_คณิต1": 14, "A-Level_อังกฤษ": 14, "A-Level_ไทย": 7, "A-Level_สังคมศึกษา": 7
+        },
+        // กลุ่มวิทยาศาสตร์สุขภาพ
+        healthSciences: { "TGAT": 40, "A-Level_ฟิสิกส์": 10, "A-Level_เคมี": 10, "A-Level_ชีววิทยา": 10, "A-Level_คณิต1": 10, "A-Level_อังกฤษ": 10, "A-Level_ไทย": 5, "A-Level_สังคมศึกษา": 5 },
+        // กลุ่มวิทยาศาสตร์
+        science: { "TGAT": 20, "TPAT3": 40, "A-Level_ฟิสิกส์": 13.33, "A-Level_เคมี": 13.33, "A-Level_ชีววิทยา": 13.34 },
+        // กลุ่มวิศวกรรมศาสตร์
+        engineering: { "TGAT": 20, "TPAT3": 40, "A-Level_คณิต1": 40 },
+        // กลุ่มศิลปศาสตร์ (ยื่นคณิต)
+        artsWithMath: { "TGAT": 60, "A-Level_คณิต2": 20, "A-Level_ไทย": 10, "A-Level_สังคมศึกษา": 10 },
+        // กลุ่มรัฐศาสตร์/นิติศาสตร์ (ยื่นคณิต)
+        poliSciLawWithMath: { "TGAT": 40, "A-Level_คณิต2": 20, "A-Level_ไทย": 20, "A-Level_สังคมศึกษา": 20 },
+        // กลุ่มบัญชี/เศรษฐศาสตร์
+        business: { "TGAT": 50, "A-Level_คณิต1": 50 },
+        businessForm2: { "TGAT": 50, "A-Level_คณิต2": 50 },
+        economics: { "TGAT": 40, "A-Level_คณิต1": 40, "A-Level_ไทย": 10, "A-Level_สังคมศึกษา": 10 },
+        // กลุ่มครุศาสตร์
+        education: { "TGAT": 20, "TPAT5": 40, "A-Level_ไทย": 20, "A-Level_สังคมศึกษา": 20 },
+        // กลุ่มศิลปกรรมศาสตร์
+        fineArts: { "TGAT": 50, "TPAT2": 50 },
+        // กลุ่มสถาปัตยกรรมศาสตร์
+        architecture: { "TGAT": 40, "TPAT4": 60 },
+        // กลุ่มจิตวิทยา
+        psychologyWithMath: { "TGAT": 50, "A-Level_คณิต1": 50 },
+        psychologyWithSci: { "TGAT": 50, "TPAT3": 50 },
+        // สำหรับ ม.กรุงเทพ (เอกชนมักจะเน้น TGAT)
+        marketingBU: { "TGAT": 100 },
+        // สำหรับ ม.การกีฬาแห่งชาติ (จะใช้เกณฑ์เฉพาะของตัวเอง)
+        educationTNSU: { "TGAT": 40, "TPAT5": 60 },      // ศึกษาศาสตร์
+        scienceTNSU: { "TGAT": 50, "TPAT3": 50 },        // วิทยาศาสตร์ (การกีฬา)
+        artsTNSU: { "TGAT": 100 },                       // ศิลปศาสตร์
+        businessTNSU: { "TGAT": 80, "A-Level_คณิต2": 20 }, // บริหารธุรกิจ
+        airTraffic: {
+            "TGAT": 30, "TPAT3": 30, "A-Level_ฟิสิกส์": 20, "A-Level_คณิต1": 20      
+        },
+        businessGeneral: {
+            "TGAT": 80, "A-Level_คณิต1": 20
+        },
+        communicationArts: {
+            "TGAT": 50, "A-Level_ไทย": 20, "A-Level_สังคมศึกษา": 10, "A-Level_อังกฤษ": 20
+        },
+        agriEconomics: {
+            "TGAT": 40,                 // ความถนัดทั่วไป 40%
+            "A-Level_คณิต1": 30,         // คณิตศาสตร์ประยุกต์ 30%
+            "A-Level_เคมี": 15,          // เคมี 15%
+            "A-Level_ชีววิทยา": 15      // ชีววิทยา 15%
+        },
+        psychologyClinical: {
+            "TGAT": 30,                 // ความถนัดทั่วไป 30%
+            "A-Level_คณิต1": 30,         // คณิตศาสตร์ประยุกต์ (สำคัญมาก) 30%
+            "A-Level_อังกฤษ": 20,          // ภาษาอังกฤษ 20%
+            "A-Level_ชีววิทยา": 20      // ชีววิทยา (สำหรับสายคลินิก) 20%
+        },
+        multimediaTech: {
+            "TGAT": 50,                 // ความถนัดทั่วไป 50%
+            "A-Level_คณิต1": 25,         // คณิตศาสตร์ประยุกต์ 25%
+            "A-Level_ฟิสิกส์": 25         // ฟิสิกส์ (สำหรับความเข้าใจเรื่องแสง สี เสียง) 25%
+        },
+        tourismAndHospitality: {
+            "TGAT": 80, "A-Level_อังกฤษ": 20
+        },
+        socialInnovationIntl: {
+            "TGAT": 50, "A-Level_อังกฤษ": 30, "A-Level_สังคมศึกษา": 20
+        },
+        logisticsManagement: {
+            "TGAT": 70,                 // ความถนัดทั่วไป 70%
+            "A-Level_คณิต2": 30         // คณิตศาสตร์พื้นฐาน 30%
+        }
+
+    };
+
+    const createLangCriteria = (langKey) => ({
+        "TGAT": 50, [langKey]: 30, "A-Level_ไทย": 10, "A-Level_สังคมศึกษา": 10
+    });
+
+    const sampleCriteriaSci = { "GPAX": 20, "TGAT": 30, "TPAT3": 50 };
+    const sampleCriteriaArt = { "GPAX": 30, "TGAT": 50, "A_SOC": 20 };   
+
+    const medCriteria = {
+        "TPAT1": 30,
+        "A-Level_ฟิสิกส์": 9,
+        "A-Level_เคมี": 9.5,
+        "A-Level_ชีววิทยา": 9.5,
+        "A-Level_คณิต1": 14,
+        "A-Level_อังกฤษ": 14,
+        "A-Level_ไทย": 7,
+        "A-Level_สังคมศึกษา": 7
+    };
+        // ฟังก์ชันสำหรับสร้างฐานข้อมูลจำลองจากข้อมูล TCAS'67 ทั้งหมด
+        // [ULTIMATE & FINAL VERSION] ฟังก์ชันสำหรับสร้างฐานข้อมูลจำลองจากข้อมูล TCAS'67 ทั้งหมด
+    function createMockTcasDatabase() {
+
+        tcasDatabase = [
+        // ข้อมูลกลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะทันตแพทยศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย", major: "ทันตแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 62.5599, max_score: 75.5063 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะแพทยศาสตร์ชัยภัทรพระนางเจ้าจอมกระบัง", major: "แพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 63.3862, max_score: 75.3419 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะแพทยศาสตร์โรงพยาบาลรามาธิบดี", major: "แพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 62.2408, max_score: 65.8402 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะแพทยศาสตร์ศิริราชพยาบาล", major: "แพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 63.4531, max_score: 74.0000 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะเภสัชศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย", major: "เภสัชศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 51.5208, max_score: 57.8226 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "คณะสัตวแพทยศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย", major: "สัตวแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 52.0696, max_score: 65.1520 } },
+        { university: "กลุ่มสถาบันแพทยศาสตร์แห่งประเทศไทย", faculty: "วิทยาลัยแพทยศาสตร์พระมงกุฎเกล้า (เพศชาย)", major: "แพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 55.7572, max_score: 62.6818 } },
+        // ข้อมูลจุฬาลงกรณ์มหาวิทยาลัย
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "บัญชีบัณฑิต (เลือกสอบคณิตศาสตร์ประยุกต์ 1)", admission_criteria: criteria.business, last_year_stat: { min_score: 74.3552, max_score: 95.3332 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "บัญชีบัณฑิต (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: criteria.businessForm2, last_year_stat: { min_score: 70.4664, max_score: 88.0332 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "บริหารธุรกิจบัณฑิต (เลือกสอบคณิตศาสตร์ประยุกต์ 1)", admission_criteria: criteria.business, last_year_stat: { min_score: 70.0000, max_score: 91.5332 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "บริหารธุรกิจบัณฑิต (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria:criteria.businessForm2, last_year_stat: { min_score: 61.3108, max_score: 78.6776 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "สถิติศาสตรบัณฑิต (การประกันภัย)", admission_criteria: criteria.business, last_year_stat: { min_score: 56.1888, max_score: 80.0220 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "สถิติศาสตรบัณฑิต (สถิติและวิทยาการข้อมูล)", admission_criteria: criteria.business, last_year_stat: { min_score: 59.1444, max_score: 84.9888 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะพาณิชยศาสตร์และการบัญชี", major: "สถิติศาสตรบัณฑิต (เทคโนโลยีสารสนเทศเพื่อธุรกิจ)", admission_criteria: criteria.business, last_year_stat: { min_score: 54.2664, max_score: 66.8108 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: createLangCriteria('A-Level_A-Level_คณิต2'), last_year_stat: { min_score: 62.8444, max_score: 70.2083 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาจีน)", admission_criteria: createLangCriteria('A-Level_จีน'), last_year_stat: { min_score: 63.2861, max_score: 66.3583 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาญี่ปุ่น)", admission_criteria: createLangCriteria('A-Level_ญี่ปุ่น'), last_year_stat: { min_score: 63.0222, max_score: 83.4027 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาฝรั่งเศส)", admission_criteria: createLangCriteria('A-Level_ฝรั่งเศส'), last_year_stat: { min_score: 63.3861, max_score: 67.2444 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาสเปน)", admission_criteria: createLangCriteria('A-Level_สเปน'), last_year_stat: { min_score: 63.5500, max_score: 68.5250 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาเยอรมัน)", admission_criteria: createLangCriteria('A-Level_เยอรมัน'), last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "การปกครอง (เลือกสอบภาษาเกาหลี)", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 64.8277, max_score: 70.1833 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: createLangCriteria('A-Level_คณิต2'), last_year_stat: { min_score: 76.8666, max_score: 83.3750 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาจีน)", admission_criteria: createLangCriteria('A-Level_จีน'), last_year_stat: { min_score: 82.0638, max_score: 82.0638 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาญี่ปุ่น)", admission_criteria: createLangCriteria('A-Level_ญี่ปุ่น'), last_year_stat: { min_score: 78.9888, max_score: 85.5416 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาไทย)", admission_criteria: createLangCriteria('A-Level_ไทย'), last_year_stat: { min_score: 73.1082, max_score: 80.9916 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาฝรั่งเศส)", admission_criteria: createLangCriteria('A-Level_ฝรั่งเศส'), last_year_stat: { min_score: 75.3776, max_score: 86.7416 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาสเปน)", admission_criteria: createLangCriteria('A-Level_สเปน'), last_year_stat: { min_score: 73.4250, max_score: 78.4776 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาเยอรมัน)", admission_criteria: createLangCriteria('A-Level_เยอรมมัน'), last_year_stat: { min_score: 77.8082, max_score: 85.6500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "ความสัมพันธ์ระหว่างประเทศ (เลือกสอบภาษาเกาหลี)", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 75.6250, max_score: 75.6250 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: createLangCriteria('A-Level_คณิต2'), last_year_stat: { min_score: 63.0776, max_score: 67.6526 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาจีน)", admission_criteria: createLangCriteria('A-Level_จีน'), last_year_stat: { min_score: 63.3276, max_score: 66.9776 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาญี่ปุ่น)", admission_criteria: createLangCriteria('A-Level_ญี่ปุ่น'), last_year_stat: { min_score: 63.0082, max_score: 70.0944 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาฝรั่งเศส)", admission_criteria: createLangCriteria('A-Level_ฝรั่งเศส'), last_year_stat: { min_score: 63.0110, max_score: 65.3582 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาสเปน)", admission_criteria: createLangCriteria('A-Level_สเปน'), last_year_stat: { min_score: 63.3082, max_score: 66.9722 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาเยอรมัน)", admission_criteria: createLangCriteria('A-Level_เยอรมัน'), last_year_stat: { min_score: 67.3110, max_score: 71.2472 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "รัฐประศาสนศาสตร์ (เลือกสอบภาษาเกาหลี)", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 63.9944, max_score: 65.4722 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: createLangCriteria('A-Level_คณิต2'), last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาจีน)", admission_criteria: createLangCriteria('A-Level_จีน'), last_year_stat: { min_score: 70.0000, max_score: 70.0000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาญี่ปุ่น)", admission_criteria: createLangCriteria('A-Level_ญี่ปุ่น'), last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาไทย)", admission_criteria: createLangCriteria('A-Level_ไทย'), last_year_stat: { min_score: 69.4513, max_score: 75.9443 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาฝรั่งเศส)", admission_criteria: createLangCriteria('A-Level_ฝรั่งเศส'), last_year_stat: { min_score: 70.0625, max_score: 72.4375 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาสเปน)", admission_criteria: createLangCriteria('A-Level_สเปน'), last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาเยอรมัน)", admission_criteria: createLangCriteria('A-Level_เยอรมัน'), last_year_stat: { min_score: 73.5415, max_score: 73.5415 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะรัฐศาสตร์", major: "สังคมวิทยาและมานุษยวิทยา (เลือกสอบภาษาเกาหลี)", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 70.7778, max_score: 74.0208 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "คณิตศาสตร์", admission_criteria: criteria.science, last_year_stat: { min_score: 57.4496, max_score: 71.9332 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "จุลชีววิทยา", admission_criteria: criteria.science, last_year_stat: { min_score: 53.0604, max_score: 69.5882 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "ชีวเคมี", admission_criteria: criteria.science, last_year_stat: { min_score: 51.6440, max_score: 62.9216 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "ชีววิทยา", admission_criteria: criteria.science, last_year_stat: { min_score: 52.4604, max_score: 65.2160 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "ธรณีวิทยา", admission_criteria: criteria.science, last_year_stat: { min_score: 53.0882, max_score: 62.4444 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "เทคโนโลยีทางภาพและการพิมพ์", admission_criteria: criteria.science, last_year_stat: { min_score: 48.5440, max_score: 62.4722 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "เทคโนโลยีทางอาหาร", admission_criteria: criteria.science, last_year_stat: { min_score: 54.5444, max_score: 71.9276 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "พันธุศาสตร์", admission_criteria: criteria.science, last_year_stat: { min_score: 47.2110, max_score: 61.8552 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "พฤกษศาสตร์", admission_criteria: criteria.science, last_year_stat: { min_score: 45.2550, max_score: 55.0722 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "ฟิสิกส์", admission_criteria: criteria.science, last_year_stat: { min_score: 52.6222, max_score: 72.3660 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "วัสดุศาสตร์และเทคโนโลยี", admission_criteria: criteria.science, last_year_stat: { min_score: 48.5054, max_score: 61.9940 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "วิทยาการคอมพิวเตอร์", admission_criteria: criteria.science, last_year_stat: { min_score: 66.8944, max_score: 74.6832 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "วิทยาศาสตร์ทางทะเล", admission_criteria: criteria.science, last_year_stat: { min_score: 52.6774, max_score: 66.8050 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "วิทยาศาสตร์สิ่งแวดล้อม", admission_criteria: criteria.science, last_year_stat: { min_score: 49.2552, max_score: 61.6774 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "สัตววิทยา", admission_criteria: criteria.science, last_year_stat: { min_score: 50.4438, max_score: 62.1500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "เคมี", admission_criteria: criteria.science, last_year_stat: { min_score: 51.9496, max_score: 63.0276 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิทยาศาสตร์", major: "เคมีวิศวกรรม", admission_criteria: criteria.science, last_year_stat: { min_score: 54.9382, max_score: 65.1496 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 72.2942, max_score: 90.4218 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์และเทคโนโลยีดิจิทัล", admission_criteria: criteria.engineering, last_year_stat: { min_score: 58.0222, max_score: 78.8053 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมทรัพยากรธรณี", admission_criteria: criteria.engineering, last_year_stat: { min_score: 51.4831, max_score: 53.3720 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมนิวเคลียร์และรังสี", admission_criteria: criteria.engineering, last_year_stat: { min_score: 49.1275, max_score: 53.4721 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมโยธา", admission_criteria: criteria.engineering, last_year_stat: { min_score: 58.5664, max_score: 64.3274 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมโลหการและวัสดุ", admission_criteria: criteria.engineering, last_year_stat: { min_score: 51.1498, max_score: 53.6222 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมศาสตร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 53.6832, max_score: 83.5332 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมสํารวจ", admission_criteria: criteria.engineering, last_year_stat: { min_score: 50.9554, max_score: 57.0996 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมสิ่งแวดล้อม", admission_criteria: criteria.engineering, last_year_stat: { min_score: 51.4386, max_score: 69.6887 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมอุตสาหการ", admission_criteria: criteria.engineering, last_year_stat: { min_score: 68.6332, max_score: 78.5108 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "การออกแบบอุตสาหกรรม", admission_criteria: criteria.architecture, last_year_stat: { min_score: 53.1000, max_score: 69.5000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "ภูมิสถาปัตยกรรม", admission_criteria: criteria.architecture, last_year_stat: { min_score: 51.8500, max_score: 58.4500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "สถาปัตยกรรม", admission_criteria: criteria.architecture, last_year_stat: { min_score: 61.2000, max_score: 80.2500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "สถาปัตยกรรมผังเมือง", admission_criteria: criteria.architecture, last_year_stat: { min_score: 49.5500, max_score: 56.7500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "สถาปัตยกรรมภายใน", admission_criteria: criteria.architecture, last_year_stat: { min_score: 58.6000, max_score: 71.2000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "ภูมิศาสตร์และภูมิสารสนเทศ", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 62.4375, max_score: 67.1875 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "สารสนเทศศึกษา", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 65.5000, max_score: 71.7500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบคณิตศาสตร์ประยุกต์ 2)", admission_criteria: createLangCriteria('A-Level_คณิต2'), last_year_stat: { min_score: 68.9375, max_score: 80.2500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาจีน)", admission_criteria: createLangCriteria('A-Level_จีน'), last_year_stat: { min_score: 70.8750, max_score: 81.7500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาญี่ปุ่น)", admission_criteria: createLangCriteria('A-Level_ญี่ปุ่น'), last_year_stat: { min_score: 70.8750, max_score: 85.2500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาบาลี)", admission_criteria: createLangCriteria('A-Level_บาลี'), last_year_stat: { min_score: 71.8750, max_score: 74.2500 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาฝรั่งเศส)", admission_criteria: createLangCriteria('A-Level_ฝรั่งเศส'), last_year_stat: { min_score: 70.8750, max_score: 82.5000 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาสเปน)", admission_criteria: createLangCriteria('A-Level_สเปน'), last_year_stat: { min_score: 71.7500, max_score: 80.6875 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาเยอรมัน)", admission_criteria: createLangCriteria('A-Level_เยอรมัน'), last_year_stat: { min_score: 72.0000, max_score: 78.6250 } },
+        { university: "จุฬาลงกรณ์มหาวิทยาลัย", faculty: "คณะอักษรศาสตร์", major: "อักษรศาสตร์ (เลือกสอบภาษาเกาหลี)", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 71.2500, max_score: 79.8750 } },
+        // ข้อมูลมหาวิทยาลัยกรุงเทพ
+        { university: "มหาวิทยาลัยกรุงเทพ", faculty: "คณะบริหารธุรกิจ", major: "การตลาด", admission_criteria: criteria.marketingBU, last_year_stat: { min_score: 25.0000, max_score: 81.5000 } },
+        // ข้อมูลมหาวิทยาลัยการกีฬาแห่งชาติ
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตกระบี่", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.educationTNSU, last_year_stat: { min_score: 55.7500, max_score: 55.7500 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตกรุงเทพ", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.scienceTNSU, last_year_stat: { min_score: 51.5832, max_score: 51.5832 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตชัยภูมิ", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsTNSU, last_year_stat: { min_score: 42.5000, max_score: 42.5000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตเชียงใหม่", major: "บริหารธุรกิจบัณฑิต", admission_criteria: criteria.businessTNSU, last_year_stat: { min_score: 51.2500, max_score: 51.2500 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตตรัง", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.educationTNSU, last_year_stat: { min_score: 49.5000, max_score: 49.5000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตยะลา", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.educationTNSU, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตลำปาง", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsTNSU, last_year_stat: { min_score: 40.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตศรีสะเกษ", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.educationTNSU, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตสุโขทัย", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsTNSU, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตสุพรรณบุรี", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsTNSU, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยการกีฬาแห่งชาติ", faculty: "วิทยาเขตอุดรธานี", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.educationTNSU, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเกษตรศาสตร์
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะประมง", major: "ประมง", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 26.5249, max_score: 52.9998 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวนศาสตร์", major: "วนศาสตร์", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 49.4580, max_score: 67.9855 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวิทยาศาสตร์", major: "คณิตศาสตร์", admission_criteria: criteria.science, last_year_stat: { min_score: 48.0914, max_score: 60.5415 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวิทยาศาสตร์", major: "เคมี", admission_criteria: criteria.science, last_year_stat: { min_score: 48.0662, max_score: 57.7662 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวิทยาศาสตร์", major: "เคมีอุตสาหกรรม", admission_criteria: criteria.science, last_year_stat: { min_score: 46.5331, max_score: 56.0414 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 57.3275, max_score: 68.6773 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมเคมี", admission_criteria: criteria.engineering, last_year_stat: { min_score: 44.3332, max_score: 50.4998 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะศึกษาศาสตร์", major: "การสอนภาษาอังกฤษ", admission_criteria: criteria.education, last_year_stat: { min_score: 79.5970, max_score: 82.6944 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะศึกษาศาสตร์", major: "พาณิชยศาสตรศึกษา (ใช้คะแนน V-NET)", admission_criteria: criteria.education, last_year_stat: { min_score: 58.2400, max_score: 73.2500 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะสังคมศาสตร์", major: "นิติศาสตรบัณฑิต (ภาคปกติ)", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 53.9541, max_score: 64.0750 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะสถาปัตยกรรมศาสตร์", major: "สถาปัตยกรรม", admission_criteria: criteria.architecture, last_year_stat: { min_score: 49.5000, max_score: 57.2500 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะเกษตร", major: "การจัดการศัตรูพืชและสัตว์", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 36.1000, max_score: 53.1664 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะเกษตร", major: "เทคโนโลยีระบบเกษตร", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 41.8776, max_score: 57.2442 } },
+        { university: "มหาวิทยาลัยเกษตรศาสตร์", faculty: "คณะเกษตร", major: "อาหาร โภชนาการ และการกำหนดอาหาร", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 54.2772, max_score: 64.6216 } },
+        { university: "มหาวิทยาลัยศิลปากร", faculty: "คณะดุริยางคศาสตร์", major: "ดุริยางคศาสตรบัณฑิต", admission_criteria: criteria.fineArts, last_year_stat: { min_score: 60.00, max_score: 75.00 } },
+        // ข้อมูลมหาวิทยาลัยขอนแก่น
+        { university: "มหาวิทยาลัยขอนแก่น", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 41.9750, max_score: 52.5125 } },
+        { university: "มหาวิทยาลัยขอนแก่น", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 45.0666, max_score: 59.2832 } },
+        { university: "มหาวิทยาลัยขอนแก่น", faculty: "คณะศึกษาศาสตร์", major: "การสอนภาษาไทย", admission_criteria: criteria.education, last_year_stat: { min_score: 65.8125, max_score: 71.9000 } },
+        { university: "มหาวิทยาลัยขอนแก่น", faculty: "คณะเกษตรศาสตร์", major: "เกษตรนวัตกรรม", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 30.0319, max_score: 35.4713 } },
+        { university: "มหาวิทยาลัยขอนแก่น", faculty: "คณะเกษตรศาสตร์", major: "เศรษฐศาสตร์เกษตร", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 30.3621, max_score: 33.4266 } },
+        // ข้อมูลมหาวิทยาลัยเชียงใหม่
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 57.3775, max_score: 59.5491 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะมนุษยศาสตร์", major: "จิตวิทยา (แขนงจิตวิทยาคลินิก)", admission_criteria: criteria.psychologyClinical, last_year_stat: { min_score: 59.9439, max_score: 59.9439 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะบริหารธุรกิจ", major: "การบัญชีและบริหารธุรกิจ (นานาชาติ)", admission_criteria: criteria.business, last_year_stat: { min_score: 55.4820, max_score: 57.4413 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะวิจิตรศิลป์", major: "การถ่ายภาพสร้างสรรค์", admission_criteria: criteria.fineArts, last_year_stat: { min_score: 54.5221, max_score: 55.4367 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะวิทยาศาสตร์", major: "เคมีอุตสาหกรรม", admission_criteria: criteria.science, last_year_stat: { min_score: 51.7130, max_score: 57.7597 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะเกษตรศาสตร์", major: "เศรษฐศาสตร์เกษตร", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 51.9618, max_score: 57.5134 } },
+        { university: "มหาวิทยาลัยเชียงใหม่", faculty: "คณะเทคนิคการแพทย์", major: "เทคนิคการแพทย์", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 57.9653, max_score: 62.6907 } },
+        // ข้อมูลมหาวิทยาลัยทักษิณ
+        { university: "มหาวิทยาลัยทักษิณ", faculty: "คณะนิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 40.2375, max_score: 54.5000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี
+        { university: "มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าธนบุรี", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 57.1448, max_score: 57.1448 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ
+        { university: "มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 69.1998, max_score: 73.7328 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีมหานคร
+        { university: "มหาวิทยาลัยเทคโนโลยีมหานคร", faculty: "คณะวิศวกรรมศาสตร์และเทคโนโลยี", major: "วิศวกรรมไฟฟ้า", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีมหานคร", faculty: "คณะสัตวแพทยศาสตร์", major: "สัตวแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 41.5000, max_score: 49.5000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีราชมงคลตะวันออก
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลตะวันออก", faculty: "วิทยาเขตจักรพงษภูวนารถ", major: "บริหารธุรกิจบัณฑิต", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 83.7500, max_score: 83.7500 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีราชมงคลพระนคร
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลพระนคร", faculty: "คณะเทคโนโลยีสื่อสารมวลชน", major: "เทคโนโลยีมัลติมีเดีย", admission_criteria: criteria.multimediaTech, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีราชมงคลรัตนโกสินทร์
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลรัตนโกสินทร์", faculty: "วิทยาลัยเพาะช่าง", major: "ศิลปบัณฑิต", admission_criteria: criteria.fineArts, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีราชมงคลศรีวิชัย
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลศรีวิชัย", faculty: "คณะบริหารธุรกิจ", major: "การจัดการ", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน", faculty: "คณะบริหารธุรกิจ", major: "การจัดการ", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน", faculty: "คณะวิทยาศาสตร์และศิลปศาสตร์", major: "ชีววิทยาประยุกต์", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน", faculty: "คณะวิทยาศาสตร์และศิลปศาสตร์", major: "ฟิสิกส์", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน", faculty: "คณะวิทยาศาสตร์และศิลปศาสตร์", major: "สถิติประยุกต์", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน", faculty: "คณะวิทยาศาสตร์และศิลปศาสตร์", major: "เคมี", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเทคโนโลยีสุรนารี
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาทันตแพทยศาสตร์", major: "ทันตแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 58.5000, max_score: 65.5000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาเทคโนโลยีการเกษตร", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 20.5000, max_score: 30.5000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาแพทยศาสตร์", major: "แพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 61.5000, max_score: 68.5000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 48.0000, max_score: 61.2500 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาวิศวกรรมศาสตร์", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 30.5000, max_score: 40.5000 } },
+        { university: "มหาวิทยาลัยเทคโนโลยีสุรนารี", faculty: "สำนักวิชาสาธารณสุขศาสตร์", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 40.5000, max_score: 47.5000 } },
+        // ข้อมูลมหาวิทยาลัยธรรมศาสตร์
+        { university: "มหาวิทยาลัยธรรมศาสตร์", faculty: "คณะนิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 75.3889, max_score: 93.3611 } },
+        // ข้อมูลมหาวิทยาลัยธุรกิจบัณฑิตย์
+        { university: "มหาวิทยาลัยธุรกิจบัณฑิตย์", faculty: "คณะนิเทศศาสตร์", major: "ภาพยนตร์และสื่อดิจิทัล", admission_criteria: criteria.communicationArts, last_year_stat: { min_score: 28.0000, max_score: 92.5000 } },
+        // ข้อมูลมหาวิทยาลัยบูรพา
+        { university: "มหาวิทยาลัยบูรพา", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 50.5000, max_score: 58.0000 } },
+        { university: "มหาวิทยาลัยบูรพา", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต (นานาชาติ)", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 43.5000, max_score: 57.5000 } },
+        { university: "มหาวิทยาลัยบูรพา", faculty: "คณะมนุษยศาสตร์และสังคมศาสตร์", major: "ภาษาเกาหลี", admission_criteria: createLangCriteria('A-Level_เกาหลี'), last_year_stat: { min_score: 71.2500, max_score: 79.9358 } },
+        // ข้อมูลมหาวิทยาลัยพะเยา
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะนิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 31.5000, max_score: 48.0000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะบริหารธุรกิจและนิเทศศาสตร์", major: "การบัญชีบัณฑิต", admission_criteria: criteria.business, last_year_stat: { min_score: 30.8332, max_score: 52.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 45.0000, max_score: 52.0000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะเภสัชศาสตร์", major: "การบริบาลทางเภสัชกรรม", admission_criteria: criteria.gpat, last_year_stat: { min_score: 48.2500, max_score: 54.1665 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะรัฐศาสตร์และสังคมศาสตร์", major: "รัฐศาสตรบัณฑิต", admission_criteria: createLangCriteria, last_year_stat: { min_score: 29.5000, max_score: 46.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะวิทยาศาสตร์", major: "เคมี", admission_criteria: criteria.science, last_year_stat: { min_score: 27.5000, max_score: 35.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะวิทยาศาสตร์การแพทย์", major: "กายภาพบำบัด", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 43.1250, max_score: 48.0000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมโยธา", admission_criteria: criteria.engineering, last_year_stat: { min_score: 26.5000, max_score: 42.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะศิลปกรรมศาสตร์", major: "ศิลปะการแสดง (แขนงนาฏศิลป์ไทย)", admission_criteria: criteria.fineArts, last_year_stat: { min_score: 55.2500, max_score: 62.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะสหเวชศาสตร์", major: "เทคนิคการแพทย์", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 47.5000, max_score: 52.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะสถาปัตยกรรมศาสตร์และศิลปกรรมศาสตร์", major: "สถาปัตยกรรม", admission_criteria: criteria.architecture, last_year_stat: { min_score: 29.5000, max_score: 45.5000 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะเกษตรศาสตร์และทรัพยากรธรรมชาติ", major: "วิทยาศาสตร์และเทคโนโลยีการอาหาร", admission_criteria: criteria.science, last_year_stat: { min_score: 28.6000, max_score: 48.7500 } },
+        { university: "มหาวิทยาลัยพะเยา", faculty: "คณะเทคโนโลยีสารสนเทศและการสื่อสาร", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 30.5000, max_score: 43.1250 } },
+        // ข้อมูลมหาวิทยาลัยพายัพ
+        { university: "มหาวิทยาลัยพายัพ", faculty: "คณะบริหารธุรกิจ", major: "การจัดการโรงแรมและการท่องเที่ยว", admission_criteria: criteria.tourismAndHospitality, last_year_stat: { min_score: 0.0000, max_score: 86.5000 } },
+        // ข้อมูลมหาวิทยาลัยมหาสารคาม
+        { university: "มหาวิทยาลัยมหาสารคาม", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 49.5000, max_score: 56.5000 } },
+        { university: "มหาวิทยาลัยมหาสารคาม", faculty: "คณะศึกษาศาสตร์", major: "การประถมศึกษา", admission_criteria: criteria.education, last_year_stat: { min_score: 64.0000, max_score: 71.0000 } },
+        // ข้อมูลมหาวิทยาลัยมหิดล
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะกายภาพบำบัด", major: "กายภาพบำบัด", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะทันตแพทยศาสตร์", major: "ทันตแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 61.5000, max_score: 68.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะเทคนิคการแพทย์", major: "เทคนิคการแพทย์", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 52.0000, max_score: 62.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะเทคโนโลยีสารสนเทศและการสื่อสาร", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะแพทยศาสตร์โรงพยาบาลรามาธิบดี", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 51.0832, max_score: 57.0832 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะแพทยศาสตร์ศิริราชพยาบาล", major: "การแพทย์แผนไทยประยุกต์บัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 57.8008, max_score: 66.4013 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะเภสัชศาสตร์", major: "เภสัชศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 53.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะวิทยาศาสตร์", major: "วิทยาศาสตร์", admission_criteria: criteria.science, last_year_stat: { min_score: 35.0000, max_score: 45.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะสัตวแพทยศาสตร์", major: "สัตวแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะสังคมศาสตร์และมนุษยศาสตร์", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 45.0000, max_score: 55.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะสาธารณสุขศาสตร์", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 45.0000, max_score: 55.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "คณะสิ่งแวดล้อมและทรัพยากรศาสตร์", major: "วิทยาศาสตร์และเทคโนโลยีสิ่งแวดล้อม", admission_criteria: criteria.science, last_year_stat: { min_score: 35.0000, max_score: 45.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "วิทยาเขตกาญจนบุรี", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "วิทยาเขตนครสวรรค์", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 35.0000, max_score: 45.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "วิทยาเขตอำนาจเจริญ", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 35.0000, max_score: 45.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "วิทยาลัยนานาชาติ", major: "บริหารธุรกิจบัณฑิต",admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 45.0000, max_score: 55.0000 } },
+        { university: "มหาวิทยาลัยมหิดล", faculty: "วิทยาลัยราชสุดา", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        // ข้อมูลมหาวิทยาลัยแม่โจ้
+        { university: "มหาวิทยาลัยแม่โจ้", faculty: "คณะบริหารธุรกิจ", major: "การบัญชี", admission_criteria: criteria.business, last_year_stat: { min_score: 65.1110, max_score: 80.0415 } },
+        // ข้อมูลมหาวิทยาลัยแม่โจ้-ชุมพร
+        { university: "มหาวิทยาลัยแม่โจ้-ชุมพร", faculty: "คณะเทคโนโลยีการประมงและทรัพยากรทางน้ำ", major: "การประมง", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 0.0000, max_score: 87.2500 } },
+        // ข้อมูลมหาวิทยาลัยแม่โจ้-แพร่
+        { university: "มหาวิทยาลัยแม่โจ้-แพร่", faculty: "คณะสัตวศาสตร์และเทคโนโลยี", major: "สัตวศาสตร์", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 0.0000, max_score: 94.5000 } },
+        // ข้อมูลมหาวิทยาลัยแม่ฟ้าหลวง
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชานวัตกรรมสังคม", major: "การพัฒนาระหว่างประเทศ (นานาชาติ)", admission_criteria: criteria.socialInnovationIntl, last_year_stat: { min_score: 46.8476, max_score: 49.2015 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชานิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 52.8416, max_score: 60.0311 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 46.5000, max_score: 53.5000 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาวิทยาศาสตร์เครื่องสำอาง", major: "วิทยาศาสตร์เครื่องสำอาง", admission_criteria: criteria.science, last_year_stat: { min_score: 49.6664, max_score: 58.0832 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาวิทยาศาสตร์สุขภาพ", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 40.5000, max_score: 47.5000 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาศิลปศาสตร์", major: "ภาษาอังกฤษ", admission_criteria: createLangCriteria('A-Level_อังกฤษ'), last_year_stat: { min_score: 58.1664, max_score: 66.8332 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาการจัดการ", major: "การจัดการธุรกิจการบิน (นานาชาติ)", admission_criteria: criteria.tourismAndHospitality, last_year_stat: { min_score: 51.5623, max_score: 59.8164 } },
+        { university: "มหาวิทยาลัยแม่ฟ้าหลวง", faculty: "สำนักวิชาการจัดการ", major: "บริหารธุรกิจ", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 41.8750, max_score: 51.5832 } },
+        // ข้อมูลมหาวิทยาลัยรังสิต
+        { university: "มหาวิทยาลัยรังสิต", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 41.5000, max_score: 48.2500 } },
+        // ข้อมูลมหาวิทยาลัยราชภัฏชัยภูมิ
+        { university: "มหาวิทยาลัยราชภัฏชัยภูมิ", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 45.6250, max_score: 53.0000 } },
+        // ข้อมูลมหาวิทยาลัยราชภัฏบ้านสมเด็จเจ้าพระยา
+        { university: "มหาวิทยาลัยราชภัฏบ้านสมเด็จเจ้าพระยา", faculty: "คณะวิทยาศาสตร์และเทคโนโลยี", major: "เทคโนโลยีสารสนเทศและนวัตกรรมดิจิทัล", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยราชพฤกษ์
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบริหารธุรกิจ", major: "การจัดการธุรกิจยุคดิจิทัล", admission_criteria: criteria.digitalBusiness, last_year_stat: { min_score: 24.9500, max_score: 41.0750 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบริหารธุรกิจ", major: "การจัดการโลจิสติกส์", admission_criteria: criteria.logisticsManagement, last_year_stat: { min_score: 14.2250, max_score: 14.2250 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบริหารธุรกิจ", major: "การตลาดดิจิทัล", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 24.9250, max_score: 24.9250 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบริหารธุรกิจ", major: "การบริหารธุรกิจ", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบริหารธุรกิจ", major: "อุตสาหกรรมท่องเที่ยว", admission_criteria: criteria.tourismAndHospitality, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะบัญชี", major: "การบัญชี", admission_criteria: criteria.business, last_year_stat: { min_score: 14.3750, max_score: 34.5000 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะนิเทศศาสตร์", major: "คอนเทนต์การโฆษณาและการประชาสัมพันธ์", admission_criteria: criteria.communicationArts, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะสาธารณสุขศาสตร์", major: "สาธารณสุขศาสตร์", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 22.6000, max_score: 22.6000 } },
+        { university: "มหาวิทยาลัยราชพฤกษ์", faculty: "คณะเทคโนโลยีดิจิทัล", major: "เทคโนโลยีดิจิทัลเพื่อธุรกิจ", admission_criteria: criteria.digitalBusiness, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยวลัยลักษณ์
+        { university: "มหาวิทยาลัยวลัยลักษณ์", faculty: "สำนักวิชาพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 45.5000, max_score: 52.5000 } },
+        // ข้อมูลมหาวิทยาลัยศรีนครินทรวิโรฒ
+        { university: "มหาวิทยาลัยศรีนครินทรวิโรฒ", faculty: "คณะพลศึกษา", major: "สาธารณสุขศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 45.4165, max_score: 57.7220 } },
+        { university: "มหาวิทยาลัยศรีนครินทรวิโรฒ", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 51.2722, max_score: 58.0832 } },
+        // ข้อมูลมหาวิทยาลัยศรีปทุม
+        { university: "มหาวิทยาลัยศรีปทุม", faculty: "คณะนิเทศศาสตร์", major: "สื่อสารการแสดง", admission_criteria: criteria.communicationArts, last_year_stat: { min_score: 77.5000, max_score: 84.0000 } },
+        // ข้อมูลมหาวิทยาลัยศิลปากร
+        { university: "มหาวิทยาลัยศิลปากร", faculty: "คณะสัตวศาสตร์และเทคโนโลยีการเกษตร", major: "สัตวศาสตร์และเทคโนโลยีการเกษตร", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 31.8750, max_score: 51.6250 } },
+        { university: "มหาวิทยาลัยศิลปากร", faculty: "คณะศึกษาศาสตร์", major: "การประถมศึกษา", admission_criteria: criteria.education, last_year_stat: { min_score: 64.6664, max_score: 69.2500 } },
+        // ข้อมูลมหาวิทยาลัยสงขลานครินทร์
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะการจัดการสิ่งแวดล้อม", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.agroForestryFisheries, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะทรัพยากรธรรมชาติ", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 20.0000, max_score: 30.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะนิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 51.0000, max_score: 58.5000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะเภสัชศาสตร์", major: "เภสัชศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะรัฐศาสตร์", major: "รัฐศาสตรบัณฑิต", admission_criteria: createLangCriteria, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิทยาการจัดการ", major: "บัญชีบัณฑิต", admission_criteria: criteria.business, last_year_stat: { min_score: 57.0000, max_score: 67.8240 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิทยาการจัดการ", major: "บริหารธุรกิจบัณฑิต", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 35.0000, max_score: 45.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิทยาการสื่อสาร", major: "นิเทศศาสตรบัณฑิต", admission_criteria: criteria.communicationArts, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิทยาศาสตร์", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 25.0000, max_score: 35.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 49.3744, max_score: 56.8916 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะวิศวกรรมศาสตร์", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะศิลปศาสตร์", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะเศรษฐศาสตร์", major: "เศรษฐศาสตรบัณฑิต", admission_criteria: criteria.economics, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะอุตสาหกรรมเกษตร", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 25.0000, max_score: 35.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "คณะเทคนิคการแพทย์", major: "เทคนิคการแพทย์", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "วิทยาเขตตรัง", major: "สถาปัตยกรรมศาสตรบัณฑิต", admission_criteria: criteria.architecture, last_year_stat: { min_score: 30.0000, max_score: 40.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "วิทยาเขตปัตตานี", major: "ศึกษาศาสตรบัณฑิต", admission_criteria: criteria.education, last_year_stat: { min_score: 50.0000, max_score: 60.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "วิทยาเขตภูเก็ต", major: "บริหารธุรกิจบัณฑิต", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "วิทยาเขตสุราษฎร์ธานี", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        { university: "มหาวิทยาลัยสงขลานครินทร์", faculty: "วิทยาลัยนานาชาติ", major: "ศิลปศาสตรบัณฑิต", admission_criteria: criteria.artsWithMath, last_year_stat: { min_score: 40.0000, max_score: 50.0000 } },
+        // ข้อมูลมหาวิทยาลัยอัสสัมชัญ
+        { university: "มหาวิทยาลัยอัสสัมชัญ", faculty: "คณะบริหารธุรกิจและเศรษฐศาสตร์", major: "การตลาดดิจิทัล", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 55.2500, max_score: 91.0000 } },
+        // ข้อมูลมหาวิทยาลัยอุบลราชธานี
+        { university: "มหาวิทยาลัยอุบลราชธานี", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 48.0000, max_score: 55.0000 } },
+        // ข้อมูลมหาวิทยาลัยเอเชียอาคเนย์
+        { university: "มหาวิทยาลัยเอเชียอาคเนย์", faculty: "คณะศิลปศาสตร์และวิทยาศาสตร์", major: "การจัดการโลจิสติกส์และโซ่อุปทาน", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลมหาวิทยาลัยเวสเทิร์น
+        { university: "มหาวิทยาลัยเวสเทิร์น", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 34.2500, max_score: 48.0000 } },
+        // ข้อมูลมหาวิทยาลัยหัวเฉียวเฉลิมพระเกียรติ
+        { university: "มหาวิทยาลัยหัวเฉียวเฉลิมพระเกียรติ", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 47.5000, max_score: 56.5000 } },
+        // ข้อมูลราชวิทยาลัยจุฬาภรณ์
+        { university: "ราชวิทยาลัยจุฬาภรณ์", faculty: "คณะทันตแพทยศาสตร์", major: "ทันตแพทยศาสตรบัณฑิต", admission_criteria: criteria.gpat, last_year_stat: { min_score: 58.0000, max_score: 62.0000 } },
+        { university: "ราชวิทยาลัยจุฬาภรณ์", faculty: "คณะเทคโนโลยีวิทยาศาสตร์สุขภาพ", major: "รังสีเทคนิค", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 39.5000, max_score: 47.0000 } },
+        { university: "ราชวิทยาลัยจุฬาภรณ์", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 54.4820, max_score: 57.4413 } },
+        // ข้อมูลโรงเรียนนายร้อยตำรวจ
+        { university: "โรงเรียนนายร้อยตำรวจ", faculty: "ส่วนกลาง", major: "รัฐประศาสนศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 64.5000, max_score: 83.5000 } },
+        // ข้อมูลโรงเรียนนายร้อยพระจุลจอมเกล้า
+        { university: "โรงเรียนนายร้อยพระจุลจอมเกล้า", faculty: "ส่วนกลาง", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลโรงเรียนนายเรือ
+        { university: "โรงเรียนนายเรือ", faculty: "ส่วนกลาง", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลโรงเรียนนายเรืออากาศนวมินทกษัตริยาธิราช
+        { university: "โรงเรียนนายเรืออากาศนวมินทกษัตริยาธิราช", faculty: "ส่วนกลาง", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลวิทยาลัยดุสิตธานี
+        { university: "วิทยาลัยดุสิตธานี", faculty: "คณะอุตสาหกรรมบริการ", major: "ศิลปะการประกอบอาหารอย่างยั่งยืน", admission_criteria: criteria.tourismAndHospitality, last_year_stat: { min_score: 36.5250, max_score: 41.5000 } },
+        // ข้อมูลวิทยาลัยเซนต์หลุยส์
+        { university: "วิทยาลัยเซนต์หลุยส์", faculty: "คณะกายภาพบำบัด", major: "กายภาพบำบัด", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 41.5000, max_score: 48.0000 } },
+        // ข้อมูลวิทยาลัยเทคโนโลยีภาคใต้
+        { university: "วิทยาลัยเทคโนโลยีภาคใต้", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 43.5000, max_score: 51.0000 } },
+        // ข้อมูลวิทยาลัยนครราชสีมา
+        { university: "วิทยาลัยนครราชสีมา", faculty: "คณะนิติศาสตร์", major: "นิติศาสตรบัณฑิต", admission_criteria: criteria.poliSciLawWithMath, last_year_stat: { min_score: 49.6250, max_score: 61.2500 } },
+        { university: "วิทยาลัยนครราชสีมา", faculty: "คณะบริหารธุรกิจ", major: "การตลาด", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 41.6250, max_score: 65.0000 } },
+        // ข้อมูลวิทยาลัยพยาบาลกองทัพเรือ
+        { university: "วิทยาลัยพยาบาลกองทัพเรือ", faculty: "ส่วนกลาง", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 53.5000, max_score: 58.5000 } },
+        // ข้อมูลวิทยาลัยพยาบาลตำรวจ
+        { university: "วิทยาลัยพยาบาลตำรวจ", faculty: "ส่วนกลาง", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 53.5000, max_score: 60.5000 } },
+        // ข้อมูลวิทยาลัยพยาบาลทหารอากาศ
+        { university: "วิทยาลัยพยาบาลทหารอากาศ", faculty: "ส่วนกลาง", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 54.0000, max_score: 60.5000 } },
+        // ข้อมูลวิทยาลัยพิชญบัณฑิต
+        { university: "วิทยาลัยพิชญบัณฑิต", faculty: "คณะศึกษาศาสตร์", major: "การศึกษาปฐมวัย", admission_criteria: criteria.education, last_year_stat: { min_score: 63.5000, max_score: 66.5000 } },
+        // ข้อมูลวิทยาลัยอินเตอร์เทคลำปาง
+        { university: "วิทยาลัยอินเตอร์เทคลำปาง", faculty: "คณะวิศวกรรมศาสตร์", major: "การจัดการโลจิสติกส์และโซ่อุปทาน", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลศูนย์ฝึกพาณิชย์นาวี
+        { university: "ศูนย์ฝึกพาณิชย์นาวี", faculty: "ส่วนกลาง", major: "วิทยาศาสตรบัณฑิต", admission_criteria: criteria.science, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลสถาบันการจัดการปัญญาภิวัฒน์
+        { university: "สถาบันการจัดการปัญญาภิวัฒน์", faculty: "คณะบริหารธุรกิจ", major: "การจัดการธุรกิจการค้าสมัยใหม่", admission_criteria: criteria.businessGeneral, last_year_stat: { min_score: 59.3250, max_score: 83.2500 } },
+        // ข้อมูลสถาบันการบินพลเรือน
+        { university: "สถาบันการบินพลเรือน", faculty: "วิทยาลัยการบินและคมนาคม", major: "การจัดการจราจรทางอากาศ", admission_criteria: criteria.airTraffic, last_year_stat: { min_score: 55.2500, max_score: 66.5000 } },
+        // ข้อมูลสถาบันบัณฑิตพัฒนศิลป์
+        { university: "สถาบันบัณฑิตพัฒนศิลป์", faculty: "คณะศิลปวิจิตร", major: "ศิลปบัณฑิต", admission_criteria: criteria.fineArts, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        // ข้อมูลสถาบันพระบรมราชชนก
+        { university: "สถาบันพระบรมราชชนก", faculty: "คณะพยาบาลศาสตร์", major: "พยาบาลศาสตรบัณฑิต", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 49.6500, max_score: 60.5000 } },
+        { university: "สถาบันพระบรมราชชนก", faculty: "คณะสาธารณสุขศาสตร์และสหเวชศาสตร์", major: "การแพทย์แผนไทย", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 51.2136, max_score: 53.7756 } },
+        { university: "สถาบันพระบรมราชชนก", faculty: "คณะสาธารณสุขศาสตร์และสหเวชศาสตร์", major: "เวชระเบียน", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 50.4894, max_score: 53.7280 } },
+        { university: "สถาบันพระบรมราชชนก", faculty: "คณะสาธารณสุขศาสตร์และสหเวชศาสตร์", major: "สาธารณสุขชุมชน", admission_criteria: criteria.healthSciences, last_year_stat: { min_score: 49.1952, max_score: 55.8744 } },
+        // ข้อมูลสถาบันเทคโนโลยีจิตรลดา
+        { university: "สถาบันเทคโนโลยีจิตรลดา", faculty: "คณะเทคโนโลยีดิจิทัล", major: "เทคโนโลยีดิจิทัลเพื่อธุรกิจ", admission_criteria: criteria.digitalBusiness, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "สถาบันเทคโนโลยีจิตรลดา", faculty: "คณะเทคโนโลยีดิจิทัล", major: "วิศวกรรมศาสตรบัณฑิต", admission_criteria: criteria.digitalBusiness, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        { university: "สถาบันเทคโนโลยีจิตรลดา", faculty: "คณะเทคโนโลยีอุตสาหกรรม", major: "วิศวกรรมคอมพิวเตอร์", admission_criteria: criteria.engineering, last_year_stat: { min_score: 0.0000, max_score: 0.0000 } },
+        ];
+    }
+        
     // =============================
     // ===== 4. CORE FUNCTIONS =====
     // =============================
@@ -766,11 +1240,244 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- [ฟังก์ชันใหม่สำหรับ TCAS Calculator] ----
+    // ---- [TCAS Calculator] ----
     function showTcasView(viewId) {
         document.querySelectorAll('#tcas-feature-wrapper .page-view').forEach(view => view.classList.add('hidden'));
-        document.getElementById(viewId).classList.remove('hidden');
+        const viewToShow = document.getElementById(viewId);
+        if(viewToShow) viewToShow.classList.remove('hidden');
         feather.replace();
+    }
+    function initializeTcasFeature() {
+        createMockTcasDatabase();
+        renderTcasSelectionPage();
+        showTcasView('tcas-selection-view');
+        document.getElementById('tcas-search-input').addEventListener('input', renderTcasSelectionPage);
+    }
+    function renderTcasSelectionPage() {
+        const query = document.getElementById('tcas-search-input').value.toLowerCase();
+        const container = document.getElementById('tcas-major-list');
+        
+        const filteredData = tcasDatabase.filter(major => 
+            major.university.toLowerCase().includes(query) ||
+            major.faculty.toLowerCase().includes(query) ||
+            major.major.toLowerCase().includes(query)
+        );
+
+        if (filteredData.length === 0) {
+            container.innerHTML = '<p class="subtle-text">ไม่พบข้อมูลคณะ/สาขาที่ค้นหา</p>';
+            return;
+        }
+
+        container.innerHTML = filteredData.map((major, index) => `
+            <div class="major-card" data-index="${tcasDatabase.indexOf(major)}">
+                <h4>${major.major}</h4>
+                <p>${major.faculty}</p>
+                <p class="subtle-text">${major.university}</p>
+            </div>
+        `).join('');
+    }
+    function selectTcasMajor(majorIndex) {
+        selectedMajor = tcasDatabase[majorIndex];
+        if (!selectedMajor) return;
+
+        // โหลดคะแนนที่เคยบันทึกไว้มาใส่ในฟอร์ม
+        const savedScores = state.profile.savedScores || {};
+        for (const key in savedScores) {
+            const input = document.querySelector(`#tcas-input-view input[name="${key}"]`);
+            if (input) {
+                input.value = savedScores[key];
+            }
+        }
+        
+        showTcasView('tcas-input-view');
+    }
+    
+    // สำหรับคำนวณคะแนน กสพท โดยเฉพาะ
+    function calculateGpatScore(userScores) {
+        // รายชื่อวิชา A-Level ที่ต้องใช้ และ Key ที่ตรงกับ HTML และฐานข้อมูล
+        const requiredALevels = [
+            'A-Level_ฟิสิกส์', 'A-Level_เคมี', 'A-Level_ชีววิทยา',
+            'A-Level_คณิต1', 'A-Level_อังกฤษ', 'A-Level_ไทย', 'A-Level_สังคมศึกษา'
+        ];
+
+        // 1. ตรวจสอบว่ากรอกคะแนนครบทุกวิชาหรือไม่
+        const allRequiredSubjects = ['TPAT1', ...requiredALevels];
+        for (const subjectKey of allRequiredSubjects) {
+            if (userScores[subjectKey] === undefined || isNaN(userScores[subjectKey])) {
+                return { error: `กรุณากรอกคะแนนสำหรับวิชา: ${subjectKey.replace(/_/g, ' ')}` };
+            }
+        }
+
+        // 2. ตรวจสอบเงื่อนไขคะแนนขั้นต่ำ 30 คะแนนของ A-Level
+        for (const subjectKey of requiredALevels) {
+            if (userScores[subjectKey] < 30) {
+                return { 
+                    finalScore: 0, 
+                    status: { text: 'ไม่ผ่านเกณฑ์', icon: '❌', className: 'status-fail' },
+                    reason: `เนื่องจากคะแนนวิชา ${subjectKey.replace(/_/g, ' ')} (${userScores[subjectKey]}) ไม่ถึงเกณฑ์ขั้นต่ำ 30 คะแนน`
+                };
+            }
+        }
+
+        // 3. ถ้าผ่านเงื่อนไขขั้นต่ำ: เริ่มคำนวณคะแนน
+        
+        // ส่วนที่ 1: คำนวณคะแนน A-Level (70%)
+        // นำคะแนนแต่ละวิชามาคูณกับน้ำหนักย่อยภายในกลุ่ม A-Level
+        const scienceScore = ((userScores['A-Level_ฟิสิกส์'] + userScores['A-Level_เคมี'] + userScores['A-Level_ชีววิทยา']) / 3) * 0.40; // กลุ่มวิทย์ 40%
+        const mathScore = userScores['A-Level_คณิต1'] * 0.20;       // คณิต 20%
+        const englishScore = userScores['A-Level_อังกฤษ'] * 0.20;   // อังกฤษ 20%
+        const thaiScore = userScores['A-Level_ไทย'] * 0.10;         // ไทย 10%
+        const socialScore = userScores['A-Level_สังคมศึกษา'] * 0.10; // สังคม 10%
+
+        // รวมคะแนน A-Level ที่ถ่วงน้ำหนักแล้ว (คะแนนเต็มส่วนนี้คือ 100)
+        const aLevelCompositeScore = scienceScore + mathScore + englishScore + thaiScore + socialScore;
+
+        // แปลงคะแนน A-Level 100 คะแนน ให้เป็น 70% ของคะแนนทั้งหมด
+        const finalALevelScore = aLevelCompositeScore * 0.70;
+
+        // ส่วนที่ 2: คำนวณคะแนน TPAT1 (30%)
+        // แปลงคะแนน TPAT1 (เต็ม 300) ให้เป็น 30% ของคะแนนทั้งหมด
+        const finalTpatScore = (userScores['TPAT1'] / 300) * 100 * 0.30;
+        
+        // รวมคะแนนสุดท้าย
+        const totalScore = finalALevelScore + finalTpatScore;
+
+        return { finalScore: totalScore };
+    }
+
+    function calculateAndShowTcasResult() {
+        if (!selectedMajor) return;
+
+        // 1. บันทึกคะแนนที่กรอกล่าสุด
+        const inputs = document.querySelectorAll('#tcas-input-view input[type="number"]');
+        const userScores = {};
+        inputs.forEach(input => {
+            // แก้ไข: ใช้ name ที่ถูกต้องจาก HTML
+            const name = input.getAttribute('name');
+            if (input.value !== '' && name) {
+                userScores[name] = parseFloat(input.value);
+            }
+        });
+        state.profile.savedScores = userScores;
+        saveState();
+
+        let result = {};
+        let calculationReason = null; // สำหรับเก็บเหตุผลกรณีไม่ผ่านเกณฑ์
+
+        // [จุดสำคัญ] แยกวิธีการคำนวณตามเกณฑ์
+        if (selectedMajor.admission_criteria === medCriteria) {
+            // --- กรณีเป็นคณะในกลุ่ม กสพท ---
+            const gpatResult = calculateGpatScore(userScores);
+            if (gpatResult.error) {
+                Swal.fire('ข้อมูลไม่ครบถ้วน', gpatResult.error, 'warning');
+                return;
+            }
+            result.totalWeightedPercentage = gpatResult.finalScore;
+            if (gpatResult.reason) {
+                calculationReason = gpatResult.reason;
+            }
+            
+        } else {
+            // --- กรณีเป็นคณะอื่นๆ (ใช้การคำนวณแบบเดิม) ---
+            let totalWeightedPercentage = 0;
+            let missingSubjects = [];
+            userScores['TGAT'] = (userScores['TGAT1'] || 0) + (userScores['TGAT2'] || 0) + (userScores['TGAT3'] || 0);
+
+            for (const subjectKey in selectedMajor.admission_criteria) {
+                const score = userScores[subjectKey];
+                const maxScore = TCAS_SUBJECT_MAX_SCORES[subjectKey];
+                const weight = selectedMajor.admission_criteria[subjectKey];
+
+                if (score === undefined || isNaN(score)) {
+                    missingSubjects.push(subjectKey.replace(/_/g, ' '));
+                    continue;
+                }
+                if (maxScore) {
+                    totalWeightedPercentage += (score / maxScore) * weight;
+                }
+            }
+
+            if (missingSubjects.length > 0) {
+                Swal.fire('ข้อมูลไม่ครบถ้วน', `กรุณากรอกคะแนนสำหรับวิชา: ${missingSubjects.join(', ')}`, 'warning');
+                return;
+            }
+            result.totalWeightedPercentage = totalWeightedPercentage;
+        }
+
+        // 3. ประเมินสถานะ (ใช้ Logic ร่วมกัน)
+        const minScore = selectedMajor.last_year_stat.min_score;
+        const scoreDiff = result.totalWeightedPercentage - minScore;
+        let status = {};
+
+        if (calculationReason) { // ถ้ามีเหตุผลการปรับตก (เช่น คะแนนไม่ถึง 30)
+            status = { text: 'ไม่ผ่านเกณฑ์', icon: '❌', className: 'status-fail' };
+        } else if (scoreDiff >= 5) {
+            status = { text: 'ผ่านชัวร์', icon: '✅', className: 'status-pass' };
+        } else if (scoreDiff >= -3) {
+            status = { text: 'มีความเสี่ยง', icon: '⚠️', className: 'status-risk' };
+        } else {
+            status = { text: 'ไม่ผ่าน', icon: '❌', className: 'status-fail' };
+        }
+        
+        // 4. แสดงผล
+        document.getElementById('result-major-name').textContent = `${selectedMajor.major}, ${selectedMajor.faculty}`;
+        document.getElementById('result-university-name').textContent = selectedMajor.university;
+        document.getElementById('result-final-score').textContent = `${result.totalWeightedPercentage.toFixed(2)}%`;
+        document.getElementById('result-status-badge').innerHTML = `${status.icon} ${status.text}`;
+        document.getElementById('result-status-badge').className = `status-badge ${status.className}`;
+        
+        // แสดงเหตุผลถ้ามี หรือแสดงคะแนนขั้นต่ำถ้าไม่มีเหตุผล
+        document.getElementById('result-comparison').textContent = calculationReason 
+            ? calculationReason 
+            : `(คะแนนขั้นต่ำปีล่าสุด: ${minScore.toFixed(2)}%)`;
+        
+        // 5. หาคณะแนะนำ
+        findSuggestedMajors(userScores);
+
+        showTcasView('tcas-result-view');
+    }
+
+    function findSuggestedMajors(userScores) {
+        const container = document.getElementById('tcas-suggestions-list');
+        const suggestions = [];
+        
+        tcasDatabase.forEach(major => {
+            if (major === selectedMajor) return; // ข้ามคณะที่เลือกไปแล้ว
+
+            let scoreForThisMajor = 0;
+            let canCalculate = true;
+            for (const subjectKey in major.admission_criteria) {
+                const score = userScores[subjectKey];
+                const maxScore = TCAS_SUBJECT_MAX_SCORES[subjectKey];
+                const weight = major.admission_criteria[subjectKey];
+                if (score === undefined || isNaN(score) || !maxScore) {
+                    canCalculate = false;
+                    break;
+                }
+                scoreForThisMajor += (score / maxScore) * weight;
+            }
+
+            if (canCalculate) {
+                const diff = scoreForThisMajor - major.last_year_stat.min_score;
+                if (diff >= -5) { // แนะนำคณะที่คะแนนเราต่ำกว่าคะแนนขั้นต่ำไม่เกิน 5%
+                    suggestions.push({ ...major, calculatedScore: scoreForThisMajor, diff: diff });
+                }
+            }
+        });
+
+        if (suggestions.length === 0) {
+            container.innerHTML = '<p class="subtle-text">ไม่มีคำแนะนำเพิ่มเติมในขณะนี้</p>';
+            return;
+        }
+
+        suggestions.sort((a, b) => b.diff - a.diff); // เรียงจากคณะที่มีโอกาสติดมากที่สุด
+        container.innerHTML = suggestions.slice(0, 5).map(s => `
+            <div class="major-card suggestion">
+                <h4>${s.major}</h4>
+                <p>${s.university}</p>
+                <p class="subtle-text">คะแนนของคุณ: ${s.calculatedScore.toFixed(2)}% (ต่ำสุดปีก่อน: ${s.last_year_stat.min_score}%)</p>
+            </div>
+        `).join('');
     }
 
     function populateTcasDropdowns(level, filter = '') {
@@ -2792,41 +3499,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // eslint-disable-next-line no-unused-vars
     window.handleAcceptFollowRequest = async (senderId) => {
         if (!currentUser) return;
-        console.log("--- 2. Accepting Follow Request from:", senderId, "---");
-        console.log('Before accepting, requests in state are:', state.followRequests);
-
         const recipientId = currentUser.uid;
         const senderRef = db.collection('users').doc(senderId);
         const recipientRef = db.collection('users').doc(recipientId);
 
         try {
             const batch = db.batch();
-
-            // 1. เราไปติดตามเขา
-            batch.update(recipientRef, { following: firebase.firestore.FieldValue.arrayUnion(senderId) });
-            // 2. เขากลายเป็นผู้ติดตามของเรา
-            batch.update(recipientRef, { followers: firebase.firestore.FieldValue.arrayUnion(senderId) });
-            
-            // 3. ลบคำขอออกจาก List ของเรา
-            batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
-            // 4. ลบคำขอที่เขาส่งไป (sent request) ออกจาก List ของเขา
-            batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
-
+            batch.update(recipientRef, { 
+                following: firebase.firestore.FieldValue.arrayUnion(senderId),
+                followers: firebase.firestore.FieldValue.arrayUnion(senderId),
+                followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) 
+            });
+            batch.update(senderRef, { 
+                sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) 
+            });
             await batch.commit();
-
-            // 5. อัปเดต State ฝั่ง Client ทันที
-            state.followRequests = state.followRequests.filter(id => id !== senderId);
-            console.log('After accepting, requests in state should be empty/filtered:', state.followRequests);
-            
-            if (!state.followers) state.followers = [];
-            state.followers.push(senderId);
-            if (!state.following) state.following = [];
-            state.following.push(senderId);
-
-            console.log("Now, calling renderFollowRequests to update UI...");
-            // 6. วาดหน้ารายการคำขอใหม่ (ซึ่งตอนนี้ควรจะว่างเปล่า)
-            renderFollowRequests();
-
             showToast("ยอมรับคำขอติดตามแล้ว ตอนนี้คุณเป็นเพื่อนกัน!");
         } catch (error) {
             console.error("Error accepting follow request:", error);
@@ -2834,32 +3521,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // eslint-disable-next-line no-unused-vars
     window.handleDeclineFollowRequest = async (senderId) => {
         if (!currentUser) return;
         const recipientId = currentUser.uid;
-
         const senderRef = db.collection('users').doc(senderId);
         const recipientRef = db.collection('users').doc(recipientId);
 
         try {
             const batch = db.batch();
-
-            // ลบคำขอออกจาก List ของเรา
             batch.update(recipientRef, { followRequests: firebase.firestore.FieldValue.arrayRemove(senderId) });
-            // ลบคำขอที่เขาส่งไป (sent request) ออกจาก List ของเขา
             batch.update(senderRef, { sentFollowRequests: firebase.firestore.FieldValue.arrayRemove(recipientId) });
-
             await batch.commit();
-
-            // อัปเดต State ฝั่ง Client ทันที
-            state.followRequests = state.followRequests.filter(id => id !== senderId);
-
-            // วาดหน้ารายการคำขอใหม่
-            renderFollowRequests();
-
             showToast("ลบคำขอติดตามแล้ว");
-
         } catch (error) {
             console.error("Error declining follow request:", error);
             showToast("เกิดข้อผิดพลาดในการลบคำขอ");
@@ -2907,16 +3580,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // [ADVANCED DEBUG VERSION]
     async function renderFollowRequests() {
-        console.log("--- 1. Rendering Follow Requests ---");
-
         const listEl = document.getElementById('friend-requests-list');
         const badgeEl = document.getElementById('request-count-badge');
         if (!listEl || !badgeEl) return;
 
         listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลด...</li>';
-
         const requestIds = state.followRequests || [];
-        console.log("State before rendering:", JSON.parse(JSON.stringify(requestIds)));
 
         badgeEl.textContent = requestIds.length;
         badgeEl.classList.toggle('hidden', requestIds.length === 0);
@@ -2927,52 +3596,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            console.log("Fetching profiles for:", JSON.parse(JSON.stringify(requestIds)));
             const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
             const requestDocs = await Promise.all(requestPromises);
 
-            console.log("--- DEBUG: Inspecting fetched documents ---"); // DEBUG
             let finalHtml = '';
-            
-            // ใช้ forEach แทน map เพื่อให้ console.log ทำงานได้ง่ายขึ้น
-            requestDocs.forEach((doc, index) => {
-                console.log(`Processing doc ${index} (ID: ${doc.id}):`); // DEBUG
-                
-                if (!doc.exists) {
-                    console.log(`  -> Document does NOT exist.`); // DEBUG
-                    return; // ถ้า document ไม่มีอยู่จริง ให้ข้ามไปเลย
-                }
-
+            requestDocs.forEach(doc => {
+                if (!doc.exists) return; // ข้าม user ที่ไม่มีข้อมูล
                 const senderData = doc.data();
-                console.log(`  -> Document exists. Data:`, senderData); // DEBUG
-
-                const displayName = senderData.profile.displayName || 'User';
-                const lifebuddyId = senderData.profile.lifebuddyId || '';
-                const photoURL = senderData.profile.photoURL || 'assets/profiles/startprofile.png';
+                const { displayName, lifebuddyId, photoURL } = senderData.profile;
                 
-                // สร้าง HTML ของรายการนี้
-                const itemHtml = `
+                finalHtml += `
                     <li class="user-list-item">
-                        <img src="${photoURL}" alt="Profile Photo" class="user-list-avatar">
+                        <img src="${photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
                         <div class="user-info">
-                            <h4>${displayName}</h4>
-                            <p class="subtle-text">${lifebuddyId}</p>
+                            <h4>${displayName || 'User'}</h4>
+                            <p class="subtle-text">${lifebuddyId || ''}</p>
                         </div>
                         <div class="user-actions">
-                            <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')">
-                                <i data-feather="check"></i> ยอมรับ
-                            </button>
-                            <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')">
-                                <i data-feather="x"></i> ลบ
-                            </button>
+                            <button class="small-btn" onclick="handleAcceptFollowRequest('${doc.id}')"><i data-feather="check"></i> ยอมรับ</button>
+                            <button class="small-btn btn-secondary" onclick="handleDeclineFollowRequest('${doc.id}')"><i data-feather="x"></i> ลบ</button>
                         </div>
                     </li>
                 `;
-                finalHtml += itemHtml; // เพิ่ม HTML เข้าไปในตัวแปร
             });
 
-            console.log("--- Finished processing. Final HTML will be set. ---"); // DEBUG
-            listEl.innerHTML = finalHtml || '<li class="empty-placeholder">ไม่พบข้อมูลคำขอ</li>'; // ถ้าวนลูปแล้วไม่มีอะไรเลย ให้แสดงข้อความ
+            listEl.innerHTML = finalHtml || '<li class="empty-placeholder">ไม่พบข้อมูลคำขอ</li>';
             feather.replace();
 
         } catch (error) {
@@ -3010,6 +3658,70 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load saved scores
         loadSavedScores();
     }
+
+        // ฟังก์ชันหลักสำหรับคำนวณเปอร์เซ็นต์ TCAS
+        function handleTcasCalculation(formula) {
+            const form = document.getElementById('tcas-score-form-container');
+            if (!form) return;
+
+            // 1. ดึงคะแนนทั้งหมดจากฟอร์มที่ผู้ใช้กรอก
+            const inputs = form.querySelectorAll('input[type="number"]');
+            const userScores = {};
+            inputs.forEach(input => {
+                if (input.value !== '') {
+                    userScores[input.name] = parseFloat(input.value);
+                }
+            });
+
+            // สร้างคะแนน TGAT_TOTAL สำหรับสูตรที่ต้องใช้คะแนนรวม
+            userScores['TGAT_TOTAL'] = (userScores['TGAT1'] || 0) + (userScores['TGAT2'] || 0) + (userScores['TGAT3'] || 0);
+
+            let totalWeightedPercentage = 0;
+            let breakdownHTML = '';
+            let missingSubjects = [];
+
+            // 2. วนลูปตามสูตรที่กำหนด (ในที่นี้คือสูตรตัวอย่าง)
+            for (const subjectKey in formula.weights) {
+                const score = userScores[subjectKey];
+                const maxScore = TCAS_SUBJECT_MAX_SCORES[subjectKey];
+                const weight = formula.weights[subjectKey];
+
+                if (score === undefined || score === null || isNaN(score)) {
+                    missingSubjects.push(subjectKey.replace(/_/g, ' '));
+                    continue; // ข้ามไปวิชาถัดไปถ้าไม่มีคะแนน
+                }
+                
+                if (maxScore) {
+                    const weightedValue = (score / maxScore) * weight;
+                    totalWeightedPercentage += weightedValue;
+                    breakdownHTML += `<li><strong>${subjectKey.replace(/_/g, ' ')}:</strong> 
+                        (${score.toFixed(2)} / ${maxScore.toFixed(2)}) × ${weight}% = <strong>${weightedValue.toFixed(2)}%</strong></li>`;
+                }
+            }
+
+            if (missingSubjects.length > 0) {
+                showToast(`กรุณากรอกคะแนนสำหรับ: ${missingSubjects.join(', ')}`);
+                return;
+            }
+
+            // 3. แสดงผลลัพธ์ทั้งหมดด้วย SweetAlert
+            Swal.fire({
+                title: `ผลการคำนวณ (${formula.name})`,
+                html: `
+                    <div class="tcas-result-card" style="text-align: left; background: none; border: none; padding: 0;">
+                        <p style="text-align: center;">คะแนนรวมแบบเปอร์เซ็นต์ของคุณคือ:</p>
+                        <div class="result-score" style="font-size: 3.5rem; text-align: center; color: var(--primary-color); margin: 10px 0;">${totalWeightedPercentage.toFixed(2)}%</div>
+                        <hr>
+                        <p><strong>รายละเอียด:</strong></p>
+                        <ul id="tcas-score-breakdown" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px;">
+                            ${breakdownHTML}
+                        </ul>
+                    </div>
+                `,
+                icon: 'success',
+                confirmButtonText: 'ยอดเยี่ยม!'
+            });
+        }
 
     function addSpecificSubjectInput(subjectKey) {
         if (!subjectKey || document.querySelector(`.specific-input-item[data-key="${subjectKey}"]`)) return;
@@ -3595,8 +4307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ---- [นำโค้ดทั้งหมดนี้ไปวางทับฟังก์ชันเดิม] ----
-    function setupAllEventListeners() {
+        function setupAllEventListeners() {
         if (areListenersSetup) return;
 
         // ===========================================
@@ -3611,6 +4322,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (gpaFeatureCard) {
                 document.getElementById('student-hub-main-view').classList.add('hidden');
+                document.getElementById('tcas-feature-wrapper').classList.add('hidden');
                 document.getElementById('gpa-feature-wrapper').classList.remove('hidden');
                 
                 // ตั้งค่าหน้าเครื่องคิดเลขสำหรับ "การคำนวณด่วน"
@@ -3620,40 +4332,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('gpa-save-record-btn').classList.add('hidden');
                 
                 renderGpaTable([]); // สร้างตารางเปล่า
-                showGpaView('gpa-calculator-view'); // แสดงหน้าเครื่องคิดเลข
+                showGpaView('gpa-calculator-view');
                 return;
             } else if (tcasFeatureCard) {
                 document.getElementById('student-hub-main-view').classList.add('hidden');
+                document.getElementById('gpa-feature-wrapper').classList.add('hidden');
                 document.getElementById('tcas-feature-wrapper').classList.remove('hidden');
-                initializeTcasPage();
-                Swal.fire({
-                    title: 'คำแนะนำการใช้งาน',
-                    html: `
-                        <div class="swal-info-text">
-                            <p>• กรอกคะแนนดิบที่ได้ ไม่ต้องกรอกคะแนน T-Score</p>
-                            <p>• หากมหาวิทยาลัยใช้ T-Score โปรแกรมจะแปลงให้เอง (ในอนาคต)</p>
-                            <p>• วิชาที่ไม่ได้สอบ ให้เว้นว่างไว้ ไม่ต้องกรอกคะแนน</p>
-                        </div>
-                    `,
-                    icon: 'info',
-                    confirmButtonText: 'รับทราบ',
-                    customClass: {
-                        confirmButton: 'swal-acknowledge-button'
-                    }
-                });
+                initializeTcasFeature();
                 return;
             }
 
             // --- Group 2: GPA & TCAS Feature Interactions ---
+            if (closest('#tcas-back-to-hub-btn')) {
+                document.getElementById('tcas-feature-wrapper').classList.add('hidden');
+                document.getElementById('gpa-feature-wrapper').classList.add('hidden');
+                document.getElementById('student-hub-main-view').classList.remove('hidden');
+                selectedMajor = null; // รีเซ็ตค่า
+                return;
+            }
+            const majorCard = closest('.major-card');
+            if(majorCard && !majorCard.classList.contains('suggestion')) {
+                selectTcasMajor(parseInt(majorCard.dataset.index));
+                return;
+            }
+
+            if (closest('#tcas-calculate-btn')) {
+                calculateAndShowTcasResult();
+                return;
+            }
+            
+            if (closest('.tcas-back-to-selection-btn')) {
+                renderTcasSelectionPage();
+                showTcasView('tcas-selection-view');
+                return;
+            }
+            if (closest('#tcas-back-to-input-btn')) {
+                showTcasView('tcas-input-view');
+                return;
+            }
+
             const gpaGoToHistoryBtn = closest('#gpa-go-to-history-btn');
             if (gpaGoToHistoryBtn) {
                 renderGpaHistoryList();
                 showGpaView('gpa-history-view');
                 return;
             }
-            const backToHubBtn = closest('#gpa-back-to-hub-btn') || closest('#tcas-back-to-hub-btn');
+            const backToHubBtn = closest('#gpa-back-to-hub-btn');
             if (backToHubBtn) {
-                if (closest('#tcas-back-to-hub-btn')) saveAllScores();
                 document.getElementById('gpa-feature-wrapper').classList.add('hidden');
                 document.getElementById('tcas-feature-wrapper').classList.add('hidden');
                 document.getElementById('student-hub-main-view').classList.remove('hidden');
@@ -3675,20 +4400,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 calculateAndDisplayGpa();
                 return;
             }
-            if (closest('#tcas-clear-btn')) {
-                clearAllTcasScores();
-                return;
-            }
-            if (closest('.remove-specific-subject-btn')) {
-                closest('.specific-input-item').remove();
-                return;
-            }
-            if (closest('#tcas-select-formula-btn')) {
-                saveAllScores();
-                showToast("บันทึกคะแนนแล้ว! ฟังก์ชันเลือกรูปแบบคำนวณจะมาในเร็วๆ นี้");
-                return;
-            }
-
+            
             // --- Sub-Group: GPA Table Interactions ---
             const gradePopup = document.getElementById('grade-popup');
             const creditBtn = closest('.credit-stepper-btn');
@@ -3891,24 +4603,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const toggleBtn = closest('.password-toggle-btn');
             if (toggleBtn) {
                 const targetId = toggleBtn.dataset.target;
-                const oldInput = document.getElementById(targetId);
-                if (!oldInput) return;
-                const wrapper = oldInput.closest('.input-with-icon-wrapper');
-                if (!wrapper) return;
-                const newInput = document.createElement('input');
-                for (const attr of oldInput.attributes) {
-                    newInput.setAttribute(attr.name, attr.value);
+                const input = document.getElementById(targetId);
+                if (input) {
+                    const isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    const icon = toggleBtn.querySelector('i');
+                    if (icon) {
+                        icon.dataset.feather = isPassword ? 'eye-off' : 'eye';
+                        feather.replace();
+                    }
                 }
-                newInput.type = (oldInput.type === 'password') ? 'text' : 'password';
-                newInput.value = oldInput.value;
-                wrapper.replaceChild(newInput, oldInput);
-                // Re-add listeners if you have a function like addPasswordInputListeners(targetId);
-                const icon = toggleBtn.querySelector('i');
-                if (icon) {
-                    icon.dataset.feather = (newInput.type === 'password') ? 'eye' : 'eye-off';
-                    feather.replace();
-                }
-                newInput.focus();
                 return;
             }
             const calendarNavBtn = closest('.calendar-nav-btn');
