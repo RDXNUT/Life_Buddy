@@ -2171,9 +2171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTheme = document.body.dataset.theme || 'light';
         const iconNumber = currentSubject.icon || '14';
 
-        const iconSrc = iconNumber === '14'
-            ? `assets/subject-icons/general-${currentTheme}${iconNumber}.png`
-            : `assets/subject-icons/${currentTheme}${iconNumber}.png`;
+         const iconSrc = `assets/subject-icons/${currentTheme}${iconNumber}.png`;
 
         const { value: formValues } = await Swal.fire({
             title: 'แก้ไขรายละเอียดวิชา',
@@ -2242,9 +2240,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         gridContainer.innerHTML = availableIcons.map(iconNum => {
             // สร้าง path ของรูปภาพ (จัดการกรณี general)
-            const iconSrc = iconNum === '14' 
-                ? `assets/subject-icons/general-${currentTheme}${iconNum}.png`
-                : `assets/subject-icons/${currentTheme}${iconNum}.png`;
+
+            const iconSrc = `assets/subject-icons/${currentTheme}${iconNum}.png`;
 
             const isSelected = iconNum === currentIcon;
 
@@ -2364,9 +2361,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const previewImg = document.getElementById('add-custom-subject-icon-preview');
         if (!previewImg) return;
         const currentTheme = document.body.dataset.theme || 'light';
-        const iconSrc = newSubjectIconNumber === '14'
-            ? `assets/subject-icons/general-${currentTheme}${newSubjectIconNumber}.png`
-            : `assets/subject-icons/${currentTheme}${newSubjectIconNumber}.png`;
+        
+        const iconSrc = `assets/subject-icons/${currentTheme}${newSubjectIconNumber}.png`;
+
         previewImg.src = iconSrc;
     }
 

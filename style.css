@@ -1894,3 +1894,258 @@ body[data-theme="dark"] .header-actions .small-btn:hover {
     color: var(--subtle-text-color);
     line-height: 1.5;
 }
+/* ======================================= */
+/* ======   TCAS Feature Buttons    ====== */
+/* ======================================= */
+
+/* --- สไตล์หลักสำหรับปุ่มทั้งหมดในหน้า TCAS --- */
+#tcas-feature-wrapper button {
+    border-radius: 50px; /* ทำให้ปุ่มกลมมนเป็นทรงแคปซูล */
+    border: none;
+    font-weight: 500;
+    padding: 12px 30px; /* ขนาดปุ่มมาตรฐาน */
+    transition: all 0.2s ease-out; /* เพิ่มอนิเมชันที่นุ่มนวล */
+    cursor: pointer;
+}
+
+/* --- สไตล์สำหรับปุ่มหลัก (Primary Button) เช่น "คำนวณผล" --- */
+#tcas-calculate-btn {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color); /* เพิ่มแสงเงาให้ปุ่ม */
+}
+
+#tcas-calculate-btn:hover {
+    transform: translateY(-3px); /* ทำให้ปุ่มลอยขึ้นเมื่อเมาส์ไปวาง */
+    box-shadow: 0 7px 20px -5px var(--primary-color); /* เพิ่มความฟุ้งของเงา */
+}
+
+#tcas-calculate-btn:active {
+    transform: translateY(0) scale(0.98); /* ทำให้ปุ่มยุบลงเมื่อคลิก */
+    box-shadow: 0 2px 8px -3px var(--primary-color);
+}
+
+
+/* --- สไตล์สำหรับปุ่มรอง (Secondary Button) เช่น "กลับไป..." --- */
+#tcas-feature-wrapper .small-btn {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 25px; /* ปรับขนาดให้เล็กลงเล็กน้อย */
+    box-shadow: 0 4px 12px -5px rgba(0,0,0,0.1); /* เงาสีกลางๆ */
+}
+/* สำหรับ Dark Mode */
+body[data-theme="dark"] #tcas-feature-wrapper .small-btn {
+    box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3);
+}
+
+
+#tcas-feature-wrapper .small-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color); /* เปลี่ยนสีกรอบเมื่อเมาส์ไปวาง */
+    color: var(--primary-color);       /* เปลี่ยนสีตัวอักษรเมื่อเมาส์ไปวาง */
+    box-shadow: 0 6px 18px -5px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] #tcas-feature-wrapper .small-btn:hover {
+    box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4);
+}
+/* ======================================= */
+/* ======   Header Menu Button Revamp   ====== */
+/* ======================================= */
+
+/* --- ปรับปรุงสไตล์หลักของปุ่มเมนู --- */
+#open-menu.icon-button {
+    width: 44px; /* กำหนดความกว้าง */
+    height: 44px; /* กำหนดความสูง */
+    display: flex; /* ใช้ Flexbox เพื่อจัดไอคอนให้อยู่ตรงกลาง */
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg-color); /* ใช้สีพื้นหลังเดียวกับการ์ด */
+    border-radius: 12px; /* ทำให้ขอบมนสวยงาม */
+    color: var(--primary-color); /* เปลี่ยนสีไอคอนเป็นสีหลักของเว็บ */
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); /* เพิ่มเงาจางๆ */
+    transition: all 0.2s ease-out; /* เพิ่มอนิเมชันที่นุ่มนวล */
+}
+
+/* สำหรับ Dark Mode */
+body[data-theme="dark"] #open-menu.icon-button {
+    background-color: var(--card-bg-dark);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* --- เพิ่มการตอบสนองเมื่อเมาส์ไปวาง (Hover) --- */
+#open-menu.icon-button:hover {
+    transform: translateY(-2px) scale(1.05); /* ทำให้ปุ่มลอยขึ้นและขยายเล็กน้อย */
+    background-color: var(--primary-color); /* เปลี่ยนพื้นหลังเป็นสีหลัก */
+    color: white; /* เปลี่ยนไอคอนเป็นสีขาว */
+    box-shadow: 0 7px 20px -5px var(--primary-color); /* เพิ่มความฟุ้งของเงา */
+}
+
+/* --- เพิ่มการตอบสนองเมื่อคลิก (Active) --- */
+#open-menu.icon-button:active {
+    transform: translateY(0) scale(0.95); /* ทำให้ปุ่มยุบลง */
+    box-shadow: 0 2px 8px -3px var(--primary-color); /* ลดขนาดเงา */
+}
+
+/* --- ปรับขนาดไอคอนภายในปุ่ม --- */
+#open-menu.icon-button .feather {
+    width: 24px;
+    height: 24px;
+}
+/* ======================================= */
+/* ====== Planner UI/UX Enhancement ====== */
+/* ======================================= */
+
+/* --- ปรับปรุงฟอร์ม "เพิ่มกิจกรรม" --- */
+#planner-form button[type="submit"] {
+    border-radius: 50px; /* ทำให้ปุ่มกลมมน */
+    font-weight: 500;
+    padding: 12px 30px;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color); /* เพิ่มแสงเงา */
+    transition: all 0.2s ease-out;
+}
+
+#planner-form button[type="submit"]:hover {
+    transform: translateY(-3px); /* ทำให้ปุ่มลอยขึ้น */
+    box-shadow: 0 7px 20px -5px var(--primary-color);
+}
+
+#planner-form button[type="submit"]:active {
+    transform: translateY(0) scale(0.98); /* ทำให้ปุ่มยุบลงเมื่อคลิก */
+    box-shadow: 0 2px 8px -3px var(--primary-color);
+}
+
+/* --- ปรับปรุงฟอร์มเพิ่มหมวดหมู่ใหม่ใน Modal --- */
+#add-custom-category-form button {
+    border-radius: 50px;
+    box-shadow: 0 4px 12px -3px var(--primary-color);
+    transition: all 0.2s ease;
+}
+#add-custom-category-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px -3px var(--primary-color);
+}
+
+
+/* --- ปรับปรุงรายการกิจกรรมที่แสดงผล --- */
+#events-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* เพิ่มระยะห่างระหว่างรายการ */
+}
+
+#events-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px; /* เพิ่ม padding ให้โปร่งขึ้น */
+    background-color: var(--bg-color);
+    border-radius: 12px; /* ทำให้ขอบมนขึ้น */
+    border-left: 5px solid var(--primary-color); /* เพิ่มแถบสีด้านซ้าย */
+    box-shadow: 0 3px 8px -2px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+body[data-theme="dark"] #events-list li {
+    box-shadow: 0 3px 10px -2px rgba(0,0,0,0.2);
+}
+
+#events-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1);
+}
+body[data-theme="dark"] #events-list li:hover {
+    box-shadow: 0 5px 20px -3px rgba(0,0,0,0.3);
+}
+
+#events-list .event-details {
+    display: flex;
+    flex-direction: column;
+}
+
+#events-list .event-name {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 1.05rem;
+}
+
+#events-list .event-category {
+    font-size: 0.85em;
+    color: var(--subtle-text-color);
+    margin-top: 3px;
+}
+
+#events-list .event-time {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--primary-color);
+    background-color: var(--card-bg-color);
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+/* ======================================= */
+/* ====== Revisit Page Button Revamp ====== */
+/* ======================================= */
+
+/* --- สไตล์หลักสำหรับปุ่ม Primary ในหน้าทบทวนความรู้ทั้งหมด --- */
+#revisit-page button[type="submit"],
+#revisit-page #start-quiz-btn {
+    border-radius: 50px; /* ทำให้ปุ่มกลมมน */
+    font-weight: 500;
+    padding: 12px 30px;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color); /* เพิ่มแสงเงา */
+    transition: all 0.2s ease-out;
+    border: none;
+}
+
+#revisit-page button[type="submit"]:hover,
+#revisit-page #start-quiz-btn:hover {
+    transform: translateY(-3px); /* ทำให้ปุ่มลอยขึ้น */
+    box-shadow: 0 7px 20px -5px var(--primary-color);
+}
+
+#revisit-page button[type="submit"]:active,
+#revisit-page #start-quiz-btn:active {
+    transform: translateY(0) scale(0.98); /* ทำให้ปุ่มยุบลงเมื่อคลิก */
+    box-shadow: 0 2px 8px -3px var(--primary-color);
+}
+
+
+/* --- สไตล์สำหรับปุ่มรอง (Secondary) เช่น "เพิ่มตัวเลือก" หรือ "ยกเลิก" --- */
+#revisit-page .btn-secondary {
+    border-radius: 50px;
+    font-weight: 500;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px -5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-out;
+}
+/* สำหรับ Dark Mode */
+body[data-theme="dark"] #revisit-page .btn-secondary {
+    box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3);
+}
+
+#revisit-page .btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 6px 18px -5px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] #revisit-page .btn-secondary:hover {
+    box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4);
+}
+
+
+/* --- ปรับปรุงสไตล์ของ Topic List ให้ดูดีขึ้น --- */
+#revisit-topics-by-subject .topic-item .small-btn {
+    border-radius: 20px;
+    font-size: 0.85em;
+    padding: 6px 15px;
+}
