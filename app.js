@@ -4532,6 +4532,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            const deleteAdviceBtn = closest('.delete-advice-btn');
+            if (deleteAdviceBtn) {
+                const adviceIndex = parseInt(deleteAdviceBtn.dataset.index, 10);
+                Swal.fire({
+                    title: 'แน่ใจหรือไม่?',
+                    text: "คุณต้องการลบคำแนะนำนี้ออกจากรายการใช่ไหม?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: 'var(--danger-color)',
+                    cancelButtonColor: '#6e7881',
+                    confirmButtonText: 'ใช่, ลบเลย!',
+                    cancelButtonText: 'ยกเลิก'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (state.userAdvice && state.userAdvice[adviceIndex] !== undefined) {
+                            state.userAdvice.splice(adviceIndex, 1);
+                            saveState();
+                            renderUserAdviceList(); // วาดรายการใหม่
+                            showToast('ลบคำแนะนำแล้ว');
+                        }
+                    }
+                });
+                return;
+            }
+
             // --- Group 4: Revisit & Quiz System ---
             if (closest('#revisit-subject-display')) { openSubjectSelector(selectSubject); return; }
             const iconOption = closest('.icon-option');
