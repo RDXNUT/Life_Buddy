@@ -1,0 +1,26 @@
+{
+  "name": "lifebuddy2",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RDXNUT/LifeBuddy2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RDXNUT/LifeBuddy2/issues"
+  },
+  "homepage": "https://github.com/RDXNUT/LifeBuddy2#readme",
+  "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2"
+  },
+  "devDependencies": {},
+  "description": ""
+}
