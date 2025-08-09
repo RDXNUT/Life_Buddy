@@ -4,7 +4,7 @@
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f5f7fa",
-  "theme_color": "#007aff",
+  "theme_color": "#e9f7ff",
   "description": "คู่หูที่จะช่วยจัดการเรื่องการเรียนและชีวิตส่วนตัวของคุณ",
   "icons": [
     {
