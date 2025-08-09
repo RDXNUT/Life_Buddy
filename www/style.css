@@ -2318,3 +2318,94 @@ body[data-theme="dark"] #revisit-page .btn-secondary:hover {
     background-color: transparent !important;
     padding: 0 !important;
 }
+/* ================================================= */
+/* ====== FINAL REVAMPED Action Sheet Styles ====== */
+/* ================================================= */
+
+/* --- 1. The Overlay (พื้นหลังสีดำโปร่งแสง) --- */
+.action-sheet-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+.action-sheet-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- 2. The Action Sheet (กล่องที่เลื่อนขึ้นมา) --- */
+.action-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #2c2c2e; /* สี Dark mode เหมือน Instagram */
+    color: white;
+    border-radius: 16px 16px 0 0;
+    z-index: 2001;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+    padding: 8px 8px 30px; /* [แก้ไข] ปรับ Padding ให้กระชับ */
+    max-width: 500px; /* [แก้ไข] จำกัดความกว้างสูงสุด */
+    margin: 0 auto;
+}
+.action-sheet.show {
+    transform: translateY(0);
+}
+.action-sheet:not(.hidden) .action-sheet-content {
+    display: flex; /* [สำคัญ] แก้ไขการแสดงผล */
+    flex-direction: column;
+    align-items: center;
+    background-color: #1c1c1e; /* [ใหม่] สีพื้นหลังของเนื้อหา */
+    border-radius: 12px; /* [ใหม่] ทำให้ขอบมน */
+}
+
+/* --- 3. Content inside the sheet (เนื้อหาข้างใน) --- */
+.action-sheet-avatar {
+    width: 60px; /* [แก้ไข] ลดขนาดรูป */
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 24px 0 16px; /* [แก้ไข] ปรับระยะห่าง */
+}
+.action-sheet-content p {
+    color: #e5e5e5;
+    text-align: center;
+    margin: 0 20px 24px; /* [แก้ไข] ปรับระยะห่าง */
+    font-size: 0.9rem; /* [แก้ไข] ลดขนาดฟอนต์ */
+    line-height: 1.5;
+}
+
+/* --- 4. Buttons (ปุ่มต่างๆ) --- */
+.action-sheet-btn {
+    width: 100%;
+    padding: 14px;
+    font-family: var(--font-family);
+    font-size: 1rem; /* [แก้ไข] ลดขนาดฟอนต์ปุ่ม */
+    background: transparent;
+    color: white;
+    border: none;
+    border-top: 1px solid rgba(84, 84, 88, 0.65); /* [แก้ไข] สีเส้นคั่น */
+    cursor: pointer;
+    font-weight: 400;
+}
+.action-sheet-btn.destructive {
+    color: #ff453a;
+    font-weight: 700;
+}
+
+/* [ใหม่] จัดการปุ่ม Cancel ให้แยกออกมา */
+#unfollow-sheet-cancel-btn {
+    margin-top: 8px; /* [ใหม่] เพิ่มระยะห่างระหว่างกลุ่มปุ่ม */
+    background-color: #1c1c1e; /* [ใหม่] สีพื้นหลัง */
+    border-radius: 12px; /* [ใหม่] ทำให้ขอบมน */
+    font-weight: 700;
+    border-top: none; /* [ใหม่] ไม่ต้องมีเส้นคั่น */
+}

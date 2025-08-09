@@ -14,11 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const capacitorExports = window.Capacitor?.Plugins;
 
     // =======================================
     // ===== 2. GLOBAL STATE & CONSTANTS =====
     // =======================================
     let currentUser = null;
+    let friendListeners = [];
     let state = {};
     const availableIcons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
     let currentlyEditingSubjectValue = null;
@@ -28,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
     let tcasDatabase = [];
     let selectedMajor = null;
+    window.handleUnfollow = handleUnfollow;
 
     const initialState = {
         coins: 50,
@@ -1934,7 +1937,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestSent = (state.sentFollowRequests || []).includes(friendId);
         let followButtonHtml = '';
         if (amIFollowing) {
-            followButtonHtml = `<button class="small-btn btn-secondary" disabled>กำลังติดตาม</button>`;
+            followButtonHtml = `<button class="small-btn btn-secondary" onclick="handleUnfollow('${friendId}', '${friendData.profile.displayName}', '${friendData.profile.photoURL}')">กำลังติดตาม</button>`;
         } else if (requestSent) {
             followButtonHtml = `<button class="small-btn" disabled>ส่งคำขอแล้ว</button>`;
         } else {
@@ -3267,47 +3270,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // eslint-disable-next-line no-unused-vars
+
     function setupFriendListeners(userId) {
         if (!userId) return;
+
+        // [สำคัญ] ยกเลิก listener เก่าทุกครั้งที่เรียกใช้ฟังก์ชันนี้ เพื่อป้องกันการทำงานซ้ำซ้อน
         if (friendListeners.length > 0) {
             friendListeners.forEach(unsubscribe => unsubscribe());
             friendListeners = [];
         }
+
         const userListener = db.collection('users').doc(userId).onSnapshot(doc => {
             if (doc.exists) {
                 const data = doc.data();
+                // อัปเดต state ของเราด้วยข้อมูลล่าสุดจาก Firestore
                 state.following = data.following || [];
                 state.followers = data.followers || [];
                 state.followRequests = data.followRequests || [];
                 state.sentFollowRequests = data.sentFollowRequests || [];
+                
                 const requestCount = state.followRequests.length;
                 const badge = document.getElementById('request-count-badge');
-                const dot = document.getElementById('unread-notification-dot');
+                
+                // อัปเดตป้ายตัวเลข (badge)
                 if (badge) {
                     badge.textContent = requestCount;
                     badge.classList.toggle('hidden', requestCount === 0);
                 }
-                if (dot) {
-                    dot.classList.toggle('hidden', requestCount === 0);
-                }
+
+                // [จุดที่แม่นยำที่สุด] ตรวจสอบว่าผู้ใช้กำลังเปิดหน้า Community อยู่หรือไม่
                 const communityPage = document.getElementById('community-page');
-                const profilePage = document.getElementById('profile-page');
                 if (communityPage && communityPage.classList.contains('active')) {
+                    // ตรวจสอบว่าแท็บ "คำขอ" กำลังถูกเปิดอยู่หรือไม่
                     const activeTab = communityPage.querySelector('.tab-btn.active');
-                    if (activeTab) {
-                        const tab = activeTab.dataset.tab;
-                        if (tab === 'requests') renderFollowRequests();
-                        else if (tab === 'followers') renderFollowersList();
-                        else renderFollowingList();
+                    if (activeTab && activeTab.dataset.tab === 'requests') {
+                        // ถ้าใช่ ให้สั่งวาดรายการคำขอใหม่ทันที!
+                        renderFollowRequests();
                     }
-                }
-                if (profilePage && profilePage.classList.contains('active')) {
-                    renderProfilePage();
                 }
             }
         }, error => {
             console.error("Error listening to user document:", error);
         });
+
+        // เก็บ listener ไว้เพื่อยกเลิกในอนาคต
         friendListeners.push(userListener);
     }
 
@@ -3385,24 +3391,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // [จุดสำคัญอยู่ตรงนี้]
             listEl.innerHTML = followingDocs.map(doc => {
-                if (!doc.exists) return '';
-                const friendData = doc.data();
-                const isMutual = (friendData.followers || []).includes(currentUser.uid);
-                const displayName = friendData.profile.displayName || 'User';
-                const { level } = calculateLevel(friendData.exp || 0);
+            if (!doc.exists) return '';
+            const friendData = doc.data();
+            const displayName = friendData.profile.displayName || 'User';
 
-                // [สำคัญมาก] onclick ต้องเรียก showFriendProfile เท่านั้น
-                return `
-                    <li class="user-list-item" style="cursor: pointer;" onclick="showFriendProfile('${doc.id}')">
-                        <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
-                        <div class="user-info">
-                            <h4>${displayName}</h4>
-                            <p class="subtle-text">Level ${level}</p>
-                        </div>
-                        ${isMutual ? '<i data-feather="repeat" class="mutual-icon" title="ติดตามซึ่งกันและกัน"></i>' : ''}
-                    </li>
-                `;
-            }).join('');
+            return `
+                <li class="user-list-item">
+                    <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar" onclick="showFriendProfile('${doc.id}')" style="cursor: pointer;">
+                    <div class="user-info" onclick="showFriendProfile('${doc.id}')" style="cursor: pointer;">
+                        <h4>${displayName}</h4>
+                        <p class="subtle-text">Level ${calculateLevel(friendData.exp || 0).level}</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="small-btn btn-secondary" onclick="handleUnfollow('${doc.id}', '${displayName}', '${friendData.profile.photoURL}')">กำลังติดตาม</button>
+                    </div>
+                </li>
+            `;
+        }).join('');
             feather.replace();
         } catch (error) {
             console.error("Error rendering following list:", error);
@@ -3462,7 +3467,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const requestSent = (state.sentFollowRequests || []).includes(user.id);
             let actionButton = '';
             if (amIFollowing) {
-                actionButton = `<button class="small-btn btn-secondary" disabled>กำลังติดตาม</button>`;
+                actionButton = `<button class="small-btn btn-secondary" onclick="handleUnfollow('${user.id}', '${profile.displayName}', '${profile.photoURL}')">กำลังติดตาม</button>`;
             } else if (requestSent) {
                 actionButton = `<button class="small-btn" disabled>ส่งคำขอแล้ว</button>`;
             } else {
@@ -3585,9 +3590,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderFollowRequests() {
         const listEl = document.getElementById('friend-requests-list');
         const badgeEl = document.getElementById('request-count-badge');
-        if (!listEl || !badgeEl) return;
+        if (!listEl || !badgeEl) return; // ออกทันทีถ้าหา element ไม่เจอ
 
         listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลด...</li>';
+        
+        // ใช้ข้อมูลล่าสุดจาก state ที่ listener อัปเดตให้เรา
         const requestIds = state.followRequests || [];
 
         badgeEl.textContent = requestIds.length;
@@ -3599,12 +3606,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // ดึงข้อมูลโปรไฟล์ของผู้ที่ส่งคำขอมา
             const requestPromises = requestIds.map(uid => db.collection('users').doc(uid).get());
             const requestDocs = await Promise.all(requestPromises);
 
             let finalHtml = '';
             requestDocs.forEach(doc => {
                 if (!doc.exists) return; // ข้าม user ที่ไม่มีข้อมูล
+                
                 const senderData = doc.data();
                 const { displayName, lifebuddyId, photoURL } = senderData.profile;
                 
@@ -3624,7 +3633,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             listEl.innerHTML = finalHtml || '<li class="empty-placeholder">ไม่พบข้อมูลคำขอ</li>';
-            feather.replace();
+            feather.replace(); // วาดไอคอนใหม่
 
         } catch (error) {
             console.error("Error rendering follow requests:", error);
@@ -4899,4 +4908,96 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('auth-modal').classList.add('hidden'); 
         document.getElementById('auth-error').textContent = ''; 
     }
+
+    async function handleUnfollow(friendId, friendName, friendPhotoURL) {
+        // ป้องกันการทำงานถ้าไม่มีข้อมูล
+        if (!currentUser || !friendId) return;
+
+        // 1. ดึง Element ทั้งหมดของ Action Sheet จาก HTML
+        const overlay = document.getElementById('unfollow-sheet-overlay');
+        const sheet = document.getElementById('unfollow-sheet');
+        const avatar = document.getElementById('unfollow-sheet-avatar');
+        const text = document.getElementById('unfollow-sheet-text');
+        const confirmBtn = document.getElementById('unfollow-sheet-confirm-btn');
+        const cancelBtn = document.getElementById('unfollow-sheet-cancel-btn');
+
+        // ตรวจสอบให้แน่ใจว่าหา Element เจอทั้งหมด ป้องกัน Error
+        if (!overlay || !sheet || !avatar || !text || !confirmBtn || !cancelBtn) {
+            console.error("Action Sheet elements not found in index.html!");
+            return;
+        }
+
+        // 2. ตั้งค่าข้อมูลและข้อความเป็นภาษาไทย
+        avatar.src = friendPhotoURL || 'assets/profiles/startprofile.png';
+        text.innerHTML = `หากคุณเปลี่ยนใจ คุณจะต้องส่งคำขอติดตาม <strong>${friendName}</strong> อีกครั้ง`;
+        confirmBtn.textContent = 'เลิกติดตาม';
+        cancelBtn.textContent = 'ยกเลิก';
+
+        // 3. สร้างฟังก์ชันสำหรับซ่อน Sheet (พร้อม Animation)
+        const hideSheet = () => {
+            overlay.classList.remove('show');
+            sheet.classList.remove('show');
+            // ใช้ setTimeout เพื่อให้ animation เล่นจบก่อนที่จะซ่อน element จริงๆ
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                sheet.classList.add('hidden');
+            }, 300);
+        };
+        
+        // 4. สร้างฟังก์ชันจัดการการทำงานของปุ่มและ Overlay
+        const handleCancel = () => {
+            hideSheet();
+            cleanupListeners();
+        };
+
+        const handleConfirm = async () => {
+            try {
+                const currentUserId = currentUser.uid;
+                const userRef = db.collection('users').doc(currentUserId);
+                const friendRef = db.collection('users').doc(friendId);
+                
+                const batch = db.batch();
+
+                // เอา ID เพื่อนออกจาก array 'following' ของเรา
+                batch.update(userRef, { following: firebase.firestore.FieldValue.arrayRemove(friendId) });
+                
+                // เอา ID ของเราออกจาก array 'followers' ของเพื่อน
+                batch.update(friendRef, { followers: firebase.firestore.FieldValue.arrayRemove(currentUserId) });
+
+                await batch.commit();
+                showToast(`เลิกติดตาม ${friendName} แล้ว`);
+            } catch (error) {
+                console.error("Error unfollowing user:", error);
+                showToast("เกิดข้อผิดพลาดในการเลิกติดตาม");
+            } finally {
+                hideSheet();
+                cleanupListeners();
+            }
+        };
+
+        // ฟังก์ชันสำหรับลบ Event Listener เก่าทิ้ง ป้องกันการทำงานซ้ำซ้อน
+        const cleanupListeners = () => {
+            cancelBtn.removeEventListener('click', handleCancel);
+            confirmBtn.removeEventListener('click', handleConfirm);
+            overlay.removeEventListener('click', handleCancel);
+        };
+
+        // 5. เริ่มกระบวนการ: ลบ Listener เก่า -> เพิ่ม Listener ใหม่ -> แสดง Sheet
+        cleanupListeners(); // ล้างของเก่าก่อนเสมอ
+
+        cancelBtn.addEventListener('click', handleCancel);
+        confirmBtn.addEventListener('click', handleConfirm);
+        overlay.addEventListener('click', handleCancel);
+
+        // แสดง Action Sheet (พร้อม Animation)
+        overlay.classList.remove('hidden');
+        sheet.classList.remove('hidden');
+        
+        // ใช้ setTimeout เล็กน้อยเพื่อให้ CSS animation ทำงานได้ถูกต้อง
+        setTimeout(() => {
+            overlay.classList.add('show');
+            sheet.classList.add('show');
+        }, 10);
+    }
+
 });
