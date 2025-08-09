@@ -21,6 +21,8 @@
     "@capacitor/cli": "^7.4.2",
     "@capacitor/core": "^7.4.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  },
   "description": ""
 }
