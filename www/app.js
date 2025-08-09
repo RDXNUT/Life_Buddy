@@ -1041,13 +1041,19 @@ document.addEventListener('DOMContentLoaded', () => {
             checkInText.classList.add('hidden');
             checkInIcon.classList.remove('hidden');
 
+            const subtext = checkInBtn.parentElement.querySelector('.check-in-subtext-external');
+            if (subtext) {
+                subtext.style.display = 'none';
+            }
+
         } else if (state.isStreakFrozen === true) {
             // --- สถานะที่ 2: สตรีคแข็งอยู่ (ไฟเย็น) ---
             checkInBtn.disabled = false;
             checkInBtn.classList.add('restore-streak');
             checkInText.classList.remove('hidden');
             checkInIcon.classList.add('hidden');
-            // สร้าง HTML สำหรับปุ่มกู้ไฟ
+            
+            // [แก้ไขกลับมาเป็นแบบนี้] ทำให้ข้อความและ subtext อยู่ในปุ่มเดียวกัน
             checkInText.innerHTML = `กู้ไฟ 🧊 <span class="check-in-subtext">(เหลือ ${state.streakFreezesAvailable} ครั้ง)</span>`;
 
         } else {
@@ -3867,28 +3873,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- กรณีที่ 2: สตรีคแข็งอยู่ (ไฟเย็น) ---
         if (state.isStreakFrozen === true) {
             Swal.fire({
-                html: `
-                    <div class="swal-streak-icon" style="text-shadow: 0 4px 20px rgba(10, 132, 255, 0.5);">🧊</div>
-                    <h2 class="swal-streak-title">สตรีคกำลังตกอยู่ในอันตราย!</h2>
-                    <p class="swal-streak-text">
-                        ดูเหมือนว่าคุณจะลืมเช็คอินเมื่อวานนี้ แต่ไม่เป็นไร!
-                        คุณสามารถใช้ "ไฟเย็น" เพื่อกู้สตรีคของคุณกลับมาได้
-                    </p>
-                    <p class="swal-streak-subtext">
-                        คุณมีโควต้ากู้สตรีคเหลือ <strong>${state.streakFreezesAvailable} ครั้ง</strong> ในเดือนนี้
-                    </p>
-                    <button id="swal-restore-btn" class="swal-checkin-button swal-restore-button">กู้สตรีคของฉัน</button>
-                `,
-                showConfirmButton: false, // ซ่อนปุ่ม OK เริ่มต้น
-                width: '380px',
-                didOpen: () => {
-                    // ผูก event ให้กับปุ่มที่สร้างขึ้นเอง
-                    document.getElementById('swal-restore-btn').addEventListener('click', () => {
-                        handleCheckIn(); // เรียกฟังก์ชันเช็คอินเดิม
-                        Swal.close();
-                    });
-                }
-            });
+            // 1. ใช้ "ช่อง" สำหรับไอคอนโดยเฉพาะ
+            html: `
+                <div class="swal-streak-icon">🧊</div>
+                <p class="swal-streak-subtext">
+                    คุณมีโควต้ากู้สตรีคเหลือ <strong>${state.streakFreezesAvailable} ครั้ง</strong> ในเดือนนี้
+                </p>
+            `,
+            // 2. ใช้ "ช่อง" สำหรับ Title โดยเฉพาะ (จะถูกจัดกลางให้อัตโนมัติ)
+            title: 'แย่แล้ว!',
+
+            // 3. ใช้ "ช่อง" สำหรับข้อความหลักโดยเฉพาะ
+            text: 'ดูเหมือนว่าคุณจะลืมเช็คอินเมื่อวานนี้ แต่ไม่เป็นไร! คุณสามารถใช้ "ไฟเย็น" เพื่อกู้สตรีคของคุณกลับมาได้',
+
+            // 4. ส่วนปุ่มยังเหมือนเดิม
+            showConfirmButton: false,
+            width: '380px',
+            didOpen: () => {
+                // สร้างปุ่มขึ้นมาเองเพื่อควบคุมได้เต็มที่
+                const container = Swal.getHtmlContainer();
+                const button = document.createElement('button');
+                button.id = 'swal-restore-btn';
+                button.className = 'swal-checkin-button swal-restore-button';
+                button.textContent = 'กู้สตรีคของฉัน';
+                button.onclick = () => {
+                    handleCheckIn();
+                    Swal.close();
+                };
+                container.appendChild(button);
+            }
+        });
             return; // จบการทำงาน
         }
 
