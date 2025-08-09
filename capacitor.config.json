@@ -1,5 +1,6 @@
 {
   "appId": "com.lifebuddy.app",
   "appName": "Life Buddy",
-  "webDir": "."
+  "webDir": "www",  
+  "bundledWebRuntime": false
 }
