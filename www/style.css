@@ -41,7 +41,13 @@ header { position: fixed; top: 0; left: 0; width: 100%; display: flex; justify-c
     border-right: 1px solid var(--border-color); }
 #sidebar.show { left: 0; }
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 20px; border-bottom: 1px solid var(--border-color); }
-#sidebar ul { list-style: none; padding: 10px; }
+#sidebar ul {
+    list-style: none;
+    padding: 10px;
+    height: calc(100% - 80px); /* กำหนดความสูงให้เกือบเต็ม แต่เว้นที่สำหรับ Header */
+    overflow-y: auto; /* [สำคัญ] ทำให้เลื่อนได้เมื่อเนื้อหาล้น */
+    padding-bottom: 50px; /* เพิ่มที่ว่างด้านล่างสุด กันเมนูล่างสุดติดขอบจอ */
+}
 #sidebar ul li a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; text-decoration: none; color: var(--text-color); font-size: 1rem; font-weight: 400; border-radius: 8px; transition: all 0.2s; margin-bottom: 5px; }
 #sidebar ul li a:hover { background-color: var(--primary-hover); color: #fff; transform: translateX(5px); }
 #sidebar ul li a.active { background-color: var(--primary-color); color: #fff; font-weight: 500; }
@@ -2378,8 +2384,8 @@ body[data-theme="dark"] #revisit-page .btn-secondary:hover {
 .action-sheet-content p {
     color: #e5e5e5;
     text-align: center;
-    margin: 0 20px 24px; /* [แก้ไข] ปรับระยะห่าง */
-    font-size: 0.9rem; /* [แก้ไข] ลดขนาดฟอนต์ */
+    margin: 0 20px 24px; 
+    font-size: 0.9rem;
     line-height: 1.5;
 }
 
@@ -2388,7 +2394,7 @@ body[data-theme="dark"] #revisit-page .btn-secondary:hover {
     width: 100%;
     padding: 14px;
     font-family: var(--font-family);
-    font-size: 1rem; /* [แก้ไข] ลดขนาดฟอนต์ปุ่ม */
+    font-size: 1rem;
     background: transparent;
     color: white;
     border: none;
@@ -2408,4 +2414,169 @@ body[data-theme="dark"] #revisit-page .btn-secondary:hover {
     border-radius: 12px; /* [ใหม่] ทำให้ขอบมน */
     font-weight: 700;
     border-top: none; /* [ใหม่] ไม่ต้องมีเส้นคั่น */
+}
+/* ======================================= */
+/* ======   Search Result Revamp    ====== */
+/* ======================================= */
+
+/* --- ปรับปรุง Layout ของรายการผลการค้นหา --- */
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* เพิ่มระยะห่างระหว่างรูป, ชื่อ, และปุ่ม */
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* --- สไตล์หลักสำหรับปุ่มในหน้าค้นหา --- */
+.search-result-item .user-actions .small-btn {
+    border-radius: 8px; /* ทำให้เป็นสี่เหลี่ยมขอบมน */
+    font-weight: 700;
+    min-width: 110px; /* กำหนดความกว้างขั้นต่ำให้ปุ่มเท่าๆ กัน */
+    transition: all 0.2s ease;
+}
+
+/* --- สไตล์สำหรับปุ่มรอง (ส่งคำขอแล้ว / กำลังติดตาม) --- */
+.search-result-item .user-actions .btn-secondary {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+.search-result-item .user-actions .btn-secondary:disabled {
+    opacity: 0.7; /* ทำให้ปุ่ม "ส่งคำขอแล้ว" ดูจางลง */
+}
+
+/* --- [ลูกเล่น] สไตล์สำหรับปุ่ม "กำลังติดตาม" เมื่อเอาเมาส์ไปชี้ --- */
+.search-result-item .user-actions .btn-following:hover {
+    background-color: rgba(255, 59, 48, 0.1); /* พื้นหลังสีแดงจางๆ */
+    color: var(--danger-color); /* ตัวอักษรสีแดง */
+    border-color: rgba(255, 59, 48, 0.4); /* ขอบสีแดงจางๆ */
+}
+/* ======================================= */
+/* ======   Coming Soon Placeholder   ====== */
+/* ======================================= */
+
+.coming-soon-placeholder {
+    grid-column: 1 / -1; /* [สำคัญ] ทำให้ข้อความนี้กินพื้นที่เต็มความกว้างของ Grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--subtle-text-color);
+    opacity: 0.7;
+}
+
+.coming-soon-placeholder .feather {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 20px;
+    stroke-width: 1.5;
+}
+
+.coming-soon-placeholder h3 {
+    font-size: 1.4rem;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+/* ======================================= */
+/* ====== Global Mobile Responsiveness ====== */
+/* ======================================= */
+
+/* ใช้กฎเหล่านี้เมื่อความกว้างหน้าจอน้อยกว่าหรือเท่ากับ 768px */
+@media (max-width: 768px) {
+
+    /* --- 1. ปรับ Padding หลักและขนาดฟอนต์พื้นฐาน --- */
+    main {
+        padding: 75px 15px 15px; /* ลดระยะขอบซ้าย-ขวา */
+    }
+    body {
+        font-size: 15px; /* ลดขนาดฟอนต์พื้นฐานเล็กน้อย */
+    }
+
+    /* --- 2. ลดขนาดหัวข้อทั้งหมด --- */
+    h1 {
+        font-size: 1.8rem;
+    }
+    h2 {
+        font-size: 1.4rem;
+        padding-bottom: 10px;
+    }
+    h3 {
+        font-size: 1.1rem;
+    }
+
+    /* --- 3. ทำให้ Card กระชับขึ้น --- */
+    .card {
+        padding: 20px; /* ลด Padding ภายใน Card */
+    }
+
+    /* --- 4. ลดขนาดปุ่มและช่องกรอกข้อมูล --- */
+    button, input, select, textarea {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+    .small-btn {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+
+    /* --- 5. [สำคัญ] ปรับ Layout ที่เป็นหลายคอลัมน์ให้เป็นคอลัมน์เดียว --- */
+
+    /* หน้า Home */
+    .home-grid {
+        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
+    }
+
+    /* หน้า Planner และ Mood */
+    .planner-container, .mood-container {
+        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
+    }
+
+    /* หน้า Profile */
+    .profile-container {
+        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
+    }
+    .profile-banner {
+        height: 140px; /* ลดความสูง Banner */
+    }
+    #profile-view-photo.avatar-display {
+        width: 120px;
+        height: 120px;
+        top: 140px;
+    }
+    .profile-info {
+        padding: 75px 20px 20px;
+    }
+
+    /* หน้า Shop */
+    .shop-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    /* --- 6. ปรับขนาด Popup (Modal) --- */
+    .modal-content {
+        padding: 20px;
+    }
+    .modal-content.large {
+        width: 95%;
+    }
+
+    /* --- 7. ปรับปรุง UI เฉพาะจุด --- */
+    #timer-display {
+        font-size: 4.5rem; /* ลดขนาดตัวเลขจับเวลา */
+    }
+    .timer-controls {
+        flex-direction: column; /* ทำให้ปุ่มจับเวลาเรียงเป็นแนวตั้ง */
+        gap: 10px;
+    }
+    .timer-controls button {
+        width: 100%;
+        max-width: none;
+    }
 }
