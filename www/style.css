@@ -2361,58 +2361,7 @@ body[data-theme="light"] .action-sheet-form-header { border-bottom-color: #dcdcd
     cursor: pointer;
 }
 
-/* --- [REVISED] Global Mobile Responsiveness --- */
-@media (max-width: 768px) {
-    /* 1. ลดขนาดฟอนต์พื้นฐานของทั้งแอป */
-    body {
-        font-size: 14px; 
-    }
 
-    main {
-        padding: 75px 15px 15px;
-    }
-
-    /* 2. ลดขนาดหัวข้อต่างๆ ลงอีกเล็กน้อย */
-    h1 { font-size: 1.6rem; }
-    h2 { font-size: 1.3rem; padding-bottom: 10px; }
-    h3 { font-size: 1.05rem; }
-
-    /* 3. ลดขนาดฟอนต์และ Padding ของปุ่ม/ฟอร์ม */
-    button, input, select, textarea {
-        padding: 12px;
-        font-size: 0.9rem;
-    }
-    .small-btn {
-        padding: 7px 12px;
-        font-size: 0.8rem;
-    }
-
-    /* 4. [สำคัญ] แก้ไขปัญหาปุ่ม "เช็คอิน" โดยเฉพาะ */
-    .user-stats {
-        gap: 10px; /* ลดระยะห่างระหว่างไอคอนบน Header */
-    }
-    #streak-display {
-        padding: 6px 12px;
-        font-size: 0.9em;
-    }
-    #check-in-btn {
-        padding: 8px 14px; /* ลด Padding ให้ปุ่มเล็กลง */
-        font-size: 0.85em;  /* ลดขนาดฟอนต์ในปุ่ม */
-        min-width: auto;
-    }
-
-    /* 5. ปรับ Layout ที่เคยทำไว้ให้เข้ากับขนาดใหม่ */
-    .home-grid, .planner-container, .mood-container, .profile-container {
-        grid-template-columns: 1fr;
-    }
-    .card { padding: 15px; }
-    .profile-banner { height: 120px; }
-    #profile-view-photo.avatar-display { width: 100px; height: 100px; top: 120px; }
-    .profile-info { padding: 60px 15px 15px; }
-    #timer-display { font-size: 4rem; }
-    .timer-controls { flex-direction: row; gap: 10px; } /* ทำให้ปุ่ม focus กลับมาแนวนอน */
-    .timer-controls button { width: auto; max-width: 150px; flex-grow: 1; }
-}
 
 /* ส่วนหัว (ปุ่ม Follow และ ปิด) */
 .fp-modal-header-actions {
@@ -2844,4 +2793,86 @@ body[data-theme="dark"] .help-sheet-icon {
     background-color: var(--primary-color);
     color: white;
     font-weight: 700;
+}
+/* --- [FINAL] Global Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    /* ลดขนาดฟอนต์พื้นฐานของทั้งแอป */
+    body {
+        font-size: 14px; 
+    }
+
+    main {
+        padding: 75px 15px 15px;
+    }
+
+    /* ลดขนาดหัวข้อต่างๆ */
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.05rem; }
+
+    /* ลดขนาดฟอนต์และ Padding ของปุ่ม/ฟอร์ม */
+    button, input, select, textarea {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    .small-btn {
+        padding: 7px 12px;
+        font-size: 0.8rem;
+    }
+
+    /* ================================================= */
+    /* ====== [แก้ไข] ส่วนของ Header บนมือถือ ====== */
+    /* ================================================= */
+    .user-stats {
+        gap: 8px; /* ลดระยะห่างระหว่างไอคอนบน Header */
+    }
+    #streak-display {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+    #check-in-btn {
+        padding: 4px 8px;   /* ลด Padding ให้ปุ่มกระชับสุดๆ */
+        font-size: 0.7em;   /* ลดขนาดฟอนต์ลงเยอะๆ */
+        height: 36px;       /* กำหนดความสูงให้พอดี */
+        min-width: 60px;    /* กำหนดความกว้างขั้นต่ำ */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        line-height: 1.2;   /* ลดระยะห่างระหว่างบรรทัด */
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    /* [สำคัญ] เปลี่ยนสีฟอนต์เป็นสีดำเฉพาะใน "โหมดสว่าง" */
+    body[data-theme="light"] #check-in-btn {
+        color: var(--text-color) !important; /* !important เพื่อให้แน่ใจว่าสไตล์นี้ถูกใช้งาน */
+        background-color: #e9ecef !important; /* เปลี่ยนสีพื้นหลังปุ่มให้เทาอ่อนๆ */
+        border: 1px solid #dee2e6;
+    }
+    body[data-theme="light"] #check-in-btn.restore-streak {
+        background-color: #cfe2ff !important; /* เปลี่ยนเป็นสีฟ้าอ่อน */
+        border-color: #9ec5fe;
+    }
+
+    /* จัดการกับข้อความย่อยในปุ่ม "กู้ไฟ" */
+    #check-in-btn .check-in-subtext {
+        font-size: 0.85em; /* ทำให้เล็กกว่าข้อความหลักเล็กน้อย */
+        opacity: 0.8;
+        margin-top: 1px;
+        display: block;
+    }
+    /* ================================================= */
+
+    /* ปรับ Layout ที่เคยทำไว้ */
+    .home-grid, .planner-container, .mood-container, .profile-container {
+        grid-template-columns: 1fr;
+    }
+    .card { padding: 15px; }
+    .profile-banner { height: 120px; }
+    #profile-view-photo.avatar-display { width: 100px; height: 100px; top: 120px; }
+    .profile-info { padding: 60px 15px 15px; }
+    #timer-display { font-size: 4rem; }
+    .timer-controls { flex-direction: row; gap: 10px; }
+    .timer-controls button { width: auto; max-width: 150px; flex-grow: 1; }
 }
