@@ -2831,36 +2831,53 @@ body[data-theme="dark"] .help-sheet-icon {
         font-size: 0.9em;
     }
     #check-in-btn {
-        padding: 4px 8px;   /* ลด Padding ให้ปุ่มกระชับสุดๆ */
-        font-size: 0.7em;   /* ลดขนาดฟอนต์ลงเยอะๆ */
-        height: 36px;       /* กำหนดความสูงให้พอดี */
-        min-width: 60px;    /* กำหนดความกว้างขั้นต่ำ */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        line-height: 1.2;   /* ลดระยะห่างระหว่างบรรทัด */
-        text-align: center;
-        box-sizing: border-box;
+        padding: 4px 10px !important;   /* ลด Padding ให้ปุ่มกระชับสุดๆ */
+         font-size: 11px !important;        /* [บังคับ] ลดขนาดฟอนต์ให้เล็กมากๆ */
+        height: 36px !important;
+        min-width: 65px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        line-height: 1.2 !important;
+        text-align: center !important;
+        border-radius: 20px !important;
+        box-sizing: border-box !important;
     }
 
-    /* [สำคัญ] เปลี่ยนสีฟอนต์เป็นสีดำเฉพาะใน "โหมดสว่าง" */
+    /* เปลี่ยนสีฟอนต์เป็นสีดำเฉพาะใน "โหมดสว่าง" */
     body[data-theme="light"] #check-in-btn {
-        color: var(--text-color) !important; /* !important เพื่อให้แน่ใจว่าสไตล์นี้ถูกใช้งาน */
-        background-color: #e9ecef !important; /* เปลี่ยนสีพื้นหลังปุ่มให้เทาอ่อนๆ */
-        border: 1px solid #dee2e6;
+        color: #1c2a38 !important; /* ฟอนต์สีดำ */
+        background-color: #e9ecef !important; /* พื้นหลังปุ่มสีเทาอ่อน */
+        border: 1px solid #dee2e6 !important;
     }
     body[data-theme="light"] #check-in-btn.restore-streak {
-        background-color: #cfe2ff !important; /* เปลี่ยนเป็นสีฟ้าอ่อน */
-        border-color: #9ec5fe;
+        background-color: #cfe2ff !important; /* พื้นหลังปุ่มสีฟ้าอ่อน */
+        border-color: #9ec5fe !important;
+        color: #004085 !important; /* ฟอนต์สีน้ำเงินเข้ม */
+    }
+     body[data-theme="light"] #check-in-btn.checked {
+        background-color: #d1e7dd !important;
+        border-color: #a3cfbb !important;
+        color: #0f5132 !important;
     }
 
     /* จัดการกับข้อความย่อยในปุ่ม "กู้ไฟ" */
+    body[data-theme="light"] #check-in-btn.checked {
+        background-color: #d1e7dd !important; /* พื้นหลังสีเขียวอ่อน */
+        border-color: #a3cfbb !important;
+        color: #0f5132 !important; /* ฟอนต์สีเขียวเข้ม */
+    }
+    #check-in-btn .check-in-text {
+        background-color: transparent !important; /* ทำให้พื้นหลังโปร่งใส */
+        padding: 0 !important;                     /* เอา padding เดิมของ span ออก */
+        border: none !important;                   /* เอาเส้นขอบเดิมออก (ถ้ามี) */
+    }
     #check-in-btn .check-in-subtext {
-        font-size: 0.85em; /* ทำให้เล็กกว่าข้อความหลักเล็กน้อย */
-        opacity: 0.8;
-        margin-top: 1px;
-        display: block;
+        font-size: 9px !important;
+        opacity: 0.8 !important;
+        margin-top: 1px !important;
+        display: block !important;
     }
     /* ================================================= */
 
