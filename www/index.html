@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=FINAL">
 
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -173,7 +173,7 @@
         </div>
         <!-- Planner Page -->
         <div id="planner-page" class="page">
-            <h1><i data-feather="calendar"></i> ระบบตารางชีวิต</h1>
+            <h1><i data-feather="calendar"></i> ระบบตารางชีวิต <button class="feature-help-btn icon-button" data-help-key="planner" title="วิธีใช้งาน"><i data-feather="help-circle"></i></button></h1>
             <div class="planner-container">
                 <div class="calendar-main card">
                     <div class="calendar-controls">
@@ -424,7 +424,7 @@
         </div>
         <!-- Revisit Page -->
         <div id="revisit-page" class="page">
-            <h1><i data-feather="book-open"></i> ทบทวนความรู้</h1>
+           <h1><i data-feather="book-open"></i> ทบทวนความรู้ <button class="feature-help-btn icon-button" data-help-key="revisit" title="วิธีใช้งาน"><i data-feather="help-circle"></i></button></h1>
 
             <!-- [VIEW 1] View สำหรับแสดงรายการหัวข้อตามหมวดหมู่ -->
             <div id="revisit-list-view" class="page-view">
@@ -542,7 +542,7 @@
         </div>
         <!-- Focus Page -->
         <div id="focus-page" class="page">
-            <h1><i data-feather="clock"></i> จับเวลาโฟกัส</h1>
+           <h1><i data-feather="clock"></i> จับเวลาโฟกัส <button class="feature-help-btn icon-button" data-help-key="focus" title="วิธีใช้งาน"><i data-feather="help-circle"></i></button></h1>
             
             <div class="focus-topic-selector card">
                 <label for="focus-topic-selector-btn">คุณกำลังจะโฟกัสเรื่องอะไร?</label>
@@ -579,7 +579,7 @@
         </div>
         <!-- Mood Page -->
         <div id="mood-page" class="page">
-            <h1><i data-feather="smile"></i> บันทึกอารมณ์</h1>
+          <h1><i data-feather="smile"></i> บันทึกอารมณ์ <button class="feature-help-btn icon-button" data-help-key="mood" title="วิธีใช้งาน"><i data-feather="help-circle"></i></button></h1>
             <div class="mood-container">
                 <div class="mood-calendar-area card">
                     <div class="calendar-controls">
@@ -628,7 +628,7 @@
 
             <!-- [สำคัญ] ตรวจสอบให้แน่ใจว่าโค้ดทั้งหมดนี้อยู่ "ข้างใน" div ข้างบน -->
 
-            <h1><i data-feather="users"></i> เพื่อน</h1>
+            <h1><i data-feather="users"></i> เพื่อน <button class="feature-help-btn icon-button" data-help-key="community" title="วิธีใช้งาน"><i data-feather="help-circle"></i></button></h1>
 
             <!-- ส่วนของ Tabs -->
             <div class="community-tabs">
@@ -758,15 +758,12 @@
     <!-- ======================================= -->
     <div id="unfollow-sheet-overlay" class="action-sheet-overlay hidden"></div>
     <div id="unfollow-sheet" class="action-sheet hidden">
-        <div class="action-sheet-content">
-            <img id="unfollow-sheet-avatar" src="" alt="Profile Picture" class="action-sheet-avatar">
-            <p id="unfollow-sheet-text">If you change your mind, you'll have to request to follow them again.</p>
-            <button id="unfollow-sheet-confirm-btn" class="action-sheet-btn destructive">Unfollow</button>
-            <button id="unfollow-sheet-cancel-btn" class="action-sheet-btn">Cancel</button>
-        </div>
+        <!-- ส่วนของเนื้อหา ที่ JS จะสร้างใส่เข้ามา -->
+        <div id="unfollow-sheet-content" class="action-sheet-content"></div>
+        
+        <!-- ปุ่ม "ยกเลิก" ที่แยกออกมาต่างหาก -->
+        <button id="unfollow-sheet-cancel-btn" class="action-sheet-btn">ยกเลิก</button>
     </div>
-
-
     <div id="timer-settings-modal" class="modal-overlay hidden">
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header">
@@ -828,7 +825,6 @@
     <div id="profile-selector-modal" class="modal-overlay hidden"><div class="modal-content large"><div class="modal-header"><h3>เลือกรูปโปรไฟล์ของคุณ</h3><button class="close-btn">×</button></div><div class="profile-selector-body"></div></div></div>
     <div id="banner-selector-modal" class="modal-overlay hidden"><div class="modal-content large"><div class="modal-header"><h3>เลือกแบนเนอร์โปรไฟล์ของคุณ</h3><button class="close-btn">×</button></div><div id="banner-selector-body" class="banner-selector-body"></div></div></div>
     <div id="user-list-modal" class="modal-overlay hidden"><div class="modal-content"><div class="modal-header"><h3 id="user-list-modal-title">รายชื่อ</h3><button class="close-btn">×</button></div><div id="user-list-modal-body" class="user-list-modal-body"></div></div></div>
-    <div id="friend-profile-modal" class="modal-overlay hidden"><div class="modal-content large" style="padding: 0; max-width: 800px;"><div id="friend-profile-content"></div><button class="close-btn" style="top: 10px; right: 10px; z-index: 10;">×</button></div></div>
     <div id="subject-selector-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -884,6 +880,16 @@
         </div>
     </div>
 
+    <div id="friend-profile-modal" class="modal-overlay hidden">
+        <div class="modal-content large" style="padding: 0; max-width: 800px;">
+            <div id="friend-profile-content">
+                <!-- ข้อมูลโปรไฟล์ของเพื่อนจะถูกวาดที่นี่ด้วย JavaScript -->
+            </div>
+            <!-- ปุ่มปิดจะถูกจัดการด้วย JavaScript แต่เราใส่ไว้เผื่อ -->
+            <button class="close-btn" style="top: 10px; right: 10px; z-index: 10;">×</button>
+        </div>
+    </div>
+
     <div id="toast-notification" class="hidden"></div> 
 
      <!-- Scripts -->
@@ -893,6 +899,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=FINAL"></script>
 </body>
 </html>

@@ -1950,75 +1950,101 @@ body[data-theme="dark"] #tcas-feature-wrapper .small-btn {
 body[data-theme="dark"] #tcas-feature-wrapper .small-btn:hover {
     box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4);
 }
-/* ======================================= */
-/* ======   Header Menu Button Revamp   ====== */
-/* ======================================= */
+/* =================================================================== */
+/* ======          COMPONENT STYLES (Styles ที่ใช้ร่วมกัน)         ====== */
+/* =================================================================== */
 
-/* --- ปรับปรุงสไตล์หลักของปุ่มเมนู --- */
-#open-menu.icon-button {
-    width: 44px; /* กำหนดความกว้าง */
-    height: 44px; /* กำหนดความสูง */
-    display: flex; /* ใช้ Flexbox เพื่อจัดไอคอนให้อยู่ตรงกลาง */
-    align-items: center;
-    justify-content: center;
-    background-color: var(--card-bg-color); /* ใช้สีพื้นหลังเดียวกับการ์ด */
-    border-radius: 12px; /* ทำให้ขอบมนสวยงาม */
-    color: var(--primary-color); /* เปลี่ยนสีไอคอนเป็นสีหลักของเว็บ */
-    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); /* เพิ่มเงาจางๆ */
-    transition: all 0.2s ease-out; /* เพิ่มอนิเมชันที่นุ่มนวล */
-}
-
-/* สำหรับ Dark Mode */
-body[data-theme="dark"] #open-menu.icon-button {
-    background-color: var(--card-bg-dark);
-    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.3);
-}
-
-/* --- เพิ่มการตอบสนองเมื่อเมาส์ไปวาง (Hover) --- */
-#open-menu.icon-button:hover {
-    transform: translateY(-2px) scale(1.05); /* ทำให้ปุ่มลอยขึ้นและขยายเล็กน้อย */
-    background-color: var(--primary-color); /* เปลี่ยนพื้นหลังเป็นสีหลัก */
-    color: white; /* เปลี่ยนไอคอนเป็นสีขาว */
-    box-shadow: 0 7px 20px -5px var(--primary-color); /* เพิ่มความฟุ้งของเงา */
-}
-
-/* --- เพิ่มการตอบสนองเมื่อคลิก (Active) --- */
-#open-menu.icon-button:active {
-    transform: translateY(0) scale(0.95); /* ทำให้ปุ่มยุบลง */
-    box-shadow: 0 2px 8px -3px var(--primary-color); /* ลดขนาดเงา */
-}
-
-/* --- ปรับขนาดไอคอนภายในปุ่ม --- */
-#open-menu.icon-button .feather {
-    width: 24px;
-    height: 24px;
-}
-/* ======================================= */
-/* ====== Planner UI/UX Enhancement ====== */
-/* ======================================= */
-
-/* --- ปรับปรุงฟอร์ม "เพิ่มกิจกรรม" --- */
-#planner-form button[type="submit"] {
-    border-radius: 50px; /* ทำให้ปุ่มกลมมน */
+/* --- 1. Primary Button (ปุ่มหลักสีน้ำเงิน) --- */
+.btn-primary-pill {
+    border-radius: 50px;
     font-weight: 500;
     padding: 12px 30px;
     background-color: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 15px -5px var(--primary-color); /* เพิ่มแสงเงา */
+    box-shadow: 0 4px 15px -5px var(--primary-color);
     transition: all 0.2s ease-out;
+    border: none;
+    cursor: pointer;
 }
-
-#planner-form button[type="submit"]:hover {
-    transform: translateY(-3px); /* ทำให้ปุ่มลอยขึ้น */
+.btn-primary-pill:hover {
+    transform: translateY(-3px);
     box-shadow: 0 7px 20px -5px var(--primary-color);
 }
-
-#planner-form button[type="submit"]:active {
-    transform: translateY(0) scale(0.98); /* ทำให้ปุ่มยุบลงเมื่อคลิก */
+.btn-primary-pill:active {
+    transform: translateY(0) scale(0.98);
     box-shadow: 0 2px 8px -3px var(--primary-color);
 }
 
-/* --- ปรับปรุงฟอร์มเพิ่มหมวดหมู่ใหม่ใน Modal --- */
+/* --- 2. Secondary Button (ปุ่มรองสีเทา/ขาว) --- */
+.btn-secondary-pill {
+    border-radius: 50px;
+    font-weight: 500;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px -5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-out;
+}
+body[data-theme="dark"] .btn-secondary-pill {
+    box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3);
+}
+.btn-secondary-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 6px 18px -5px rgba(0,0,0,0.15);
+}
+body[data-theme="dark"] .btn-secondary-pill:hover {
+    box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4);
+}
+
+
+/* =================================================================== */
+/* ======             PAGE-SPECIFIC STYLES                   ====== */
+/* =================================================================== */
+
+/* --- Header Menu Button --- */
+#open-menu.icon-button {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background-color: var(--card-bg-color);
+    border-radius: 12px;
+    color: var(--primary-color);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-out;
+}
+body[data-theme="dark"] #open-menu.icon-button {
+    background-color: var(--card-bg-dark);
+    box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.3);
+}
+#open-menu.icon-button:hover {
+    transform: translateY(-2px) scale(1.05);
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 7px 20px -5px var(--primary-color);
+}
+#open-menu.icon-button:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 2px 8px -3px var(--primary-color);
+}
+#open-menu.icon-button .feather { width: 24px; height: 24px; }
+
+/* --- Planner Page --- */
+#planner-form button[type="submit"] {
+    /* ใช้สไตล์ร่วมกับปุ่มหลัก */
+    border-radius: 50px; font-weight: 500; padding: 12px 30px;
+    background-color: var(--primary-color); color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color);
+    transition: all 0.2s ease-out;
+}
+#planner-form button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px -5px var(--primary-color);
+}
+#planner-form button[type="submit"]:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px -3px var(--primary-color);
+}
 #add-custom-category-form button {
     border-radius: 50px;
     box-shadow: 0 4px 12px -3px var(--primary-color);
@@ -2028,315 +2054,598 @@ body[data-theme="dark"] #open-menu.icon-button {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px -3px var(--primary-color);
 }
-
-
-/* --- ปรับปรุงรายการกิจกรรมที่แสดงผล --- */
-#events-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* เพิ่มระยะห่างระหว่างรายการ */
-}
-
+#events-list { list-style: none; padding: 0; margin-top: 15px; display: flex; flex-direction: column; gap: 12px; }
 #events-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px; /* เพิ่ม padding ให้โปร่งขึ้น */
-    background-color: var(--bg-color);
-    border-radius: 12px; /* ทำให้ขอบมนขึ้น */
-    border-left: 5px solid var(--primary-color); /* เพิ่มแถบสีด้านซ้าย */
+    display: flex; justify-content: space-between; align-items: center; padding: 15px;
+    background-color: var(--bg-color); border-radius: 12px;
+    border-left: 5px solid var(--primary-color);
     box-shadow: 0 3px 8px -2px rgba(0,0,0,0.05);
     transition: transform 0.2s, box-shadow 0.2s;
 }
-body[data-theme="dark"] #events-list li {
-    box-shadow: 0 3px 10px -2px rgba(0,0,0,0.2);
-}
-
-#events-list li:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1);
-}
-body[data-theme="dark"] #events-list li:hover {
-    box-shadow: 0 5px 20px -3px rgba(0,0,0,0.3);
-}
-
-#events-list .event-details {
-    display: flex;
-    flex-direction: column;
-}
-
-#events-list .event-name {
-    font-weight: 500;
-    color: var(--text-color);
-    font-size: 1.05rem;
-}
-
-#events-list .event-category {
-    font-size: 0.85em;
-    color: var(--subtle-text-color);
-    margin-top: 3px;
-}
-
+body[data-theme="dark"] #events-list li { box-shadow: 0 3px 10px -2px rgba(0,0,0,0.2); }
+#events-list li:hover { transform: translateY(-2px); box-shadow: 0 5px 15px -3px rgba(0,0,0,0.1); }
+body[data-theme="dark"] #events-list li:hover { box-shadow: 0 5px 20px -3px rgba(0,0,0,0.3); }
+#events-list .event-details { display: flex; flex-direction: column; }
+#events-list .event-name { font-weight: 500; color: var(--text-color); font-size: 1.05rem; }
+#events-list .event-category { font-size: 0.85em; color: var(--subtle-text-color); margin-top: 3px; }
 #events-list .event-time {
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--primary-color);
-    background-color: var(--card-bg-color);
-    padding: 6px 12px;
-    border-radius: 8px;
-}
-/* ======================================= */
-/* ====== Revisit Page Button Revamp ====== */
-/* ======================================= */
-
-/* --- สไตล์หลักสำหรับปุ่ม Primary ในหน้าทบทวนความรู้ทั้งหมด --- */
-#revisit-page button[type="submit"],
-#revisit-page #start-quiz-btn {
-    border-radius: 50px; /* ทำให้ปุ่มกลมมน */
-    font-weight: 500;
-    padding: 12px 30px;
-    background-color: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 15px -5px var(--primary-color); /* เพิ่มแสงเงา */
-    transition: all 0.2s ease-out;
-    border: none;
+    font-weight: 700; font-size: 1rem; color: var(--primary-color);
+    background-color: var(--card-bg-color); padding: 6px 12px; border-radius: 8px;
 }
 
-#revisit-page button[type="submit"]:hover,
-#revisit-page #start-quiz-btn:hover {
-    transform: translateY(-3px); /* ทำให้ปุ่มลอยขึ้น */
-    box-shadow: 0 7px 20px -5px var(--primary-color);
+/* --- Revisit Page --- */
+#revisit-page button[type="submit"], #revisit-page #start-quiz-btn {
+    /* ใช้สไตล์ร่วมกับปุ่มหลัก */
+    border-radius: 50px; font-weight: 500; padding: 12px 30px;
+    background-color: var(--primary-color); color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color);
+    transition: all 0.2s ease-out; border: none;
 }
-
-#revisit-page button[type="submit"]:active,
-#revisit-page #start-quiz-btn:active {
-    transform: translateY(0) scale(0.98); /* ทำให้ปุ่มยุบลงเมื่อคลิก */
-    box-shadow: 0 2px 8px -3px var(--primary-color);
+#revisit-page button[type="submit"]:hover, #revisit-page #start-quiz-btn:hover {
+    transform: translateY(-3px); box-shadow: 0 7px 20px -5px var(--primary-color);
 }
-
-
-/* --- สไตล์สำหรับปุ่มรอง (Secondary) เช่น "เพิ่มตัวเลือก" หรือ "ยกเลิก" --- */
+#revisit-page button[type="submit"]:active, #revisit-page #start-quiz-btn:active {
+    transform: translateY(0) scale(0.98); box-shadow: 0 2px 8px -3px var(--primary-color);
+}
 #revisit-page .btn-secondary {
-    border-radius: 50px;
-    font-weight: 500;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    /* ใช้สไตล์ร่วมกับปุ่มรอง */
+    border-radius: 50px; font-weight: 500; background-color: var(--bg-color);
+    color: var(--text-color); border: 1px solid var(--border-color);
     box-shadow: 0 4px 12px -5px rgba(0,0,0,0.1);
     transition: all 0.2s ease-out;
 }
-/* สำหรับ Dark Mode */
-body[data-theme="dark"] #revisit-page .btn-secondary {
-    box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3);
-}
-
+body[data-theme="dark"] #revisit-page .btn-secondary { box-shadow: 0 4px 15px -5px rgba(0,0,0,0.3); }
 #revisit-page .btn-secondary:hover {
-    transform: translateY(-2px);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    transform: translateY(-2px); border-color: var(--primary-color); color: var(--primary-color);
     box-shadow: 0 6px 18px -5px rgba(0,0,0,0.15);
 }
-body[data-theme="dark"] #revisit-page .btn-secondary:hover {
-    box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4);
+body[data-theme="dark"] #revisit-page .btn-secondary:hover { box-shadow: 0 6px 20px -5px rgba(0,0,0,0.4); }
+#revisit-topics-by-subject .topic-item .small-btn { border-radius: 20px; font-size: 0.85em; padding: 6px 15px; }
+
+
+/* --- Search Results & Friend List --- */
+.search-result-item, .user-list-item { /* ใช้สไตล์ร่วมกัน */
+    display: flex; align-items: center; gap: 15px;
+    padding: 12px 15px; border-bottom: 1px solid var(--border-color);
+}
+.search-result-item:last-child, .user-list-item:last-child { border-bottom: none; }
+.search-result-item .user-actions .small-btn,
+.user-list-item .user-actions .small-btn {
+    border-radius: 8px; font-weight: 700;
+    min-width: 110px; transition: all 0.2s ease;
+}
+.search-result-item .user-actions .btn-secondary,
+.user-list-item .user-actions .btn-secondary {
+    background-color: var(--bg-color); color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+.search-result-item .user-actions .btn-following:hover,
+.user-list-item .user-actions .btn-following:hover {
+    background-color: rgba(255, 59, 48, 0.1); color: var(--danger-color);
+    border-color: rgba(255, 59, 48, 0.4);
 }
 
 
-/* --- ปรับปรุงสไตล์ของ Topic List ให้ดูดีขึ้น --- */
-#revisit-topics-by-subject .topic-item .small-btn {
-    border-radius: 20px;
-    font-size: 0.85em;
-    padding: 6px 15px;
+/* --- Coming Soon Placeholder --- */
+.coming-soon-placeholder {
+    grid-column: 1 / -1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 60px 20px;
+    text-align: center; color: var(--subtle-text-color); opacity: 0.7;
 }
-/* ======================================= */
-/* ======   Streak Modal Pop-up   ====== */
-/* ======================================= */
+.coming-soon-placeholder .feather { width: 48px; height: 48px; margin-bottom: 20px; stroke-width: 1.5; }
+.coming-soon-placeholder h3 { font-size: 1.4rem; color: var(--text-color); margin-bottom: 8px; }
 
-/* ทำให้ส่วนแสดงสตรีคใน Header กดได้ (อาจจะมีอยู่แล้ว) */
-#streak-display {
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-#streak-display:hover {
-    transform: scale(1.1);
-}
 
-/* ปรับแต่งเนื้อหาภายใน SweetAlert */
-.swal2-html-container {
-    margin: 0 !important;
-    padding: 0 !important;
-}
+/* =================================================================== */
+/* ======              MODAL & POP-UP STYLES                 ====== */
+/* =================================================================== */
 
-/* สไตล์ไอคอนอิโมจิอันใหญ่ */
-.swal-streak-icon {
-    font-size: 5rem; /* ขนาดใหญ่เด่น */
-    margin: 10px 0 15px;
-    line-height: 1;
-    animation: bounce-in 0.6s ease;
+/* --- 1. SweetAlert (Modal กลางจอ) --- */
+.swal2-title {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    color: var(--text-color) !important;
 }
+body[data-theme="light"] .swal2-title { color: #333 !important; }
+.swal2-html-container { margin: 0 !important; padding: 0 !important; }
 
-/* สไตล์หัวข้อ */
-.swal-streak-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    text-align: center;
-    color: var(--text-color) /* ใช้สีข้อความหลัก */
-}
-
-/* สไตล์ข้อความหลัก */
-.swal-streak-text {
-    font-size: 1rem; /* ปรับขนาดฟอนต์ตรงนี้ */
-    color: var(--subtle-text-color);
-    line-height: 1.6;
-    margin: 0 auto;
-    max-width: 90%;
-}
-
-/* สไตล์ข้อความย่อย (เช่น จำนวนไฟเย็น) */
-.swal-streak-subtext {
-    font-size: 0.9em; /* ปรับขนาดฟอนต์ตรงนี้ */
-    color: var(--subtle-text-color);
-    margin-top: 15px;
-    opacity: 0.8;
-}
-
-/* สไตล์ปุ่มเช็คอินแบบ "ปุ๊กปิ๊ก" */
-.swal-checkin-button {
-    font-family: var(--font-family);
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: white;
-    background: var(--accent-color); /* สีส้ม */
-    border: none;
-    border-radius: 12px;
-    padding: 14px 30px; /* เพิ่มความสูงของปุ่มเล็กน้อย */
-    margin: 25px 20px 20px; /* [จุดสำคัญ] เพิ่มระยะห่างซ้าย-ขวา-ล่าง */
-    cursor: pointer;
-    transition: all 0.2s ease-out;
-    box-shadow: 0 5px 20px -5px var(--accent-color); /* เพิ่มความฟุ้งของเงา */
-    display: block;
-    width: calc(100% - 40px); /* ทำให้ปุ่มมีความกว้างเกือบเต็ม แต่มีขอบ */
-}
-
-.swal-checkin-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px -5px var(--accent-color);
-}
-
-.swal-checkin-button:active {
-    transform: scale(0.95); /* เอฟเฟกต์กดแล้วยุบ */
-    box-shadow: 0 2px 10px -5px var(--accent-color);
-}
-
-/* สไตล์สำหรับปุ่ม "กู้ไฟ" โดยเฉพาะ */
-.swal-checkin-button.swal-restore-button {
-    background: #0A84FF; /* สีฟ้า */
-    box-shadow: 0 5px 15px -5px #0A84FF;
-}
-
-.swal-checkin-button.swal-restore-button:hover {
-    box-shadow: 0 8px 20px -5px #0A84FF;
-}
-
-/* อนิเมชันสำหรับไอคอน */
+/* --- Streak Modal --- */
+#streak-display { cursor: pointer; transition: transform 0.2s ease; }
+#streak-display:hover { transform: scale(1.1); }
+.swal-streak-icon { font-size: 5rem; margin: 10px 0 15px; line-height: 1; animation: bounce-in 0.6s ease; }
 @keyframes bounce-in {
     0% { transform: scale(0.5); opacity: 0; }
     70% { transform: scale(1.05); opacity: 1; }
     100% { transform: scale(1); }
 }
-
-/* ======================================= */
-/* ======   Streak Modal Revamp (FIX)   ====== */
-/* ======================================= */
-
-/* [สำคัญ] บังคับให้ Title อยู่ตรงกลางและสีเข้ม */
-.swal2-title {
-    text-align: center !important;
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    color: #333333 !important; /* สีเทาเข้มเกือบดำ */
-    margin-top: 15px !important;
-    margin-bottom: 20px !important;
+.swal-streak-text, .swal-streak-subtext {
+    font-size: 1rem; color: var(--subtle-text-color); line-height: 1.6;
+    margin: 0 auto; max-width: 90%;
 }
-
-/* [สำคัญ] ทำให้ข้อความหลักสีเข้มขึ้นและจัดกลาง */
-.swal2-text {
-    color: #555555 !important; /* สีเทาเข้ม */
-    text-align: center !important;
-    line-height: 1.6 !important;
-    font-size: 1rem !important;
+body[data-theme="light"] .swal-streak-text, body[data-theme="light"] .swal-streak-subtext { color: #555 !important; }
+.swal-checkin-button {
+    font-family: var(--font-family); font-size: 1.1rem; font-weight: 500;
+    color: white; background: var(--accent-color); border: none;
+    border-radius: 12px; padding: 14px 30px; margin: 25px 20px 20px;
+    cursor: pointer; transition: all 0.2s ease-out;
+    box-shadow: 0 5px 20px -5px var(--accent-color);
+    display: block; width: calc(100% - 40px);
 }
+.swal-checkin-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px -5px var(--accent-color); }
+.swal-checkin-button:active { transform: scale(0.95); box-shadow: 0 2px 10px -5px var(--accent-color); }
+.swal-checkin-button.swal-restore-button { background: #0A84FF; box-shadow: 0 5px 15px -5px #0A84FF; }
+.swal-checkin-button.swal-restore-button:hover { box-shadow: 0 8px 20px -5px #0A84FF; }
 
-/* สไตล์สำหรับข้อความย่อย (จำนวนครั้ง) */
-.swal-streak-subtext {
-    font-size: 0.9em;
-    color: #777777; /* สีเทา */
-    margin-top: 20px;
-    margin-bottom: 20px;
+/* --- Action Sheet Theming --- */
+.action-sheet-content, #unfollow-sheet-cancel-btn { border-radius: 14px; }
+/* Dark Theme (Base) */
+.action-sheet-icon-wrapper {
+    margin-bottom: 16px;
 }
+/* Light Theme */
+body[data-theme="light"] .action-sheet-content { background-color: #f0f0f0; }
+body[data-theme="light"] #unfollow-sheet-cancel-btn { background-color: #FFFFFF; color: var(--primary-light); }
 
-/* ไอคอน (เหมือนเดิม) */
-.swal-streak-icon {
-    font-size: 5rem;
-    margin: 10px 0 0;
-    line-height: 1;
-    animation: bounce-in 0.6s ease;
+/* --- Action Sheet Form (Timer Settings) --- */
+.action-sheet-form-inner { padding: 16px; }
+.action-sheet-form-header {
+    display: flex; justify-content: center; align-items: center;
+    padding-bottom: 16px; margin-bottom: 16px;
+    border-bottom: 1px solid rgba(84, 84, 88, 0.65);
 }
-
-/* ปุ่ม (เหมือนเดิม) */
-.swal-checkin-button.swal-restore-button {
-    margin: 0 auto 10px !important; /* จัดปุ่มให้อยู่กลาง */
+body[data-theme="light"] .action-sheet-form-header { border-bottom-color: #dcdcdc; }
+.action-sheet-form-header h3 {
+    margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-color);
+    display: flex; align-items: center; gap: 8px;
 }
-/* ======================================= */
-/* ===== New Styles for Streak Freeze ===== */
-/* ======================================= */
-
-/* สไตล์สำหรับปุ่ม "กู้ไฟ" (ไฟเย็น) */
-#check-in-btn.restore-streak {
-    background-color: #0A84FF; /* สีฟ้า/น้ำเงิน */
-    padding: 8px 12px; /* ปรับ padding ให้พอดีกับข้อความที่ยาวขึ้น */
+.action-sheet-form-inner .form-group label { color: var(--text-color); }
+.action-sheet-form-inner .form-group input {
+    width: 100%; padding: 12px; border-radius: 8px; font-size: 1rem;
+    border: 1px solid var(--border-color); background-color: var(--bg-color);
+    color: var(--text-color);
 }
-#check-in-btn.restore-streak:hover {
-    background-color: #3b9dff;
+.action-sheet-btn.primary {
+    /* ใช้สไตล์ร่วมกับปุ่มหลัก */
+    border-radius: 50px; font-weight: 700; padding: 14px;
+    background-color: var(--primary-color); color: white;
+    box-shadow: 0 4px 15px -5px var(--primary-color);
+    transition: all 0.2s ease-out; border: none; cursor: pointer;
+    width: 100%; margin-top: 8px;
 }
+.action-sheet-btn.primary:hover { transform: translateY(-3px); box-shadow: 0 7px 20px -5px var(--primary-color); }
+.action-sheet-btn.primary:active { transform: translateY(0) scale(0.98); box-shadow: 0 2px 8px -3px var(--primary-color); }
 
-/* ทำให้ข้อความหลัก (เช่น กู้ไฟ) และข้อความย่อย (เช่น เหลือ x ครั้ง) เรียงกันสวยงาม */
-/* โค้ดส่วนนี้เราจะย้ายไปจัดการใน JS แทน */
 
-/* สไตล์สำหรับข้อความย่อย */
-.check-in-subtext {
-    font-size: 0.7em; /* ทำให้ฟอนต์เล็กลง */
-    font-weight: 300;
-    opacity: 0.8;
-    margin-top: 2px; /* เพิ่มระยะห่างเล็กน้อยจากข้อความหลัก */
-    background-color: transparent !important;
+/* --- Friend Profile Modal --- */
+#friend-profile-modal .modal-content {
+    max-width: 380px !important; /* ลดความกว้างสูงสุดลง */
     padding: 0 !important;
+    border-radius: 20px !important;
+    overflow: visible;
+    background-color: var(--card-bg-color);
 }
-.check-in-subtext-external {
-    font-size: 0.8em;
+.fp-modal-container {
+    position: relative;
+    padding: 16px;
+    padding-top: 50px; /* ลด padding ด้านบนลง */
+}
+.fp-modal-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid var(--card-bg-color);
+    background-color: var(--card-bg-color);
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    object-fit: cover;
+}
+.fp-modal-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px; /* ลดระยะห่างล่าง */
+}
+.fp-modal-close-btn {
+    background-color: var(--bg-color) !important;
+    border-radius: 50% !important;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fp-modal-header-actions .small-btn {
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 6px 16px;
+}
+.fp-modal-info {
+    text-align: center;
+}
+.fp-modal-level-id {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* ลดระยะห่าง */
+    margin-bottom: 6px;
+}
+.fp-modal-level-id span:not(.level-badge) {
+    font-weight: 500;
     color: var(--subtle-text-color);
-    margin-left: 15px; /* จัดให้อยู่แนวเดียวกับปุ่มอื่นๆ */
+    font-size: 0.9rem; /* ลดขนาดฟอนต์ ID */
 }
-#check-in-btn .check-in-text {
-    background-color: transparent !important;
-    padding: 0 !important;
+.fp-modal-bio {
+    font-size: 0.95rem; /* ลดขนาดฟอนต์ bio */
+    color: var(--text-color);
+    margin: 8px 0 0;
 }
-/* ================================================= */
-/* ====== FINAL REVAMPED Action Sheet Styles ====== */
-/* ================================================= */
+.fp-modal-main-action { margin: 16px 0; }
+.fp-modal-main-action .small-btn {
+    width: 100%; padding: 12px; font-size: 1rem;
+    font-weight: 700; border-radius: 8px;
+}
+.fp-modal-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 16px 0; /* ลดระยะห่าง */
+}
+.fp-modal-follow-stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 12px;
+}
+.follow-stat {
+    color: var(--text-color);
+    display: flex;
+    align-items: baseline; /* จัดให้ตัวเลขกับข้อความชิดด้านล่าง */
+    gap: 6px;
+    font-size: 0.9rem;
+}
+.follow-stat strong { font-size: 1.1rem; }
+.fp-modal-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px; /* ลดระยะห่าง */
+}
+.fp-modal-stats-grid .stat-item {
+    background-color: var(--bg-color);
+    border-radius: 12px;
+    padding: 10px; /* ลด padding */
+    display: flex;
+    flex-direction: column; /* [ปรับ] เป็นแนวตั้ง */
+    align-items: center; /* [ปรับ] จัดกลาง */
+    text-align: center;
+    gap: 4px; /* [ปรับ] ลดระยะห่าง */
+}
+.stat-icon {
+    font-size: 1.5rem;
+}
+.stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
 
-/* --- 1. The Overlay (พื้นหลังสีดำโปร่งแสง) --- */
+.stat-label { color: var(--subtle-text-color); }
+
+.fp-modal-close-btn-bottom {
+    display: block;
+    width: calc(100% - 48px);
+    margin: 24px auto 0;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    cursor: pointer;
+}
+#friend-profile-modal .modal-overlay:not(.hidden) .close-btn {
+    position: static;
+    display: block;
+    width: calc(100% - 48px);
+    margin: 24px auto 0;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* --- Global Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    main { padding: 75px 15px 15px; }
+    body { font-size: 15px; }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.4rem; padding-bottom: 10px; }
+    h3 { font-size: 1.1rem; }
+    .card { padding: 20px; }
+    button, input, select, textarea { padding: 12px; font-size: 0.95rem; }
+    .small-btn { padding: 8px 14px; font-size: 0.85rem; }
+    .home-grid, .planner-container, .mood-container, .profile-container { grid-template-columns: 1fr; }
+    .profile-banner { height: 140px; }
+    #profile-view-photo.avatar-display { width: 120px; height: 120px; top: 140px; }
+    .profile-info { padding: 75px 20px 20px; }
+    .shop-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .modal-content.large { width: 95%; }
+    .modal-content > *:not(.modal-header):not(.custom-subject-footer):not(.social-login-container) { padding: 0 20px 20px; }
+    #timer-display { font-size: 4.5rem; }
+    .timer-controls { flex-direction: column; gap: 10px; }
+    .timer-controls button { width: 100%; max-width: none; }
+}
+
+/* ส่วนหัว (ปุ่ม Follow และ ปิด) */
+.fp-modal-header-actions {
+    display: flex;
+    justify-content: flex-end; /* จัดปุ่มไปทางขวา */
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.fp-modal-stats-grid .stat-icon {
+    font-size: 1.4rem;
+}
+
+.fp-modal-stats-grid .stat-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.fp-modal-stats-grid .stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1;
+}
+
+.fp-modal-stats-grid .stat-label {
+    color: var(--subtle-text-color);
+    font-size: 0.75rem;
+}
+
+/* ปุ่มยกเลิกด้านล่างสุด */
+.fp-modal-close-btn-bottom {
+    display: block;
+    width: calc(100% - 32px); /* ปรับความกว้างให้สัมพันธ์กับ padding */
+    margin: 16px auto 0;
+    padding: 12px;
+    border-radius: 12px; /* ทำให้มนขึ้น */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: none; /* เอาเส้นขอบออก */
+    font-weight: 500;
+    cursor: pointer;
+}
+/* ====== [FINAL] Friend Profile Action Sheet ====== */
+
+/* จัดการ Container หลักของเนื้อหา */
+.friend-profile-sheet-container {
+    padding: 16px;
+    padding-top: 50px; /* เว้นที่ให้รูปโปรไฟล์ลอย */
+    position: relative;
+    background-color: var(--card-bg-color);
+    border-radius: 14px; /* ทำให้ขอบมนเหมือน Action Sheet ทั่วไป */
+}
+
+/* รูปโปรไฟล์ */
+.friend-profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid var(--card-bg-color);
+    background-color: var(--border-color); /* สีพื้นหลังเผื่อรูปไม่โหลด */
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    object-fit: cover;
+}
+
+/* ส่วนหัว (ปุ่ม Follow/Unfollow และปุ่มปิด) */
+.friend-profile-header-actions {
+    display: flex;
+    justify-content: space-between; /* จัดให้ปุ่มอยู่คนละฝั่ง */
+    align-items: center;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+}
+
+.friend-profile-header-actions .small-btn {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+.friend-profile-header-actions .small-btn.btn-following {
+    color: var(--subtle-text-color);
+}
+
+
+.friend-profile-close-btn {
+    background-color: var(--bg-color) !important;
+    border-radius: 50% !important;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+}
+
+/* ส่วนข้อมูลกลาง */
+.friend-profile-info {
+    text-align: center;
+    margin-top: 10px; /* เพิ่มระยะห่างจากขอบบนเล็กน้อย */
+}
+.friend-profile-name {
+    margin: 4px 0;
+    font-size: 1.4rem;
+    border: none;
+    padding: 0;
+}
+.friend-profile-id {
+    color: var(--subtle-text-color);
+    font-size: 0.9rem;
+}
+.friend-profile-bio {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin: 12px 0 0;
+}
+
+/* เส้นคั่น */
+.friend-profile-divider {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 16px 0;
+}
+
+/* ส่วนสถิติ Follow */
+.friend-profile-follow-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    text-align: center;
+}
+.follow-stat {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 0.95rem;
+    color: var(--subtle-text-color);
+}
+.follow-stat strong {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+
+/* ตารางสถิติหลัก 4 อย่าง */
+.friend-profile-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.friend-profile-stats-grid .stat-item {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.friend-profile-stats-grid .stat-icon {
+    font-size: 1.5rem;
+}
+.friend-profile-stats-grid .stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+.friend-profile-stats-grid .stat-label {
+    color: var(--subtle-text-color);
+    font-size: 0.8rem;
+    margin-left: 4px;
+}
+/* ค้นหา class นี้แล้วแทนที่ด้วยโค้ดใหม่ */
+.friend-profile-level-id {
+    display: flex;
+    flex-direction: column; /* [ปรับ] เปลี่ยนเป็นเรียงแนวตั้ง */
+    align-items: center;    /* [ปรับ] จัดให้อยู่กึ่งกลาง */
+    gap: 4px;               /* [ปรับ] ลดระยะห่างระหว่าง Level กับ ID */
+    margin-top: 8px;        /* เพิ่มระยะห่างจากชื่อ */
+}
+/* Styles for Badges on Profile Page */
+.profile-badge-item {
+    flex-direction: row; /* เรียงไอคอนกับข้อความแนวนอน */
+    align-items: center;
+    padding: 12px;
+    gap: 12px;
+}
+.profile-badge-item .stat-icon {
+    font-size: 2rem;
+}
+.profile-badge-item .stat-text-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+.profile-badge-item .stat-value {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.3;
+}
+.profile-badge-item .stat-label {
+    font-size: 0.8rem;
+}
+/* Styles for Feature Help Button */
+.feature-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-left: 12px; /* ระยะห่างจากหัวข้อ */
+    background-color: transparent;
+    color: var(--subtle-text-color);
+    transition: all 0.2s ease;
+    vertical-align: middle; /* ทำให้ปุ่มอยู่ตรงกลางแนวเดียวกับข้อความ */
+}
+
+.feature-help-btn:hover {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.feature-help-btn .feather {
+    width: 18px;
+    height: 18px;
+}
+
+/* ปรับสไตล์ของ List ใน SweetAlert ให้อ่านง่ายขึ้น */
+.swal2-html-container ul {
+    text-align: left;
+    padding-left: 25px;
+    margin-top: 15px;
+    color: var(--text-color);
+    line-height: 1.8;
+}
+
+.swal2-html-container li {
+    margin-bottom: 10px;
+}
+/* ====== [FINAL & CORRECT v2] Action Sheet Styles ====== */
+
+/* พื้นหลังสีเทาโปร่งแสง */
 .action-sheet-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 2000;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -2346,237 +2655,162 @@ body[data-theme="dark"] #revisit-page .btn-secondary:hover {
     pointer-events: auto;
 }
 
-/* --- 2. The Action Sheet (กล่องที่เลื่อนขึ้นมา) --- */
+/* Container หลักที่เลื่อนขึ้นมา */
 .action-sheet {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #2c2c2e; /* สี Dark mode เหมือน Instagram */
-    color: white;
-    border-radius: 16px 16px 0 0;
-    z-index: 2001;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9999;
     transform: translateY(100%);
-    transition: transform 0.3s ease-out;
-    padding: 8px 8px 30px; /* [แก้ไข] ปรับ Padding ให้กระชับ */
-    max-width: 500px; /* [แก้ไข] จำกัดความกว้างสูงสุด */
+    /* [แก้ไข] เพิ่ม opacity เข้าไปใน transition */
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s ease;
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    max-width: 420px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: transparent;
+    /* [เพิ่ม] ทำให้มันโปร่งใสและคลิกไม่ได้เป็นค่าเริ่มต้น */
+    opacity: 0;
+    pointer-events: none;
 }
 .action-sheet.show {
     transform: translateY(0);
+    /* [เพิ่ม] ทำให้มันทึบแสงและคลิกได้เมื่อแสดงผล */
+    opacity: 1;
+    pointer-events: auto;
 }
-.action-sheet:not(.hidden) .action-sheet-content {
-    display: flex; /* [สำคัญ] แก้ไขการแสดงผล */
+
+/* กล่องเนื้อหา (กล่องบน) */
+.action-sheet-content {
+    background-color: var(--card-bg-color);
+    border-radius: 14px;
+}
+.action-sheet-inner {
+    padding: 20px;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #1c1c1e; /* [ใหม่] สีพื้นหลังของเนื้อหา */
-    border-radius: 12px; /* [ใหม่] ทำให้ขอบมน */
-}
-
-/* --- 3. Content inside the sheet (เนื้อหาข้างใน) --- */
-.action-sheet-avatar {
-    width: 60px; /* [แก้ไข] ลดขนาดรูป */
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin: 24px 0 16px; /* [แก้ไข] ปรับระยะห่าง */
-}
-.action-sheet-content p {
-    color: #e5e5e5;
     text-align: center;
-    margin: 0 20px 24px; 
-    font-size: 0.9rem;
-    line-height: 1.5;
 }
 
-/* --- 4. Buttons (ปุ่มต่างๆ) --- */
+/* รูปโปรไฟล์ใน Action Sheet */
+.action-sheet-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    object-fit: cover;
+}
+
+/* ข้อความ */
+.action-sheet-title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--subtle-text-color);
+    margin: 0;
+}
+.action-sheet-title strong {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+/* ปุ่มภายในกล่องเนื้อหา (ปุ่มเลิกติดตาม) */
 .action-sheet-btn {
     width: 100%;
-    padding: 14px;
-    font-family: var(--font-family);
-    font-size: 1rem;
-    background: transparent;
-    color: white;
+    background: none;
     border: none;
-    border-top: 1px solid rgba(84, 84, 88, 0.65); /* [แก้ไข] สีเส้นคั่น */
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 500;
     cursor: pointer;
-    font-weight: 400;
+    border-top: 1px solid var(--border-color);
+    margin-top: 20px;
+    color: var(--primary-color);
 }
 .action-sheet-btn.destructive {
-    color: #ff453a;
+    color: var(--danger-color);
     font-weight: 700;
 }
 
-/* [ใหม่] จัดการปุ่ม Cancel ให้แยกออกมา */
+/* ปุ่มยกเลิก (กล่องล่าง) */
 #unfollow-sheet-cancel-btn {
-    margin-top: 8px; /* [ใหม่] เพิ่มระยะห่างระหว่างกลุ่มปุ่ม */
-    background-color: #1c1c1e; /* [ใหม่] สีพื้นหลัง */
-    border-radius: 12px; /* [ใหม่] ทำให้ขอบมน */
+    width: 100%;
+    background-color: var(--card-bg-color);
+    border: none;
+    padding: 14px;
+    font-size: 1.1rem;
     font-weight: 700;
-    border-top: none; /* [ใหม่] ไม่ต้องมีเส้นคั่น */
+    color: var(--primary-color);
+    border-radius: 14px;
+    cursor: pointer;
 }
-/* ======================================= */
-/* ======   Search Result Revamp    ====== */
-/* ======================================= */
+/* ====== [NEW] Help Action Sheet Styles ====== */
 
-/* --- ปรับปรุง Layout ของรายการผลการค้นหา --- */
-.search-result-item {
+/* จัดสไตล์เนื้อหาภายใน Action Sheet */
+.help-sheet-content {
+    padding: 16px;
+    padding-bottom: 20px;
+}
+
+.help-sheet-header {
     display: flex;
     align-items: center;
-    gap: 15px; /* เพิ่มระยะห่างระหว่างรูป, ชื่อ, และปุ่ม */
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-.search-result-item:last-child {
-    border-bottom: none;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-/* --- สไตล์หลักสำหรับปุ่มในหน้าค้นหา --- */
-.search-result-item .user-actions .small-btn {
-    border-radius: 8px; /* ทำให้เป็นสี่เหลี่ยมขอบมน */
-    font-weight: 700;
-    min-width: 110px; /* กำหนดความกว้างขั้นต่ำให้ปุ่มเท่าๆ กัน */
-    transition: all 0.2s ease;
-}
-
-/* --- สไตล์สำหรับปุ่มรอง (ส่งคำขอแล้ว / กำลังติดตาม) --- */
-.search-result-item .user-actions .btn-secondary {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-}
-.search-result-item .user-actions .btn-secondary:disabled {
-    opacity: 0.7; /* ทำให้ปุ่ม "ส่งคำขอแล้ว" ดูจางลง */
-}
-
-/* --- [ลูกเล่น] สไตล์สำหรับปุ่ม "กำลังติดตาม" เมื่อเอาเมาส์ไปชี้ --- */
-.search-result-item .user-actions .btn-following:hover {
-    background-color: rgba(255, 59, 48, 0.1); /* พื้นหลังสีแดงจางๆ */
-    color: var(--danger-color); /* ตัวอักษรสีแดง */
-    border-color: rgba(255, 59, 48, 0.4); /* ขอบสีแดงจางๆ */
-}
-/* ======================================= */
-/* ======   Coming Soon Placeholder   ====== */
-/* ======================================= */
-
-.coming-soon-placeholder {
-    grid-column: 1 / -1; /* [สำคัญ] ทำให้ข้อความนี้กินพื้นที่เต็มความกว้างของ Grid */
+.help-sheet-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--subtle-text-color);
-    opacity: 0.7;
+    background-color: rgba(0, 122, 255, 0.1); /* สีฟ้าอ่อนๆ */
+    color: var(--primary-color);
+}
+body[data-theme="dark"] .help-sheet-icon {
+    background-color: rgba(10, 132, 255, 0.2);
+}
+.help-sheet-icon .feather {
+    width: 24px;
+    height: 24px;
 }
 
-.coming-soon-placeholder .feather {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 20px;
-    stroke-width: 1.5;
-}
-
-.coming-soon-placeholder h3 {
-    font-size: 1.4rem;
+.help-sheet-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: left;
     color: var(--text-color);
-    margin-bottom: 8px;
 }
-/* ======================================= */
-/* ====== Global Mobile Responsiveness ====== */
-/* ======================================= */
 
-/* ใช้กฎเหล่านี้เมื่อความกว้างหน้าจอน้อยกว่าหรือเท่ากับ 768px */
-@media (max-width: 768px) {
+.help-sheet-body ul {
+    text-align: left;
+    padding-left: 20px;
+    margin: 0;
+    color: var(--subtle-text-color);
+    line-height: 1.7;
+}
 
-    /* --- 1. ปรับ Padding หลักและขนาดฟอนต์พื้นฐาน --- */
-    main {
-        padding: 75px 15px 15px; /* ลดระยะขอบซ้าย-ขวา */
-    }
-    body {
-        font-size: 15px; /* ลดขนาดฟอนต์พื้นฐานเล็กน้อย */
-    }
+.help-sheet-body li {
+    margin-bottom: 12px;
+}
+.help-sheet-body li::marker {
+    color: var(--primary-color);
+}
+.help-sheet-body strong {
+    color: var(--text-color);
+    font-weight: 500;
+}
 
-    /* --- 2. ลดขนาดหัวข้อทั้งหมด --- */
-    h1 {
-        font-size: 1.8rem;
-    }
-    h2 {
-        font-size: 1.4rem;
-        padding-bottom: 10px;
-    }
-    h3 {
-        font-size: 1.1rem;
-    }
-
-    /* --- 3. ทำให้ Card กระชับขึ้น --- */
-    .card {
-        padding: 20px; /* ลด Padding ภายใน Card */
-    }
-
-    /* --- 4. ลดขนาดปุ่มและช่องกรอกข้อมูล --- */
-    button, input, select, textarea {
-        padding: 12px;
-        font-size: 0.95rem;
-    }
-    .small-btn {
-        padding: 8px 14px;
-        font-size: 0.85rem;
-    }
-
-    /* --- 5. [สำคัญ] ปรับ Layout ที่เป็นหลายคอลัมน์ให้เป็นคอลัมน์เดียว --- */
-
-    /* หน้า Home */
-    .home-grid {
-        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
-    }
-
-    /* หน้า Planner และ Mood */
-    .planner-container, .mood-container {
-        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
-    }
-
-    /* หน้า Profile */
-    .profile-container {
-        grid-template-columns: 1fr; /* บังคับเป็น 1 คอลัมน์ */
-    }
-    .profile-banner {
-        height: 140px; /* ลดความสูง Banner */
-    }
-    #profile-view-photo.avatar-display {
-        width: 120px;
-        height: 120px;
-        top: 140px;
-    }
-    .profile-info {
-        padding: 75px 20px 20px;
-    }
-
-    /* หน้า Shop */
-    .shop-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-    }
-
-    /* --- 6. ปรับขนาด Popup (Modal) --- */
-    .modal-content {
-        padding: 20px;
-    }
-    .modal-content.large {
-        width: 95%;
-    }
-
-    /* --- 7. ปรับปรุง UI เฉพาะจุด --- */
-    #timer-display {
-        font-size: 4.5rem; /* ลดขนาดตัวเลขจับเวลา */
-    }
-    .timer-controls {
-        flex-direction: column; /* ทำให้ปุ่มจับเวลาเรียงเป็นแนวตั้ง */
-        gap: 10px;
-    }
-    .timer-controls button {
-        width: 100%;
-        max-width: none;
-    }
+/* [สำคัญ] ทำให้ปุ่ม "เข้าใจแล้ว" ดูเป็นปุ่มหลัก */
+#unfollow-sheet-cancel-btn.primary-action {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 700;
 }

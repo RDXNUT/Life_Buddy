@@ -1,3 +1,61 @@
+const featureHelpContent = {
+        planner: {
+            title: 'วิธีใช้งานตารางชีวิต',
+            html: `
+                <ul>
+                    <li><strong>เลือกวัน:</strong> คลิกวันที่ในปฏิทินเพื่อดูหรือเพิ่มกิจกรรม</li>
+                    <li><strong>เพิ่มกิจกรรม:</strong> กรอกชื่อ, เลือกหมวดหมู่, และกำหนดเวลา จากนั้นกดปุ่ม "+ เพิ่มกิจกรรม"</li>
+                    <li><strong>จัดการหมวดหมู่:</strong> คุณสามารถเพิ่มหมวดหมู่ของตัวเองได้โดยพิมพ์ในช่อง "หรือเพิ่มหมวดหมู่ใหม่..."</li>
+                    <li><strong>เลื่อนเดือน:</strong> ใช้ปุ่มลูกศร ◀ ▶ เพื่อไปยังเดือนก่อนหน้าหรือเดือนถัดไป</li>
+                </ul>
+            `
+        },
+        revisit: {
+            title: 'วิธีใช้งานระบบทบทวน',
+            html: `
+                <p>ระบบนี้ใช้หลักการ <strong>Spaced Repetition</strong> เพื่อช่วยให้คุณจำเนื้อหาได้ในระยะยาว</p>
+                <ul>
+                    <li><strong>เพิ่มหัวข้อ:</strong> เลือกวิชา, ตั้งชื่อหัวข้อ, และเลือกรอบการทบทวน (เช่น 1, 3, 7 วัน) แล้วกด "+ เพิ่มหัวข้อ"</li>
+                    <li><strong>จัดการควิซ:</strong> คลิก "จัดการควิซ" ในหัวข้อที่คุณสร้าง เพื่อเข้าไปสร้างคำถาม/คำตอบสำหรับทดสอบตัวเอง</li>
+                    <li><strong>เริ่มทบทวน:</strong> เมื่อถึงวันที่กำหนดทบทวน หัวข้อจะปรากฏในหน้า "ภาพรวม" หรือคุณสามารถเข้ามาทำควิซในหน้านี้ได้ตลอดเวลา</li>
+                </ul>
+            `
+        },
+        focus: {
+            title: 'วิธีใช้งานจับเวลาโฟกัส',
+            html: `
+                <p>ฟีเจอร์นี้ใช้เทคนิค <strong>Pomodoro</strong> เพื่อช่วยเพิ่มสมาธิในการทำงานหรืออ่านหนังสือ</p>
+                <ul>
+                    <li><strong>เลือกหัวข้อ:</strong> เลือกวิชาหรือเรื่องที่คุณกำลังจะโฟกัส</li>
+                    <li><strong>เริ่มจับเวลา:</strong> กดปุ่ม "เริ่ม" เพื่อเริ่มนับถอยหลัง (ปกติ 25 นาที)</li>
+                    <li><strong>พักเบรค:</strong> เมื่อครบเวลาโฟกัส ระบบจะเริ่มจับเวลาพักให้โดยอัตโนมัติ (ปกติ 5 นาที)</li>
+                    <li><strong>ดูสถิติ:</strong> คุณสามารถดูสถิติการโฟกัสของคุณแบบรายวัน, สัปดาห์, หรือทั้งหมดได้ที่ด้านล่าง</li>
+                </ul>
+            `
+        },
+        mood: {
+            title: 'วิธีใช้งานบันทึกอารมณ์',
+            html: `
+                <ul>
+                    <li><strong>เลือกวัน:</strong> คลิกวันที่ในปฏิทินที่คุณต้องการบันทึก</li>
+                    <li><strong>เลือกอารมณ์:</strong> เลือก Emoji ที่ตรงกับความรู้สึกของคุณในวันนั้น</li>
+                    <li><strong>ใส่รายละเอียด:</strong> สามารถเขียนโน้ตเพิ่มเติมและเลือกเหตุผลที่ทำให้รู้สึกแบบนั้นได้</li>
+                    <li><strong>บันทึก:</strong> กดปุ่ม "บันทึกอารมณ์" เพื่อเก็บข้อมูล</li>
+                </ul>
+            `
+        },
+        community: {
+            title: 'วิธีใช้งานหน้าเพื่อน',
+            html: `
+                <ul>
+                    <li><strong>ค้นหาเพื่อน:</strong> กดไอคอน "แว่นขยาย" ที่มุมขวาบนของจอเพื่อค้นหาเพื่อนจากชื่อหรือ LifeBuddy ID</li>
+                    <li><strong>ติดตาม:</strong> เมื่อเจอเพื่อนที่ต้องการสามารถกดปุ่ม "ติดตาม" เพื่อนของคุณได้</li>
+                    <li><strong>ดูรายชื่อ:</strong> คุณสามารถสลับดูรายชื่อคนที่คุณ "กำลังติดตาม" และคนที่ "ผู้ติดตาม" คุณได้จากหน้านี้</li>
+                </ul>
+            `
+        }
+        // สามารถเพิ่ม key และข้อมูลสำหรับหน้าอื่นๆ ได้ที่นี่
+    };
 document.addEventListener('DOMContentLoaded', () => {
 
     // =============================
@@ -30,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const profilePictures = [ 'girl_01.png', 'girl_02.png', 'girl_03.png', 'girl_04.png', 'girl_05.png', 'boy_01.png', 'boy_02.png', 'boy_03.png', 'boy_04.png', 'boy_05.png', 'cat_01.png', 'cat_02.png', 'cat_03.png', 'dog_01.png', 'dog_02.png', 'dog_03.png' ];
     let tcasDatabase = [];
     let selectedMajor = null;
-    window.handleUnfollow = handleUnfollow;
+
+
 
     const initialState = {
         coins: 50,
@@ -286,6 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function runApp() {
+        window.handleFollow = handleFollow;
+        window.handleUnfollow = handleUnfollow;
+        window.showFriendProfile = showFriendProfile;
+        window.showCommunityTab = showCommunityTab;
+
         if (!areListenersSetup) {
             setupAllEventListeners();
             areListenersSetup = true;
@@ -957,6 +1021,144 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==================================
     // ===== 5. UI & PAGE RENDERING =====
     // ==================================
+
+    async function renderFollowingList() {
+        const listEl = document.getElementById('following-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลด...</li>';
+        
+        const followingIds = state.following || [];
+        if (followingIds.length === 0) {
+            listEl.innerHTML = '<li class="empty-placeholder">คุณยังไม่ได้ติดตามใครเลย...</li>';
+            return;
+        }
+
+        try {
+            const followingPromises = followingIds.map(uid => db.collection('users').doc(uid).get());
+            const followingDocs = await Promise.all(followingPromises);
+
+            listEl.innerHTML = followingDocs.map(doc => {
+                if (!doc.exists) return '';
+                
+                const friendData = doc.data();
+                const profile = friendData.profile || {}; // ป้องกัน error ถ้าไม่มี profile
+                const displayName = profile.displayName || 'User';
+                const level = calculateLevel(friendData.exp || 0).level;
+                const photoURL = profile.photoURL || 'assets/profiles/startprofile.png';
+
+                return `
+                    <li class="user-list-item">
+                        <div class="user-profile-link" data-friend-id="${doc.id}" style="display: flex; align-items: center; gap: 15px; flex-grow: 1; cursor: pointer;">
+                            <img src="${photoURL}" alt="Profile Photo" class="user-list-avatar">
+                            <div class="user-info">
+                                <h4>${displayName}</h4>
+                                <p class="subtle-text">Level ${level}</p>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="small-btn btn-secondary btn-following" 
+                                onclick="handleUnfollow('${doc.id}', '${displayName}', '${photoURL}')"
+                                onmouseover="this.textContent = 'เลิกติดตาม'"
+                                onmouseout="this.textContent = 'กำลังติดตาม'">
+                                กำลังติดตาม
+                            </button>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+            feather.replace();
+        } catch (error) {
+            console.error("Error rendering following list:", error);
+            listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
+        }
+    }
+
+    async function renderFollowersList() {
+        const listEl = document.getElementById('followers-list');
+        if (!listEl) return;
+        listEl.innerHTML = '<li class="loading-placeholder">กำลังโหลด...</li>';
+
+        const followerIds = state.followers || [];
+        if (followerIds.length === 0) {
+            listEl.innerHTML = '<li class="empty-placeholder">ยังไม่มีผู้ติดตาม</li>';
+            return;
+        }
+
+        try {
+            const followerPromises = followerIds.map(uid => db.collection('users').doc(uid).get());
+            const followerDocs = await Promise.all(followerPromises);
+
+            listEl.innerHTML = followerDocs.map(doc => {
+                if (!doc.exists) return '';
+                
+                const followerData = doc.data();
+                const profile = followerData.profile || {}; // ป้องกัน error ถ้าไม่มี profile
+                const displayName = profile.displayName || 'User';
+                const level = calculateLevel(followerData.exp || 0).level;
+                const photoURL = profile.photoURL || 'assets/profiles/startprofile.png';
+                
+                // ตรวจสอบว่าเรากำลังติดตามคนๆ นี้อยู่หรือไม่
+                const amIFollowing = (state.following || []).includes(doc.id);
+                let actionButton = '';
+
+                if (amIFollowing) {
+                    // ถ้าติดตามอยู่แล้ว ให้แสดงปุ่ม "กำลังติดตาม"
+                    actionButton = `
+                        <button class="small-btn btn-secondary btn-following" 
+                            onclick="handleUnfollow('${doc.id}', '${displayName}', '${photoURL}')"
+                            onmouseover="this.textContent = 'เลิกติดตาม'"
+                            onmouseout="this.textContent = 'กำลังติดตาม'">
+                            กำลังติดตาม
+                        </button>`;
+                } else {
+                    // ถ้ายังไม่ได้ติดตาม ให้แสดงปุ่ม "ติดตามกลับ"
+                    actionButton = `
+                        <button class="small-btn" onclick="handleFollow('${doc.id}', '${displayName}')">
+                            ติดตามกลับ
+                        </button>`;
+                }
+
+                return `
+                <li class="user-list-item">
+                    <div class="user-profile-link" data-friend-id="${doc.id}" style="display: flex; align-items: center; gap: 15px; flex-grow: 1; cursor: pointer;">
+                            <img src="${photoURL}" alt="Profile Photo" class="user-list-avatar">
+                            <div class="user-info">
+                                <h4>${displayName}</h4>
+                                <p class="subtle-text">Level ${level}</p>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            ${actionButton}
+                        </div>
+                    </li>
+                `;
+            }).join('');
+            feather.replace();
+        } catch (error) {
+            console.error("Error rendering followers list:", error);
+            listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
+        }
+    }
+
+    function showCommunityTab(tabName) {
+        // จัดการสไตล์ของปุ่มแท็บ
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        
+        // จัดการการแสดงผลของเนื้อหา
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.toggle('active', content.id.startsWith(tabName));
+        });
+
+        // เรียกฟังก์ชันวาดข้อมูลตามแท็บที่เลือก
+        if (tabName === 'following') {
+            renderFollowingList();
+        } else if (tabName === 'followers') {
+            renderFollowersList();
+        }
+    }
+
     window.showPage = (pageId) => {
         if (!pageId) pageId = 'home';
         const protectedPages = ['profile', 'rewards', 'settings', 'community', 'shop'];
@@ -1686,9 +1888,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const allBadges = {
             "ความสม่ำเสมอ & การเริ่มต้น": [
                 { id: 'explorer', title: 'นักสำรวจ', desc: 'เปิดใช้งานครบทุกหน้าหลัก', icon: '🗺️' },
-                { id: 'streak15', title: 'เช็คอินต่อเนื่อง 15 วัน', desc: 'เช็คอินต่อเนื่องครบ 15 วัน', icon: '🔥🥉' },
-                { id: 'streak30', title: 'เช็คอินต่อเนื่อง 30 วัน', desc: 'เช็คอินต่อเนื่องครบ 30 วัน', icon: '🔥🥈' },
-                { id: 'loyalist45', title: 'ผู้ภักดี', desc: 'เช็คอินต่อเนื่องครบ 45 วัน', icon: '🔥🥇' },
+                { id: 'streak15', title: 'เช็คอินต่อเนื่อง 15 วัน', desc: 'เช็คอินต่อเนื่องครบ 15 วัน', icon: '🔥' },
+                { id: 'streak30', title: 'เช็คอินต่อเนื่อง 30 วัน', desc: 'เช็คอินต่อเนื่องครบ 30 วัน', icon: '🔥' },
+                { id: 'loyalist45', title: 'ผู้ภักดี', desc: 'เช็คอินต่อเนื่องครบ 45 วัน', icon: '🔥' },
             ],
             "การวางแผน & การจัดการ": [
                 { id: 'proPlanner', title: 'นักวางแผนมืออาชีพ', desc: 'เพิ่มกิจกรรมในตาราง 15 ครั้ง', icon: '📝' },
@@ -1715,6 +1917,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         };
         
+
         badgesContainer.innerHTML = '';
         for (const category in allBadges) {
             const categoryHtml = `
@@ -1868,27 +2071,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('profile-stat-focus').textContent = state.focus?.totalSessions || 0;
     document.getElementById('profile-stat-moods').textContent = Object.keys(state.moods || {}).length;
 
-    // 8. แสดงความสำเร็จ (Achievements) ที่ปลดล็อกแล้ว
+    // 8. แสดงความสำเร็จ (Achievements) ที่ปลดล็อกแล้ว [เวอร์ชันแก้ไข]
     const achievementsContainer = document.getElementById('profile-achievements-container');
     if (achievementsContainer) {
-        const badgeData = [ 
-            { id: 'focus10', title: 'นักโฟกัสหน้าใหม่', icon: '🎯'}, 
-            { id: 'plan5', title: 'นักวางแผนตัวยง', icon: '📝'}, 
-            { id: 'mood7', title: 'จิตใจเบิกบาน', icon: '😊'}, 
-            { id: 'review20', title: 'ยอดนักทบทวน', icon: '🎓'} 
-        ];
-        const unlockedBadges = badgeData.filter(badge => state.badges && state.badges[badge.id]);
+        const unlockedBadges = [];
+        
+        // วนลูปเพื่อหาเหรียญที่ปลดล็อกแล้วทั้งหมดจากฐานข้อมูลกลาง
+        for (const category in allBadges) {
+            allBadges[category].forEach(badge => {
+                if (state.badges && state.badges[badge.id]) {
+                    unlockedBadges.push(badge);
+                }
+            });
+        }
         
         if (unlockedBadges.length > 0) {
-            achievementsContainer.innerHTML = unlockedBadges.map(badge => 
-                `<div class="stat-item">
+            // แสดงแค่ 4 เหรียญล่าสุดที่ปลดล็อก (เพื่อความสวยงาม)
+            achievementsContainer.innerHTML = unlockedBadges.slice(0, 4).map(badge => `
+                <div class="stat-item profile-badge-item">
                     <span class="stat-icon">${badge.icon}</span>
-                    <span class="stat-value" style="font-size: 1rem; color: var(--text-color); margin: 4px 0;">${badge.title}</span>
-                    <span class="stat-label">ปลดล็อกแล้ว</span>
-                 </div>`
-            ).join('');
+                    <div class="stat-text-group">
+                        <span class="stat-value">${badge.title}</span>
+                        <span class="stat-label">ปลดล็อกแล้ว</span>
+                    </div>
+                </div>
+            `).join('');
         } else {
-            achievementsContainer.innerHTML = '<p class="subtle-text">ยังไม่มีความสำเร็จ... มาเริ่มสะสมกันเลย!</p>';
+            achievementsContainer.innerHTML = '<p class="subtle-text" style="text-align:center; width:100%;">ยังไม่มีความสำเร็จ... มาเริ่มสะสมกันเลย!</p>';
         }
     }
     
@@ -1936,10 +2145,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const requestSent = (state.sentFollowRequests || []).includes(friendId);
         let followButtonHtml = '';
         if (amIFollowing) {
-            followButtonHtml = `<button class="small-btn btn-secondary" onclick="handleUnfollow('${friendId}', '${friendData.profile.displayName}', '${friendData.profile.photoURL}')">กำลังติดตาม</button>`;
+            followButtonHtml = `<button class="small-btn btn-secondary btn-following" id="friend-profile-unfollow-btn">กำลังติดตาม</button>`;
         } else {
             // [สำคัญ] เปลี่ยนจาก handleSendFollowRequest เป็น handleFollow
-            followButtonHtml = `<button class="small-btn" onclick="handleFollow('${friendId}', '${friendData.profile.displayName}')">ติดตาม</button>`;
+            followButtonHtml = `<button class="small-btn" id="friend-profile-follow-btn">ติดตาม</button>`;
         }
 
         const bannerId = friendData.profile.currentBanner;
@@ -1978,6 +2187,27 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         feather.replace(); // วาดไอคอนใหม่
+        
+        const followBtn = contentEl.querySelector('#friend-profile-follow-btn');
+        if (followBtn) {
+            followBtn.addEventListener('click', () => {
+                handleFollow(friendId, displayName);
+                // ปิดโปรไฟล์หลังจากกดติดตาม
+                hideSheet(); 
+            });
+        }
+
+        const unfollowBtn = contentEl.querySelector('#friend-profile-unfollow-btn');
+        if (unfollowBtn) {
+            unfollowBtn.addEventListener('click', () => {
+                // [สำคัญ] ซ่อนโปรไฟล์เพื่อนก่อน แล้วค่อยแสดง Popup ยืนยัน
+                hideSheet();
+                // ใช้ setTimeout เล็กน้อยเพื่อให้ animation เล่นจบก่อน
+                setTimeout(() => {
+                    handleUnfollow(friendId, displayName, photoURL);
+                }, 300);
+            });
+        }
 
     } catch (error) {
         console.error("Error showing friend profile:", error);
@@ -2652,17 +2882,17 @@ document.addEventListener('DOMContentLoaded', () => {
         feather.replace();
     };
     window.deleteQuiz = (quizId) => {
-        Swal.fire({
-            title: 'แน่ใจหรือไม่?', text: "คุณต้องการลบควิซข้อนี้ใช่ไหม? การกระทำนี้ไม่สามารถย้อนกลับได้", icon: 'warning',
-            showCancelButton: true, confirmButtonColor: 'var(--danger-color)', cancelButtonColor: '#6e7881',
-            confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
-            if (result.isConfirmed) {
+        showActionSheet({
+            title: 'คุณต้องการลบควิซข้อนี้ใช่ไหม?',
+            text: 'การกระทำนี้ไม่สามารถย้อนกลับได้',
+            confirmText: 'ใช่, ลบเลย!',
+            isDestructive: true,
+            onConfirm: () => {
                 const topic = state.revisitTopics[currentQuizState.subject].find(t => t.id === currentQuizState.topicId);
                 topic.quizzes = topic.quizzes.filter(q => q.id !== parseInt(quizId));
                 saveState();
                 renderCreatedQuizzesList();
-                Swal.fire('ลบแล้ว!', 'ควิซถูกลบออกไปแล้ว', 'success');
+                showToast('ลบควิซถูกลบออกไปแล้ว');
             }
         });
     };
@@ -3297,110 +3527,6 @@ document.addEventListener('DOMContentLoaded', () => {
         friendListeners.push(userListener);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    async function renderFollowersList() {
-        const listEl = document.getElementById('followers-list');
-        if (!listEl) return;
-        listEl.innerHTML = '<li>กำลังโหลด...</li>';
-        const followerIds = state.followers || [];
-        if (followerIds.length === 0) {
-            listEl.innerHTML = '<li>ยังไม่มีผู้ติดตาม</li>';
-            return;
-        }
-        const followerPromises = followerIds.map(uid => db.collection('users').doc(uid).get());
-        const followerDocs = await Promise.all(followerPromises);
-        listEl.innerHTML = followerDocs.map(doc => {
-            if (!doc.exists) return '';
-            const followerData = doc.data();
-            const displayName = followerData.profile.displayName || 'User';
-            const amIFollowing = (state.following || []).includes(doc.id);
-            let actionButton = '';
-            if (amIFollowing) {
-                // ถ้าเราติดตามเขาอยู่แล้ว ก็ไม่ต้องแสดงปุ่มอะไรเลย (หรือจะแสดงปุ่ม Unfollow ก็ได้)
-                actionButton = `<button class="small-btn btn-secondary" onclick="handleUnfollow('${doc.id}', '${displayName}', '${followerData.profile.photoURL}')">กำลังติดตาม</button>`;
-            } else {
-                // [สำคัญ] เปลี่ยนจาก handleFollowBack เป็น handleFollow
-                actionButton = `<button class="small-btn" onclick="handleFollow('${doc.id}', '${displayName}')">ติดตามกลับ</button>`;
-            }
-            return `
-                <li class="user-list-item">
-                    <img src="${followerData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar">
-                    <div class="user-info">
-                        <h4>${displayName}</h4>
-                        <p>${followerData.profile.lifebuddyId || ''}</p>
-                    </div>
-                    <div class="user-actions">
-                        ${actionButton}
-                    </div>
-                </li>
-            `;
-        }).join('');
-        feather.replace();
-    }
-
-   // ฟังก์ชัน showCommunityTab เวอร์ชั่นอัปเกรด (แทนที่ของเก่าทั้งหมด)
-    function showCommunityTab(tabName) {
-        // --- ส่วนที่ 1: จัดการสไตล์ของปุ่มแท็บ (เหมือนเดิม) ---
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-        
-        // --- ส่วนที่ 2: จัดการการแสดงผลของเนื้อหา (เหมือนเดิม) ---
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.toggle('active', content.id.startsWith(tabName));
-        });
-
-        // --- ส่วนที่ 3: [สำคัญที่สุด] เรียกฟังก์ชันวาดข้อมูลตามแท็บที่เลือก ---
-        if (tabName === 'following') {
-            renderFollowingList();
-        } else if (tabName === 'followers') {
-            renderFollowersList();
-        } else if (tabName === 'requests') {
-            renderFollowRequests(); // <--- นี่คือส่วนที่ขาดหายไป!
-        }
-    }
-
-    async function renderFollowingList() {
-        const listEl = document.getElementById('following-list');
-        if (!listEl) return;
-        listEl.innerHTML = '<li>กำลังโหลด...</li>';
-        const followingIds = state.following || [];
-        if (followingIds.length === 0) {
-            listEl.innerHTML = '<li class="empty-placeholder">คุณยังไม่ได้ติดตามใครเลย...</li>';
-            return;
-        }
-        try {
-            const followingPromises = followingIds.map(uid => db.collection('users').doc(uid).get());
-            const followingDocs = await Promise.all(followingPromises);
-
-            // [จุดสำคัญอยู่ตรงนี้]
-            listEl.innerHTML = followingDocs.map(doc => {
-            if (!doc.exists) return '';
-            const friendData = doc.data();
-            const displayName = friendData.profile.displayName || 'User';
-
-            return `
-                <li class="user-list-item">
-                    <img src="${friendData.profile.photoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="user-list-avatar" onclick="showFriendProfile('${doc.id}')" style="cursor: pointer;">
-                    <div class="user-info" onclick="showFriendProfile('${doc.id}')" style="cursor: pointer;">
-                        <h4>${displayName}</h4>
-                        <p class="subtle-text">Level ${calculateLevel(friendData.exp || 0).level}</p>
-                    </div>
-                    <div class="user-actions">
-                        <button class="small-btn btn-secondary" onclick="handleUnfollow('${doc.id}', '${displayName}', '${friendData.profile.photoURL}')">กำลังติดตาม</button>
-                    </div>
-                </li>
-            `;
-        }).join('');
-            feather.replace();
-        } catch (error) {
-            console.error("Error rendering following list:", error);
-            listEl.innerHTML = '<li>เกิดข้อผิดพลาดในการโหลดข้อมูล</li>';
-        }
-    }
-
-    // ใน app.js, แทนที่ฟังก์ชัน renderChatList เดิมด้วยเวอร์ชันนี้
-    
     async function handleFriendSearch(e) {
         e.preventDefault();
         const searchInput = document.getElementById('search-friends-input');
@@ -4423,6 +4549,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            
             // --- Sub-Group: GPA Table Interactions ---
             const gradePopup = document.getElementById('grade-popup');
             const creditBtn = closest('.credit-stepper-btn');
@@ -4462,7 +4589,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.grade-selector.active').forEach(el => el.classList.remove('active'));
             }
             const gpaClearBtn = closest('#gpa-clear-btn');
-            if (gpaClearBtn) { resetGpaTable(); return; }
+            if (gpaClearBtn) {
+                showActionSheet({
+                    title: 'คุณต้องการล้างข้อมูลทั้งหมดใช่ไหม?',
+                    text: 'ข้อมูลในตารางจะถูกลบทั้งหมดและไม่สามารถกู้คืนได้',
+                    confirmText: 'ใช่, ล้างข้อมูล',
+                    isDestructive: true,
+                    onConfirm: resetGpaTable
+                });
+                return;
+            }
             const gpaSaveRecordBtn = closest('#gpa-save-record-btn');
             if (gpaSaveRecordBtn) { saveGpaRecord(); return; }
             const historyItem = closest('.gpa-history-item');
@@ -4482,12 +4618,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteGpaBtn = closest('.delete-gpa-record-btn');
             if (deleteGpaBtn) {
                 const recordId = parseInt(deleteGpaBtn.dataset.id);
-                Swal.fire({
-                    title: 'ยืนยันการลบ', text: "คุณต้องการลบผลการเรียนนี้ใช่ไหม?",
-                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
-                    confirmButtonText: 'ใช่, ลบเลย', cancelButtonText: 'ยกเลิก'
-                }).then(result => {
-                    if(result.isConfirmed) {
+                showActionSheet({
+                    title: 'คุณต้องการลบผลการเรียนนี้ใช่ไหม?',
+                    confirmText: 'ลบผลการเรียน',
+                    isDestructive: true,
+                    onConfirm: () => {
                         state.gpaHistory = state.gpaHistory.filter(rec => rec.id !== recordId);
                         saveState();
                         renderGpaHistoryList();
@@ -4496,17 +4631,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 return;
             }
-            
+                
             // --- Group 3: Home Page Items (To-Do & Activities) ---
             const deleteTodoBtn = closest('.delete-todo-btn');
             if (deleteTodoBtn) {
                 const todoId = parseInt(deleteTodoBtn.dataset.id);
-                Swal.fire({
-                    title: 'แน่ใจหรือไม่?', text: "คุณต้องการลบเป้าหมายนี้ใช่ไหม?",
-                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
-                    cancelButtonColor: '#6e7881', confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                
+                showActionSheet({
+                    title: 'คุณต้องการลบเป้าหมายนี้ใช่ไหม?',
+                    confirmText: 'ลบเป้าหมาย',
+                    isDestructive: true, // ทำให้ปุ่มเป็นสีแดง
+                    onConfirm: () => {
                         state.todos = state.todos.filter(t => t.id !== todoId);
                         saveState();
                         updateHomePageUI();
@@ -4540,12 +4675,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteActivityBtn = closest('.delete-activity-btn');
             if (deleteActivityBtn) {
                 const activityIndex = parseInt(deleteActivityBtn.dataset.index, 10);
-                Swal.fire({
-                    title: 'แน่ใจหรือไม่?', text: "คุณต้องการลบกิจกรรมนี้ออกจากรายการใช่ไหม?",
-                    icon: 'warning', showCancelButton: true, confirmButtonColor: 'var(--danger-color)',
-                    cancelButtonColor: '#6e7881', confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                
+                showActionSheet({
+                    title: 'คุณต้องการลบกิจกรรมนี้ใช่ไหม?',
+                    confirmText: 'ลบกิจกรรม',
+                    isDestructive: true,
+                    onConfirm: () => {
                         if (state.userActivities && state.userActivities[activityIndex] !== undefined) {
                             state.userActivities.splice(activityIndex, 1);
                             saveState();
@@ -4560,21 +4695,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteAdviceBtn = closest('.delete-advice-btn');
             if (deleteAdviceBtn) {
                 const adviceIndex = parseInt(deleteAdviceBtn.dataset.index, 10);
-                Swal.fire({
-                    title: 'แน่ใจหรือไม่?',
-                    text: "คุณต้องการลบคำแนะนำนี้ออกจากรายการใช่ไหม?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: 'var(--danger-color)',
-                    cancelButtonColor: '#6e7881',
-                    confirmButtonText: 'ใช่, ลบเลย!',
-                    cancelButtonText: 'ยกเลิก'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+
+                showActionSheet({
+                    title: 'คุณต้องการลบคำแนะนำนี้ใช่ไหม?',
+                    confirmText: 'ลบคำแนะนำ',
+                    isDestructive: true,
+                    onConfirm: () => {
                         if (state.userAdvice && state.userAdvice[adviceIndex] !== undefined) {
                             state.userAdvice.splice(adviceIndex, 1);
                             saveState();
-                            renderUserAdviceList(); // วาดรายการใหม่
+                            renderUserAdviceList();
                             showToast('ลบคำแนะนำแล้ว');
                         }
                     }
@@ -4720,11 +4850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'start-timer-btn': if (timerInterval) { stopTimer(); timerInterval = null; } else { startTimer(); } break;
                 case 'reset-timer-btn': resetTimer(); break;
                 case 'settings-timer-btn': 
-                    if (!state.settings) state.settings = { focusDuration: 25, breakDuration: 5 };
-                    document.getElementById('focus-duration').value = state.settings.focusDuration || 25;
-                    document.getElementById('break-duration').value = state.settings.breakDuration || 5;
-                    document.getElementById('timer-settings-modal').classList.remove('hidden'); 
-                    feather.replace(); 
+                    showTimerSettingsSheet(); // เรียกใช้ฟังก์ชันใหม่ของเรา
                     break;
                 case 'save-timer-settings-btn': handleSaveTimerSettings(); break; 
                 case 'change-banner-btn': openBannerSelector(); break;
@@ -4769,9 +4895,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'start-quiz-btn': startQuiz(); break;
                 case 'cancel-edit-quiz-btn': resetQuizCreationForm(); break;
                 case 'continue-quiz-btn': continueQuiz(); break;
-                case 'exit-quiz-btn': Swal.fire({ title: 'แน่ใจหรือไม่?', text: "คุณต้องการออกจากการทำควิซ?", icon: 'warning', showCancelButton: true, confirmButtonText: 'ใช่, ออกเลย', cancelButtonText: 'ทำต่อ' }).then(r => { if(r.isConfirmed) { document.getElementById('quiz-taking-view').classList.add('hidden'); document.getElementById('revisit-list-view').classList.remove('hidden'); renderRevisitList(); }}); break;
+                case 'exit-quiz-btn':
+                            showActionSheet({
+                                title: 'คุณต้องการออกจากการทำควิซหรือไม่?',
+                                confirmText: 'ใช่, ออกเลย',
+                                isDestructive: true,
+                                onConfirm: () => {
+                                    document.getElementById('quiz-taking-view').classList.add('hidden');
+                                    document.getElementById('revisit-list-view').classList.remove('hidden');
+                                    renderRevisitList();
+                                }
+                            });
+                            break;
                 case 'submit-typed-answer-btn': handleAnswer(document.getElementById('typed-answer-input').value); break;
             }
+
+            const showFeatureHelp = (featureKey) => {
+            const content = featureHelpContent[featureKey];
+            if (!content) {
+                console.error('Help content not found for key:', featureKey);
+                return;
+            }
+
+            // เรียกใช้ฟังก์ชัน Action Sheet ที่เรามีอยู่แล้ว
+            showActionSheet({
+                // [ใหม่] เราจะสร้าง HTML ทั้งหมดสำหรับใส่ในกล่องเนื้อหา
+                html: `
+                    <div class="help-sheet-content">
+                        <div class="help-sheet-header">
+                            <div class="help-sheet-icon"><i data-feather="info"></i></div>
+                            <h2>${content.title}</h2>
+                        </div>
+                        <div class="help-sheet-body">
+                            ${content.html}
+                        </div>
+                    </div>
+                `,
+                // เราไม่ต้องการปุ่มยืนยัน (ปุ่มสีแดง) เลยไม่ส่ง confirmText
+                
+                // [ใหม่] เราจะเปลี่ยนข้อความของปุ่ม "ยกเลิก" ให้เป็น "เข้าใจแล้ว"
+                cancelText: 'เข้าใจแล้ว'
+            });
+
+            // สั่งให้วาดไอคอน info ที่เราเพิ่งสร้างขึ้นมา
+            feather.replace();
+        };
+
+        // --- จัดการการคลิกปุ่มวิธีใช้งาน ---
+        document.body.addEventListener('click', (e) => {
+            const helpBtn = e.target.closest('.feature-help-btn');
+            if (helpBtn) {
+                const featureKey = helpBtn.dataset.helpKey;
+                if (featureKey) {
+                    showFeatureHelp(featureKey);
+                }
+            }
+        });
+
         });
 
         // ===========================================
@@ -4826,7 +5006,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
         });
+
+        const communityContent = document.querySelector('.community-content');
+        if (communityContent) {
+            communityContent.addEventListener('click', (e) => {
+                // หา element ที่ถูกคลิกที่ใกล้ที่สุดที่มี class 'user-profile-link'
+                const profileLink = e.target.closest('.user-profile-link');
+                
+                // ถ้าหาเจอ (หมายความว่าผู้ใช้คลิกที่ชื่อหรือรูป)
+                if (profileLink) {
+                    const friendId = profileLink.dataset.friendId;
+                    if (friendId) {
+                        showFriendProfile(friendId);
+                    }
+                }
+            });
+        }
+            console.log("กำลังตั้งค่า Listener สำหรับหน้าเพื่อน..."); // ด่านตรวจที่ 1
             
+            if (communityContent) {
+                console.log("เจอ .community-content แล้ว, กำลังจะเพิ่ม Listener..."); // ด่านตรวจที่ 2
+
+                communityContent.addEventListener('click', (e) => {
+                    console.log("มีการคลิกเกิดขึ้นใน .community-content!"); // ด่านตรวจที่ 3
+
+                    const profileLink = e.target.closest('.user-profile-link');
+                    
+                    if (profileLink) {
+                        console.log("คลิกที่ user-profile-link สำเร็จ!"); // ด่านตรวจที่ 4
+                        const friendId = profileLink.dataset.friendId;
+                        
+                        if (friendId) {
+                            console.log("ได้ friendId มาแล้ว:", friendId, "กำลังจะเรียก showFriendProfile..."); // ด่านตรวจที่ 5
+                            showFriendProfile(friendId);
+                        } else {
+                            console.error("หา friendId ไม่เจอใน data-attribute!");
+                        }
+                    }
+                });
+            } else {
+                console.error("หา .community-content ไม่เจอใน HTML!");
+            } 
         areListenersSetup = true;
     }
 
@@ -4913,125 +5133,87 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('auth-error').textContent = ''; 
     }
 
+    // ทำให้ Popup สวยงาม
     async function handleUnfollow(friendId, friendName, friendPhotoURL) {
-        // ป้องกันการทำงานถ้าไม่มีข้อมูล
         if (!currentUser || !friendId) return;
 
-        // 1. ดึง Element ทั้งหมดของ Action Sheet จาก HTML
-        const overlay = document.getElementById('unfollow-sheet-overlay');
-        const sheet = document.getElementById('unfollow-sheet');
-        const avatar = document.getElementById('unfollow-sheet-avatar');
-        const text = document.getElementById('unfollow-sheet-text');
-        const confirmBtn = document.getElementById('unfollow-sheet-confirm-btn');
-        const cancelBtn = document.getElementById('unfollow-sheet-cancel-btn');
+        // สังเกตว่าโค้ดนี้จะเรียกใช้ฟังก์ชัน showActionSheet ที่เราเตรียมไว้แล้ว
+        showActionSheet({
+            icon: `<img src="${friendPhotoURL || 'assets/profiles/startprofile.png'}" alt="Profile Photo" class="action-sheet-avatar">`,
+            
+            title: `คุณแน่ใจหรือไม่ว่าจะเลิกติดตาม <strong>${friendName}</strong>`,
 
-        // ตรวจสอบให้แน่ใจว่าหา Element เจอทั้งหมด ป้องกัน Error
-        if (!overlay || !sheet || !avatar || !text || !confirmBtn || !cancelBtn) {
-            console.error("Action Sheet elements not found in index.html!");
+            confirmText: 'เลิกติดตาม',
+            isDestructive: true,
+
+            onConfirm: async () => {
+                try {
+                    const currentUserId = currentUser.uid;
+                    const userRef = db.collection('users').doc(currentUserId);
+                    const friendRef = db.collection('users').doc(friendId);
+
+                    const batch = db.batch();
+                    batch.update(userRef, { following: firebase.firestore.FieldValue.arrayRemove(friendId) });
+                    batch.update(friendRef, { followers: firebase.firestore.FieldValue.arrayRemove(currentUserId) });
+                    await batch.commit();
+
+                    showToast(`เลิกติดตาม ${friendName} แล้ว`);
+                } catch (error) {
+                    console.error("Error unfollowing user:", error);
+                    showToast("เกิดข้อผิดพลาดในการเลิกติดตาม");
+                }
+            }
+        });
+    }
+
+    // ฟังก์ชันสำหรับจัดการการกดปุ่ม "ติดตาม"
+    async function handleFollow(targetUserId, targetUserName) {
+        if (!currentUser) {
+            openAuthModal();
+            return;
+        }
+        const currentUserId = currentUser.uid;
+
+        // ป้องกันการติดตามตัวเอง
+        if (currentUserId === targetUserId) {
+            showToast("คุณไม่สามารถติดตามตัวเองได้");
             return;
         }
 
-        // 2. ตั้งค่าข้อมูลและข้อความเป็นภาษาไทย
-        avatar.src = friendPhotoURL || 'assets/profiles/startprofile.png';
-        text.innerHTML = `หากคุณเปลี่ยนใจ คุณจะต้องส่งคำขอติดตาม <strong>${friendName}</strong> อีกครั้ง`;
-        confirmBtn.textContent = 'เลิกติดตาม';
-        cancelBtn.textContent = 'ยกเลิก';
-
-        // 3. สร้างฟังก์ชันสำหรับซ่อน Sheet (พร้อม Animation)
-        const hideSheet = () => {
-            overlay.classList.remove('show');
-            sheet.classList.remove('show');
-            // ใช้ setTimeout เพื่อให้ animation เล่นจบก่อนที่จะซ่อน element จริงๆ
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                sheet.classList.add('hidden');
-            }, 300);
-        };
-        
-        // 4. สร้างฟังก์ชันจัดการการทำงานของปุ่มและ Overlay
-        const handleCancel = () => {
-            hideSheet();
-            cleanupListeners();
-        };
-
-        const handleConfirm = async () => {
-            try {
-                const currentUserId = currentUser.uid;
-                const userRef = db.collection('users').doc(currentUserId);
-                const friendRef = db.collection('users').doc(friendId);
-                
-                const batch = db.batch();
-
-                // เอา ID เพื่อนออกจาก array 'following' ของเรา
-                batch.update(userRef, { following: firebase.firestore.FieldValue.arrayRemove(friendId) });
-                
-                // เอา ID ของเราออกจาก array 'followers' ของเพื่อน
-                batch.update(friendRef, { followers: firebase.firestore.FieldValue.arrayRemove(currentUserId) });
-
-                await batch.commit();
-                showToast(`เลิกติดตาม ${friendName} แล้ว`);
-            } catch (error) {
-                console.error("Error unfollowing user:", error);
-                showToast("เกิดข้อผิดพลาดในการเลิกติดตาม");
-            } finally {
-                hideSheet();
-                cleanupListeners();
-            }
-        };
-
-        // ฟังก์ชันสำหรับลบ Event Listener เก่าทิ้ง ป้องกันการทำงานซ้ำซ้อน
-        const cleanupListeners = () => {
-            cancelBtn.removeEventListener('click', handleCancel);
-            confirmBtn.removeEventListener('click', handleConfirm);
-            overlay.removeEventListener('click', handleCancel);
-        };
-
-        // 5. เริ่มกระบวนการ: ลบ Listener เก่า -> เพิ่ม Listener ใหม่ -> แสดง Sheet
-        cleanupListeners(); // ล้างของเก่าก่อนเสมอ
-
-        cancelBtn.addEventListener('click', handleCancel);
-        confirmBtn.addEventListener('click', handleConfirm);
-        overlay.addEventListener('click', handleCancel);
-
-        // แสดง Action Sheet (พร้อม Animation)
-        overlay.classList.remove('hidden');
-        sheet.classList.remove('hidden');
-        
-        // ใช้ setTimeout เล็กน้อยเพื่อให้ CSS animation ทำงานได้ถูกต้อง
-        setTimeout(() => {
-            overlay.classList.add('show');
-            sheet.classList.add('show');
-        }, 10);
-    }
-
-    //=========================================================
-    //====== HANDLE FOLLOW FUNCTION (Instant Follow) ======
-    //=========================================================
-    async function handleFollow(targetUserId, targetUserName) {
-        if (!currentUser || !targetUserId) return;
+        // ดึง Reference ของ Document ทั้งสอง
+        const userRef = db.collection('users').doc(currentUserId);
+        const targetUserRef = db.collection('users').doc(targetUserId);
 
         try {
-            const currentUserId = currentUser.uid;
-            const userRef = db.collection('users').doc(currentUserId);
-            const targetUserRef = db.collection('users').doc(targetUserId);
-
-            // ใช้ Batch Write เพื่อให้การทำงาน 2 อย่างสำเร็จพร้อมกัน
+            // ใช้ Batch เพื่อให้การเขียนข้อมูล 2 ที่สำเร็จพร้อมกัน
             const batch = db.batch();
 
-            // 1. เพิ่ม ID ของเป้าหมายเข้าไปใน array 'following' ของเรา
-            batch.update(userRef, {
-                following: firebase.firestore.FieldValue.arrayUnion(targetUserId)
-            });
-            // 2. เพิ่ม ID ของเราเข้าไปใน array 'followers' ของเป้าหมาย
-            batch.update(targetUserRef, {
-                followers: firebase.firestore.FieldValue.arrayUnion(currentUserId)
-            });
-
+            // 1. อัปเดต Document ของเรา: เพิ่ม targetUserId เข้าไปใน array 'following'
+            batch.update(userRef, { following: firebase.firestore.FieldValue.arrayUnion(targetUserId) });
+            
+            // 2. อัปเดต Document ของเป้าหมาย: เพิ่ม currentUserId เข้าไปใน array 'followers'
+            batch.update(targetUserRef, { followers: firebase.firestore.FieldValue.arrayUnion(currentUserId) });
+            
             // สั่งให้ Batch ทำงาน
             await batch.commit();
 
+            // อัปเดต State ฝั่ง Client ทันทีเพื่อความรวดเร็ว
+            if (!state.following) state.following = [];
+            state.following.push(targetUserId);
+
+            // อัปเดต UI ที่เกี่ยวข้อง
+            // หากอยู่ในหน้า Community ให้วาดรายการใหม่
+            if (document.getElementById('community-page').classList.contains('active')) {
+                const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+                if (activeTab === 'followers') renderFollowersList();
+                else if (activeTab === 'following') renderFollowingList();
+            }
+            // หากอยู่ในหน้าค้นหา ให้วาดผลลัพธ์ใหม่
+            if (document.getElementById('search-friends-modal').classList.contains('hidden') === false) {
+                renderSearchResults(lastSearchResults);
+            }
+
             showToast(`ติดตาม ${targetUserName} แล้ว!`);
-            // Listener (setupFriendListeners) จะทำงานและอัปเดต UI ให้เอง
 
         } catch (error) {
             console.error("Error following user:", error);
@@ -5039,7 +5221,296 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    
+
     // ทำให้ฟังก์ชันนี้เรียกใช้ได้จากทุกที่
     window.handleFollow = handleFollow;
+
+    //=========================================================
+    //====== SHOW FRIEND PROFILE MODAL FUNCTION ======
+    //=========================================================
+    // [สำคัญ] คัดลอกโค้ดนี้ไปแทนที่ฟังก์ชัน showFriendProfile เดิมทั้งหมด
+    async function showFriendProfile(friendId) {
+        // ถ้ากดดูโปรไฟล์ตัวเอง ให้ไปหน้าโปรไฟล์ปกติ
+        if (currentUser && friendId === currentUser.uid) {
+            showPage('profile');
+            return;
+        }
+
+        const overlay = document.getElementById('unfollow-sheet-overlay');
+        const sheet = document.getElementById('unfollow-sheet');
+        const contentEl = document.getElementById('unfollow-sheet-content');
+        const cancelBtn = document.getElementById('unfollow-sheet-cancel-btn');
+
+        if (!overlay || !sheet || !contentEl || !cancelBtn) {
+            console.error("Action Sheet elements not found!");
+            return;
+        }
+
+        // --- ฟังก์ชันสำหรับซ่อน Sheet ---
+        const hideSheet = () => {
+            overlay.classList.remove('show');
+            sheet.classList.remove('show');
+        };
+
+        // แสดง Sheet พร้อม Spinner ขณะโหลด
+        contentEl.innerHTML = '<div class="loader" style="margin: 100px auto;"></div>';
+        cancelBtn.classList.add('hidden'); // ซ่อนปุ่มยกเลิกเก่าก่อน
+        overlay.classList.remove('hidden');
+        sheet.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('show');
+            sheet.classList.add('show');
+        }, 10);
+        
+        // ผูก Event ให้กดพื้นที่สีเทาเพื่อปิดได้
+        overlay.onclick = hideSheet;
+
+        try {
+            const doc = await db.collection('users').doc(friendId).get();
+            if (!doc.exists) {
+                contentEl.innerHTML = '<p style="padding: 50px; text-align: center;">ไม่พบผู้ใช้นี้</p>';
+                cancelBtn.textContent = 'ปิด';
+                cancelBtn.classList.remove('hidden');
+                cancelBtn.onclick = hideSheet;
+                return;
+            }
+
+            const friendData = doc.data();
+            const friendProfile = friendData.profile || {};
+            
+            // --- เตรียมข้อมูล ---
+            const displayName = friendProfile.displayName || 'User';
+            const photoURL = friendProfile.photoURL || 'assets/profiles/startprofile.png';
+            const lifebuddyId = friendProfile.lifebuddyId || '';
+            const bio = friendProfile.bio || 'ยังไม่มีคำอธิบายตัวตน...';
+            const { level } = calculateLevel(friendData.exp || 0);
+            const followersCount = (friendData.followers || []).length;
+            const followingCount = (friendData.following || []).length;
+            const streak = friendData.streak || 0;
+            const totalExp = friendData.exp || 0;
+            const focusSessions = friendData.focus?.totalSessions || 0;
+            const moodLogs = Object.keys(friendData.moods || {}).length;
+
+            // --- เตรียมปุ่ม Follow/Unfollow ---
+            const amIFollowing = (state.following || []).includes(friendId);
+            let actionButtonHTML = '';
+            if (amIFollowing) {
+                actionButtonHTML = `<button class="small-btn btn-secondary" id="sheet-unfollow-btn">กำลังติดตาม</button>`;
+            } else {
+                actionButtonHTML = `<button class="small-btn" id="sheet-follow-btn">ติดตาม</button>`;
+            }
+
+            // --- สร้าง HTML สำหรับ Action Sheet ---
+            contentEl.innerHTML = `
+                <div class="friend-profile-sheet-container">
+                    <img src="${photoURL}" alt="Avatar" class="friend-profile-avatar">
+                    <div class="friend-profile-header-actions">
+                        ${actionButtonHTML}
+                        <button class="icon-button friend-profile-close-btn" title="ปิด"><i data-feather="x"></i></button>
+                    </div>
+
+                    <div class="friend-profile-info">
+                        <h2 class="friend-profile-name">${displayName}</h2>
+                        <div class="friend-profile-level-id">
+                            <span class="level-badge">Level ${level}</span>
+                            <p class="friend-profile-id">${lifebuddyId}</p>
+                        </div>
+                        <p class="friend-profile-bio">${bio}</p>
+                    </div>
+
+                    
+                    <hr class="friend-profile-divider">
+
+                    <div class="friend-profile-follow-stats">
+                        <div class="follow-stat"><strong>${followersCount}</strong> ผู้ติดตาม</div>
+                        <div class="follow-stat"><strong>${followingCount}</strong> กำลังติดตาม</div>
+                    </div>
+
+                    <hr class="friend-profile-divider">
+
+                    <div class="friend-profile-stats-grid">
+                        <div class="stat-item"><span class="stat-icon">🔥</span> <span class="stat-value">${streak}</span> <span class="stat-label">สตรีค</span></div>
+                        <div class="stat-item"><span class="stat-icon">🎯</span> <span class="stat-value">${focusSessions}</span> <span class="stat-label">โฟกัส</span></div>
+                        <div class="stat-item"><span class="stat-icon">😊</span> <span class="stat-value">${moodLogs}</span> <span class="stat-label">อารมณ์</span></div>
+                        <div class="stat-item"><span class="stat-icon">⚡️</span> <span class="stat-value">${totalExp}</span> <span class="stat-label">XP</span></div>
+                    </div>
+                </div>
+            `;
+            feather.replace();
+
+            // --- แสดงปุ่ม "ยกเลิก" ด้านล่าง และผูก Event ---
+            cancelBtn.textContent = 'ยกเลิก';
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.onclick = hideSheet;
+
+            // --- ผูก Event Listener กับปุ่มต่างๆ ที่สร้างขึ้นมาใหม่ ---
+            contentEl.querySelector('.friend-profile-close-btn').onclick = hideSheet;
+
+            const followBtn = document.getElementById('sheet-follow-btn');
+            if(followBtn) {
+                followBtn.onclick = () => { handleFollow(friendId, displayName); hideSheet(); };
+            }
+            
+            const unfollowBtn = document.getElementById('sheet-unfollow-btn');
+            if(unfollowBtn) {
+                unfollowBtn.onclick = () => {
+                    hideSheet();
+                    setTimeout(() => handleUnfollow(friendId, displayName, photoURL), 300);
+                };
+            }
+
+        } catch (error) {
+            console.error("Error showing friend profile:", error);
+            contentEl.innerHTML = '<p style="padding: 50px; text-align: center;">เกิดข้อผิดพลาด</p>';
+            cancelBtn.textContent = 'ปิด';
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.onclick = hideSheet;
+        }
+    }
+    /**
+     * ฟังก์ชันกลางสำหรับแสดง Action Sheet
+         /**
+     * [SUPER FUNCTION] ฟังก์ชันกลางสำหรับแสดง Action Sheet ทุกรูปแบบ
+     * @param {object} options - ตัวเลือกต่างๆ
+     * @param {string} options.title - ข้อความหลัก (ถ้าใช้ html จะถูกแทนที่)
+     * @param {string} [options.text] - ข้อความรอง (แสดงใต้ Title)
+     * @param {string} [options.icon] - Emoji หรือไอคอนที่จะแสดงด้านบน
+     * @param {string} [options.html] - โค้ด HTML ที่จะแสดงแทน title และ text
+     * @param {string} [options.confirmText] - ข้อความบนปุ่มยืนยัน
+     * @param {boolean} [options.isDestructive=false] - ทำให้ปุ่มยืนยันเป็นสีแดงหรือไม่
+     * @param {function} [options.onConfirm] - ฟังก์ชันที่จะทำงานเมื่อกดยืนยัน
+     */
+    
+    function showActionSheet(options) {
+        const { title, text, icon, html, confirmText, isDestructive = false, onConfirm, cancelText } = options;
+
+        const overlay = document.getElementById('unfollow-sheet-overlay');
+        const sheet = document.getElementById('unfollow-sheet');
+        const contentEl = document.getElementById('unfollow-sheet-content');
+        const cancelBtn = document.getElementById('unfollow-sheet-cancel-btn');
+
+        if (!overlay || !sheet || !contentEl || !cancelBtn) {
+            console.error("Action Sheet elements not found!");
+            return;
+        }
+
+        // 1. สร้างเนื้อหาแบบไดนามิก
+        let innerHTML = '<div class="action-sheet-inner">';
+        if (html) {
+            innerHTML += html; // ถ้ามี html ให้ใช้ html เลย
+        } else {
+            // ถ้าไม่มี html ให้สร้างจาก title, icon, text
+            if (icon) innerHTML += `<div class="action-sheet-icon-wrapper">${icon}</div>`;
+            if (title) innerHTML += `<h2 class="action-sheet-title">${title}</h2>`;
+            if (text) innerHTML += `<p class="action-sheet-text">${text}</p>`;
+        }
+
+        if (confirmText) {
+            innerHTML += `<button id="action-sheet-confirm-btn" class="action-sheet-btn ${isDestructive ? 'destructive' : ''}">${confirmText}</button>`;
+        }
+        innerHTML += '</div>';
+        contentEl.innerHTML = innerHTML;
+        
+        // 2. ฟังก์ชันซ่อน Sheet
+        const hideSheet = () => {
+            overlay.classList.remove('show');
+            sheet.classList.remove('show');
+        };
+        
+        // 3. จัดการ Event Listener
+        const confirmBtn = document.getElementById('action-sheet-confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+                hideSheet();
+            };
+        }
+
+        // [แก้ไข] ส่วนจัดการปุ่ม Cancel/Primary Action
+        cancelBtn.textContent = cancelText || 'ยกเลิก';
+        cancelBtn.classList.toggle('primary-action', !!cancelText && !confirmText);
+        cancelBtn.onclick = hideSheet;
+        overlay.onclick = hideSheet;
+
+        // 4. แสดง Action Sheet
+        overlay.classList.remove('hidden');
+        sheet.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('show');
+            sheet.classList.add('show');
+        }, 10);
+    }
+
+    function showTimerSettingsSheet() {
+    const overlay = document.getElementById('unfollow-sheet-overlay');
+    const sheet = document.getElementById('unfollow-sheet');
+    const contentEl = document.getElementById('unfollow-sheet-content');
+    const cancelBtn = document.getElementById('unfollow-sheet-cancel-btn');
+
+    // 1. ดึงค่าปัจจุบันจาก state มาแสดง
+    const currentFocus = state.settings?.focusDuration || 25;
+    const currentBreak = state.settings?.breakDuration || 5;
+
+    // 2. สร้าง HTML ของฟอร์มตั้งค่า
+    contentEl.innerHTML = `
+        <div class="action-sheet-form-inner">
+            <div class="action-sheet-form-header">
+                <h3><i data-feather="sliders"></i> ตั้งค่าเวลา</h3>
+            </div>
+            <div class="form-group">
+                <label for="sheet-focus-duration">เวลาโฟกัส (นาที)</label>
+                <input type="number" id="sheet-focus-duration" value="${currentFocus}" min="1">
+            </div>
+            <div class="form-group">
+                <label for="sheet-break-duration">เวลาพัก (นาที)</label>
+                <input type="number" id="sheet-break-duration" value="${currentBreak}" min="1">
+            </div>
+            <button id="sheet-save-timer-settings-btn" class="action-sheet-btn primary">บันทึกการตั้งค่า</button>
+        </div>
+    `;
+    feather.replace();
+
+    // 3. ฟังก์ชันซ่อน Sheet
+    const hideSheet = () => {
+        overlay.classList.remove('show');
+        sheet.classList.remove('show');
+    };
+
+    // 4. จัดการ Event Listener ของปุ่ม "บันทึก" และ "ยกเลิก"
+    const saveBtn = document.getElementById('sheet-save-timer-settings-btn');
+    
+    saveBtn.onclick = () => {
+        const newFocus = parseInt(document.getElementById('sheet-focus-duration').value, 10);
+        const newBreak = parseInt(document.getElementById('sheet-break-duration').value, 10);
+
+        if (isNaN(newFocus) || newFocus < 1 || isNaN(newBreak) || newBreak < 1) {
+            showToast("กรุณาใส่เวลาเป็นตัวเลขที่มากกว่า 0");
+            return;
+        }
+
+        if (!state.settings) state.settings = {};
+        state.settings.focusDuration = newFocus;
+        state.settings.breakDuration = newBreak;
+        
+        saveState();
+        resetTimer(); // อัปเดตหน้าปัดนาฬิกาทันที
+        hideSheet();
+        showToast("บันทึกการตั้งค่าเรียบร้อยแล้ว!");
+    };
+
+    cancelBtn.onclick = hideSheet;
+    overlay.onclick = hideSheet;
+    
+    // 5. แสดง Action Sheet
+    overlay.classList.remove('hidden');
+    sheet.classList.remove('hidden');
+    setTimeout(() => {
+        overlay.classList.add('show');
+        sheet.classList.add('show');
+    }, 10);
+}
 
 });
