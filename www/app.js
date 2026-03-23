@@ -375,6 +375,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return JSON.parse(JSON.stringify(initialState));
         }
     }
+    // ฟังก์ชันสำหรับบันทึก State ทั้งหมดกลับไปยัง Firebase
+    async function saveStateToFirestore() {
+        if (!currentUser) return;
+        try {
+            await db.collection('users').doc(currentUser.uid).set(state);
+            console.log("บันทึกข้อมูลสำเร็จ!");
+        } catch (error) {
+            console.error("เซฟไม่สำเร็จ:", error);
+        }
+    }
 
     function runApp() {
         window.handleFollow = handleFollow;
@@ -2607,43 +2617,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Revisit & Quiz System ---
     let currentQuizState = { subject: null, topicId: null, quizzes: [], currentQuizIndex: 0, correctAnswers: 0 };
-    window.renderRevisitList = () => {
-        const container = document.getElementById('revisit-topics-by-subject');
-        if (!container) return;
-        container.innerHTML = '';
-        let hasTopics = false;
-        const allSubjects = state.subjects || [];
-        for (const subjectData of allSubjects) {
-            const subjectKey = subjectData.value;
-            const subjectName = subjectData.name;
-            if (state.revisitTopics && state.revisitTopics[subjectKey] && state.revisitTopics[subjectKey].length > 0) {
-                hasTopics = true;
-                const subjectGroup = document.createElement('div');
-                subjectGroup.className = 'subject-group';
-                const subjectTitle = document.createElement('h3');
-                subjectTitle.className = 'subject-title';
-                subjectTitle.textContent = subjectName;
-                subjectGroup.appendChild(subjectTitle);
-                const topicList = document.createElement('ul');
-                topicList.className = 'topic-list';
-                topicList.innerHTML = state.revisitTopics[subjectKey].map(topic => `
-                    <li class="topic-item">
-                        <div class="topic-info">
-                            <span>${topic.name}</span>
-                            <div class="next-review">ทบทวนครั้งถัดไป: ${dayjs(topic.nextReviewDate).format('D MMM YYYY')}</div>
-                        </div>
-                        <button class="small-btn" onclick="openQuizManager('${subjectKey}', ${topic.id})">จัดการควิซ</button>
-                    </li>
-                `).join('');
-                subjectGroup.appendChild(topicList);
-                container.appendChild(subjectGroup);
-            }
-        }
-        if (!hasTopics) container.innerHTML = '<p class="subtle-text" style="text-align:center;">ยังไม่มีหัวข้อสำหรับทบทวน ลองเพิ่มดูสิ!</p>';
-        feather.replace();
-        const homePage = document.getElementById('home-page');
-        if (homePage && homePage.classList.contains('active')) updateHomePageUI();
-    };
+    
     window.openQuizManager = (subject, topicId) => {
         currentQuizState.subject = subject;
         currentQuizState.topicId = parseInt(topicId);
@@ -2708,6 +2682,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             topic.quizzes.push(newQuizData);
         }
+        
         saveState();
         renderCreatedQuizzesList();
         resetQuizCreationForm();
@@ -5515,3 +5490,22 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 
 });
+function showPage(pageId) {
+    // ซ่อนทุกหน้า
+    allPages.forEach(p => p.classList.remove('active'));
+    allNavLinks.forEach(l => l.classList.remove('active'));
+
+    // แสดงหน้าที่เลือก
+    const targetPage = document.getElementById(pageId + '-page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+        window.location.hash = pageId;
+    }
+
+    // [สำคัญ] ถ้าเปิดหน้าทบทวน ให้โหลดข้อมูลใหม่มาแสดงด้วย
+    if (pageId === 'revisit') {
+        if (typeof renderRevisitTopics === 'function') {
+            renderRevisitTopics(); 
+        }
+    }
+}
